@@ -31,7 +31,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
         $validated['password'] = Hash::make($validated['password']);
 
         $user = new User();
-        $user-
+
 
 
         Auth::login($user);
