@@ -1,0 +1,16 @@
+<?php
+
+use Illuminate\Support\Facades\Cache;
+
+if (!function_exists('getCartQuantities')) {
+    function getCartQuantities()
+    {
+        $userId  = auth('api')->id() ?? session()->getId();
+        $cartKey = "cart_{$userId}";
+        $cart    = Cache::get($cartKey, []);
+
+        return collect($cart)->mapWithKeys(fn($item) => [
+            $item['variant_id'] => $item['quantity']
+        ]);
+    }
+}
