@@ -7,7 +7,10 @@ use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use App\Models\Notification;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+
 
 class HomeController extends Controller {
     public function index(Request $request) {
@@ -101,4 +104,108 @@ class HomeController extends Controller {
             ]
         ]);
     }
+
+
+    public function notification()
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'You need to login first'
+        ]);
+    }
+
+    $notification = Notification::where('user_id', Auth::id())
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function ($list) {
+            return [
+                'notification_id' => $list->id,
+                 'notification_image' => url('/storage/logo.jpg'),
+                'notification_title' => $list->title,
+                'notification_description' => $list->description,
+                'created_date' => $list->created_at,
+                'read_status' => $list->status === 1,
+            ];
+        });
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Notifications List',
+        'data' => $notification->values()
+    ]);
+}
+
+public function notificationReadStatus(Request $request)
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'You need to login first'
+        ]);
+    }
+
+    // Validation
+    $validator = Validator::make($request->all(), [
+        'notification_id' => 'nullable|array|min:1',
+        'user_id' => 'nullable|integer',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 409,
+            'message' => $validator->errors()->first(),
+        ], 409);
+    }
+
+    if ($request->filled('notification_id')) {
+        Notification::where('user_id', Auth::id())
+            ->whereIn('id', $request->notification_id)
+            ->update(['status' => 1]);
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Selected Notifications Marked as Read',
+        ]);
+    }
+
+    Notification::where('user_id', Auth::id())->update(['status' => 1]);
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'All Notifications Marked as Read',
+    ]);
+}
+
+
+ public function notificationDelete(Request $request)
+ {
+    if (!Auth::check()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'You need to login first'
+        ]);
+    }
+
+    $validator = Validator::make($request->all(), [
+        'notification_id' => 'required|array|min:1',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 409,
+            'message' => $validator->errors()->first(),
+        ], 409);
+    }
+
+    Notification::where('user_id', Auth::id())
+        ->whereIn('id', $request->notification_id)
+        ->delete();
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Notification Deleted Successfully',
+    ]);
+}
+
 }
