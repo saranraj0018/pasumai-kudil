@@ -21,7 +21,7 @@ class CouponController extends Controller
                         "coupon_code"      => $coupon->coupon_code,
                         "discount_value"   => $coupon->discount_value,
                         "discount_type"    => $coupon->discount_type,
-                         "description"     => $coupon->description,
+                         "description"     => $coupon->description ?? 'null',
                         "apply_for"       => $coupon->apply_for,
                         "max_price"       => $coupon->max_price ?? 0,
                         "min_price"       => $coupon->min_price ?? 0,
