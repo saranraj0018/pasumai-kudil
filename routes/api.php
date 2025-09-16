@@ -6,6 +6,7 @@ use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\ProfileController;
 use App\Http\Controllers\API\CartController;
+use App\Http\Controllers\API\CouponController;
 
 
 
@@ -38,6 +39,14 @@ Route::group(['prefix' => 'user'], function () {
      //profile
      Route::get('/profile', [ProfileController::class, 'show']);
      Route::post('/edit-profile', [ProfileController::class, 'update']);
+
+     //Notifications
+     Route::get('/notification/list', [HomeController::class, 'notification']);
+     Route::post('/notification/read-status', [HomeController::class,'notificationReadStatus']);
+     Route::post('/notification/delete', [HomeController::class,'notificationDelete']);
+
+     //coupons
+     Route::get('/coupons', [CouponController::class, 'index']);
 
      //Cart
      Route::post('/add-to-cart', [CartController::class, 'addToCart']);
