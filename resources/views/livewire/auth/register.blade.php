@@ -25,28 +25,38 @@ new #[Layout('components.layouts.auth')] class extends Component {
             'mobile_number' => ['required', 'digits:10'],
             'email' => ['required', 'email', 'max:255', 'unique:' . Admin::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
-            'code' => ['required', 'string'],
+            'code' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    if (!empty($this->code) && $this->code !== 'Pasumai2025K') {
+                        $fail('The referral code is invalid.');
+                    }
+                }
+            ],
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        $admin = new Admin();
+        $admin->name     = $validated['name'];
+        $admin->email         = $validated['email'];
+        $admin->password      = Hash::make($validated['password']);;
+        $admin->role          = $validated['role'];
+        $admin->mobile_number = $validated['mobile_number'];
+        $admin->code = $validated['code'];
+        $admin->save();
 
-        $user = new User();
+        // Login new admin
+        Auth::guard('admin')->login($admin);
 
-
-
-        Auth::login($user);
-
-        $this->redirectIntended(route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(route('view.dashboard', absolute: false), navigate: true);
     }
 };
 ?>
-
 <div class="min-h-screen flex items-center justify-center px-4"
      style="background: linear-gradient(to bottom, #FFE6CE 0%, #ffffff 80%);">
-    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-xl p-10">
-        <h2 class="text-2xl font-bold text-green-800 mb-6">Create an Account</h2>
+    <div class="w-full max-w-3xl bg-white rounded-3xl shadow-xl p-10">
+        <h2 class="text-2xl font-bold text-black mb-6">Create an Account</h2>
 
-        <form wire:submit.prevent="register" class="space-y-5">
+        <form wire:submit.prevent="register" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Role -->
             <div>
                 <label class="text-sm text-gray-700">Role</label>
@@ -69,7 +79,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
             <!-- Mobile -->
             <div>
                 <label class="text-sm text-gray-700">Mobile</label>
-                <input wire:model="mobile_number" type="tel" class="w-full border rounded-md px-3 py-2 mt-1" />
+                <input wire:model="mobile_number" type="number" class="w-full border rounded-md px-3 py-2 mt-1" />
                 @error('mobile_number') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
             </div>
 
@@ -94,18 +104,21 @@ new #[Layout('components.layouts.auth')] class extends Component {
             </div>
 
             <!-- Security Code -->
-            <div>
+            <div class="md:col-span-2">
                 <label class="text-sm text-gray-700">Security Code</label>
                 <input wire:model="code" type="text" class="w-full border rounded-md px-3 py-2 mt-1" />
                 @error('code') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
             </div>
 
-            <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-md">Sign Up</button>
+            <!-- Submit -->
+            <div class="md:col-span-2">
+                <button type="submit" class="w-full bg-[#FFE6CE] text-black py-2 rounded-md">Sign Up</button>
+            </div>
         </form>
 
         <p class="text-sm text-gray-600 text-center mt-6">
             Already have an account?
-            <a href="/" class="text-green-600 hover:underline">Sign In</a>
+            <a href="/" class="text-black hover:underline">Sign In</a>
         </p>
     </div>
 </div>

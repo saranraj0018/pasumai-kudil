@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>{{ $title ?? config('app.name') }}</title>
+    <title>{{ $title ?? __('Dashboard') }} - {{ config('app.name') }}</title>
 
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -15,10 +15,27 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
-
 </head>
-<body class="">
-{{ $slot }}
+<body class="bg-gray-100 dark:bg-gray-900">
+
+<div x-data="{ open: true }" class="flex min-h-screen">
+
+    {{-- Sidebar --}}
+    <x-sidebar />
+
+    {{-- Main Content --}}
+    <div class="flex-1 flex flex-col">
+
+        {{-- Navbar --}}
+        <x-navbar :title="$title ?? __('Dashboard')" />
+
+        {{-- Page Content --}}
+        <main class="p-6">
+            {{ $slot }}
+        </main>
+    </div>
+</div>
+
 @fluxScripts
 </body>
 </html>
