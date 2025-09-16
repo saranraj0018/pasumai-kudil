@@ -28,7 +28,7 @@ class extends Component {
         // Throttle login attempts
         $this->ensureIsNotRateLimited();
 
-        if (!Auth::guard('admin')->attempt(['email' => $this->email, 'password' => $this->password], true)) {
+        if (!Auth::guard('admin')->attempt(['email' => $this->email, 'password' => $this->password])) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -40,7 +40,7 @@ class extends Component {
 
         session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('view.dashboard'));
     }
 
     protected function ensureIsNotRateLimited(): void
