@@ -13,7 +13,7 @@ class CartController extends Controller
     $request->validate([
         'product_id' => 'required|integer',
         'variant_id' => 'required|integer',
-        'quantity'   => 'required|integer',
+        'quantity'   => 'required|integer|min:1',
     ]);
 
     $userId  = auth('api')->id() ?? session()->getId();
