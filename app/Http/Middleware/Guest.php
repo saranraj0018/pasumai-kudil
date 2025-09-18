@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminRedirect
+class Guest
 {
     /**
      * Handle an incoming request.
@@ -16,8 +16,8 @@ class AdminRedirect
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::guard('admin')->check()) {
-            return redirect()->route('login');
+        if (Auth::guard('admin')->check()) {
+            return redirect()->route('view.dashboard');
         }
         return $next($request);
     }

@@ -112,7 +112,18 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
             <!-- Submit -->
             <div class="md:col-span-2">
-                <button type="submit" class="w-full bg-[#FFE6CE] text-black py-2 rounded-md">Sign Up</button>
+                <button type="submit"
+                        class="w-full bg-[#FFE6CE] text-black py-2 rounded-md flex items-center justify-center gap-2"
+                        wire:loading.attr="disabled">
+                    <span wire:loading.remove>Sign Up</span>
+                    <span wire:loading.flex>
+            <svg class="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
+            </svg>
+            Processing...
+        </span>
+                </button>
             </div>
         </form>
 
