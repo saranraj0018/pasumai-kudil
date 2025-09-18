@@ -17,7 +17,7 @@ class CouponController extends Controller
                 ->get()
                 ->map(function ($coupon) {
                     return [
-                            "coupon_id" => $coupon->id,
+                       "coupon_id" => $coupon->id,
                             "coupon_code" => $coupon->coupon_code,
                             "coupon_discount" => $coupon->discount_value,
                             "coupon_type" => $coupon->discount_type == 1 ? "fixed" : "percentage",
