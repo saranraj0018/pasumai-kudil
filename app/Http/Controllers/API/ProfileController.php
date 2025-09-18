@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use App\Models\Product;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\User;
 
@@ -120,7 +121,7 @@ class ProfileController extends Controller
         ], 200);
     }
 
-    public function toggleLikeStatus(Request $request)
+     public function toggleLikeStatus(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -147,12 +148,13 @@ class ProfileController extends Controller
 
          $likedProducts = (array) json_decode($user->likedProducts ?? '[]');
 
-         $like = $request->status;
-
-            if (!empty($like) && !in_array($request->product_id, $likedProducts)) {
-                $likedProducts[] = $request->product_id;
-                $message = "Wishlist Added Successfully";
-            } else {
+         $like = (bool) $request->status;
+            if ($like) {
+            if (!in_array($product->id, $likedProducts)) {
+                $likedProducts[] = $product->id;
+            }
+              $message = "Wishlist Added Successfully";
+        } else {
             $likedProducts = array_filter($likedProducts, fn($id) => $id != $product->id);
             $likedProducts = array_values($likedProducts);
              $message = "Wishlist Removed Successfully";

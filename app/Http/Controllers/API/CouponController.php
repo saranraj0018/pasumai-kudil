@@ -17,16 +17,22 @@ class CouponController extends Controller
                 ->get()
                 ->map(function ($coupon) {
                     return [
-                            "coupon_id" => $coupon->id,
-                            "coupon_code" => $coupon->coupon_code,
-                            "coupon_discount" => $coupon->discount_value,
-                            "coupon_type" => $coupon->discount_type == 1 ? "fixed" : "percentage",
-                            "coupon_value" => $coupon->discount_value,
-                            "coupon_start_date" => now()->format('Y-m-d'),
-                            "coupon_end_date" => \Carbon\Carbon::parse($coupon->expires_at)->format('Y-m-d'),
-                            "coupon_status" => $coupon->status == 1 ? "active" : "disabled",
-                            "description" => $coupon->description ?? "null",
-                            "coupon_image" => $coupon->image ? url('/storage/' . $coupon->image) : null,
+                      // "coupon_id"        => $coupon->id,
+                        "coupon_code"      => $coupon->coupon_code,
+                        "discount_value"   => $coupon->discount_value,
+                        "discount_type"    => $coupon->discount_type,
+                         "description"     => $coupon->description ?? 'null',
+                        "apply_for"       => $coupon->apply_for,
+                        "max_price"       => $coupon->max_price ?? 0,
+                        "min_price"       => $coupon->min_price ?? 0,
+                        "order_count"     => $coupon->order_count ?? 0,
+                       "expires_at"      => $coupon->expires_at
+                                               ? Carbon::parse($coupon->expires_at)->format('Y-m-d')
+                                               : null,
+                       // "couponStartDate" => now()->format('Y-m-d'),
+                        // "couponEndDate" => \Carbon\Carbon::parse($coupon->expires_at)->format('Y-m-d'),
+                      //  "coupon_status"    => $coupon->status ? "active" : "disabled",
+                       // "coupon_image"     => $coupon->image ? asset('storage/' . $coupon->image) : null,
                     ];
                 });
 
