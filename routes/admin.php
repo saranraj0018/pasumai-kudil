@@ -18,7 +18,10 @@ Route::prefix('admin')->group(function () {
     Route::get('/category', \App\Livewire\Category::class)->name('view.category');
     Route::post('logout', App\Livewire\Actions\Logout::class)
         ->name('logout');
+
+    Volt::route('/users', 'users')->name('users');
 });
+
 
 
 
