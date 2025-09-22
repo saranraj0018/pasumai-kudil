@@ -13,4 +13,11 @@ if (!function_exists('getCartQuantities')) {
             $item['variant_id'] => $item['quantity']
         ]);
     }
+
+    if (!function_exists('intValue')) {
+        function intValue($value)
+        {
+            return intval($value);
+        }
+    }
 }

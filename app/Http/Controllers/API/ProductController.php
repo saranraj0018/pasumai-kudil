@@ -25,7 +25,7 @@ class ProductController extends Controller {
                     "stock_count"    => $details ? $details->stock : 0,
                     'product_kg'  => $details ? ($details->weight . ' ' . $details->weight_unit) : null,
                     'variation_id'  => $details ? $details->id : null,
-                    'quantity'     =>  $details ? ($cartQuantities[$details->id] ?? 0) : 0,
+                    'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                     'is_featured_product' => $details ? $details->is_featured_product : 0,
                 ];
             })->filter(fn($product) => $product['is_featured_product'] == 1)
@@ -57,7 +57,7 @@ class ProductController extends Controller {
                     "stock_count"    => $details ? $details->stock : 0,
                     'product_kg'  =>  $details ? ($details->weight . ' ' . $details->weight_unit) : null,
                     'variation_id'  => $details ? $details->id : null,
-                    'quantity'     =>  $details ? ($cartQuantities[$details->id] ?? 0) : 0,
+                    'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                     'is_featured_product' => $details ? $details->is_featured_product : 0,
                 ];
             })->filter(fn($product) => $product['is_featured_product'] != 1)
@@ -105,7 +105,7 @@ class ProductController extends Controller {
                         "liked_status"         => in_array($product->id, $likedProducts),
                         'product_kg'  =>  $details ? ($details->weight . ' ' . $details->weight_unit) : null,
                         'variation_id'  => $details ? $details->id : null,
-                        'quantity'     =>  $details ? ($cartQuantities[$details->id] ?? 0) : 0,
+                        'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                     ];
                 }),
             ], 200);
@@ -132,6 +132,15 @@ class ProductController extends Controller {
 
             if (!$product) {
                 throw new \Exception('Product Not found', 404);
+            }
+
+            $variant = $product->variants->firstWhere('id', $request['variation_id']);
+
+            if (empty($variant)) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Variant not found'
+                ]);
             }
 
             $details = $product->details;
@@ -171,7 +180,7 @@ class ProductController extends Controller {
                         'product_gram'  =>  $currentVariant ? ($currentVariant->weight . ' ' . $currentVariant->weight_unit) : null,
                         "liked_status" => $likedStatus,
                         "product_size" => $productSizes,
-                        "quantity" => $currentVariant ? ($cartQuantities[$currentVariant->id] ?? 0) : 0,
+                        "quantity" => $currentVariant ? intValue($cartQuantities[$currentVariant->id] ?? 0) : 0,
                         "image_text" => $product->description,
                         "cooking_idea" => $product->benefits
                     ]

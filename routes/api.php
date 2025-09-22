@@ -11,6 +11,7 @@ use App\Http\Controllers\API\CouponController;
 
 
 Route::group(['prefix' => 'user'], function () {
+
     Route::post('/register', [AuthController::class, 'userRegister']);
     Route::post('/otp', [AuthController::class, 'VerifyOtp']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -50,6 +51,7 @@ Route::group(['prefix' => 'user'], function () {
 
      //Cart
      Route::post('/add-to-cart', [CartController::class, 'addToCart']);
+     Route::post('/cart', [CartController::class, 'getCart']);
      Route::post('/cart/remove', [CartController::class, 'removeFromCart']);
 });
 

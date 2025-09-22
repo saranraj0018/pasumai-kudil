@@ -26,7 +26,7 @@ class CouponController extends Controller
                             "coupon_end_date" => \Carbon\Carbon::parse($coupon->expires_at)->format('Y-m-d'),
                             "coupon_status" => $coupon->status == 1 ? "active" : "disabled",
                             "description" => $coupon->description ?? "null",
-                            "coupon_image" => $coupon->image ? url('/storage/' . $coupon->image) : null,
+                            "coupon_image" => $coupon->image ? url('/storage/' . $coupon->image) : '',
                     ];
                 });
 

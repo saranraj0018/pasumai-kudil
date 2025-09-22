@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
-use App\Livewire\Dashboard;
+use App\Http\Controllers\Admin\Dashboard;
+use App\Http\Controllers\Admin\Authenticate;
 
 
 
@@ -12,20 +12,16 @@ use App\Livewire\Dashboard;
 
 Route::prefix('admin')->group(function () {
 
-    Route::middleware('guest')->group(function () {
-        Volt::route('login', 'auth.login')
-            ->name('login');
-
-        Volt::route('register', 'auth.register')
-            ->name('register');
-    });
+    Route::view('/login', 'auth.login')->name('admin.login');
+    Route::view('/register', 'auth.register')->name('admin.register');
+    Route::post('/authenticate', [Authenticate::class, 'adminAuthenticate'])->name('admin.authenticate');
+    Route::post('/register/update', [Authenticate::class, 'registerUpdate'])->name('admin.register.update');
 
     Route::middleware('admin')->group(function () {
 
-        Route::get('/dashboard', Dashboard::class)->name('view.dashboard');
-        Route::get('/category', \App\Livewire\Category::class)->name('view.category');
-        Route::post('logout', App\Livewire\Actions\Logout::class)
-            ->name('logout');
+        Route::get('/dashboard', [Dashboard::class, 'index'])->name('admin.dashboard');
+        Route::get('/category', [])->name('view.category');
+        Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
     });
 });
 
