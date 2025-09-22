@@ -20,7 +20,9 @@ class HomeController extends Controller {
             ->map(function ($banner) {
                 return [
                     'banner_id' => $banner->id,
-                    'banner_image' => url('/storage/' . $banner->image_url),
+                    'banner_image' => request()->isSecure()
+                        ? secure_url('storage/' . $banner->image_url)
+                        : url('storage/' . $banner->image_url),
                 ];
             });
 
@@ -63,7 +65,7 @@ class HomeController extends Controller {
                     'liked_status'       => in_array($product->id, $likedProducts),
                     'product_kg'  => $details ? ($details->weight . ' ' . $details->weight_unit) : null,
                     'variation_id'  => $details ? $details->id : null,
-                    'quantity'     =>  $details ? ($cartQuantities[$details->id] ?? 0) : 0,
+                    'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                     'is_featured_product' => $details ? $details->is_featured_product : 0,
                 ];
             })->filter(fn($product) => $product['is_featured_product'] == 1)
@@ -85,7 +87,7 @@ class HomeController extends Controller {
                    "stock_count"    => $details ? $details->stock : 0,
                     'product_kg'  =>  $details ? ($details->weight . ' ' . $details->weight_unit) : null,
                     'variation_id'  => $details ? $details->id : null,
-                    'quantity'     =>  $details ? ($cartQuantities[$details->id] ?? 0) : 0,
+                    'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                     'is_featured_product' => $details ? $details->is_featured_product : 0,
                 ];
             })->filter(fn($product) => $product['is_featured_product'] != 1)

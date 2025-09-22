@@ -62,7 +62,7 @@ class CategoryController extends Controller {
                          'product_kg'  => $details ? ($details->weight . ' ' . $details->weight_unit) : null,
                          'liked_status'         => in_array($product->id, $likedProducts),
                          'variation_id'  => $details ? $details->id : null,
-                         'quantity'     =>  $details ? ($cartQuantities[$details->id] ?? 0) : 0,
+                         'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                          "stock_count"    => $details ? $details->stock : 0,
                          "product_name"    => $product->name,];
                 });
