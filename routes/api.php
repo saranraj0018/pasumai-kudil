@@ -1,12 +1,13 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\ProfileController;
-use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\CouponController;
+use App\Http\Controllers\API\AddressController;
 
 
 
@@ -47,6 +48,14 @@ Route::group(['prefix' => 'user'], function () {
 
      //coupons
      Route::get('/coupons', [CouponController::class, 'index']);
+
+     //Address
+        Route::get('/address/list', [AddressController::class, 'index']);
+        Route::post('/address/save', [AddressController::class, 'save']);
+        Route::post('/address/update', [AddressController::class, 'update']);
+        Route::post('/address/set-default', [AddressController::class, 'setDefaultAddress']);
+        Route::post('/address/delete', [AddressController::class, 'delete']);
+
 
      //Cart
      Route::post('/add-to-cart', [CartController::class, 'addToCart']);

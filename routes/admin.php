@@ -24,6 +24,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/dashboard', Dashboard::class)->name('view.dashboard');
         Route::get('/category', \App\Livewire\Category::class)->name('view.category');
+        Route::get('/users', \App\Livewire\UserList::class)->name('view.users');
         Route::post('logout', App\Livewire\Actions\Logout::class)
             ->name('logout');
     });
