@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\Dashboard;
 use App\Http\Controllers\Admin\Authenticate;
+use App\Http\Controllers\Admin\CategoryController;
 
 
 
@@ -20,7 +21,11 @@ Route::prefix('admin')->group(function () {
     Route::middleware('admin')->group(function () {
 
         Route::get('/dashboard', [Dashboard::class, 'index'])->name('admin.dashboard');
-        Route::get('/category', [])->name('view.category');
+
+        Route::prefix('category')->group(function () {
+        Route::get('/list', [CategoryController::class,'view'])->name('view.category');
+
+        });
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
     });
 });
