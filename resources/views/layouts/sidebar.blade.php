@@ -1,4 +1,4 @@
-<aside class="bg-gradient-to-b from-[#ab5f00] to-white h-screen w-64 shadow-lg">
+<aside class="bg-gradient-to-b from-[#ab5f00] to-white fixed top-0 left-0 h-full w-64 overflow-y-auto">
     <!-- Brand Logo -->
     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 p-4 border-b border-white/30">
         <img src="/pasumai.png" alt="Pasumai Logo" class="h-10 w-10 object-contain">
@@ -33,7 +33,7 @@
             <!-- Submenu -->
             <ul x-show="openGrocery" x-transition class="ml-8 mt-1 space-y-1">
                 <li>
-                    <a href="#"
+                    <a href="{{ route('view.category') }}"
                        class="flex items-center gap-3 px-3 py-2 rounded transition hover:bg-[#ab5f00]/80">
                         <i class="fas fa-layer-group w-5"></i>
                         <span>Category</span>

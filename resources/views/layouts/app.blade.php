@@ -12,75 +12,84 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-    <!-- AdminLTE style -->
-    <link rel="stylesheet" href="{{ asset('admin/css/adminlte.min.css') }}">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('admin/css/custom.css') }}">
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/2.3.0/alpine.js"></script>
 
-
-    <!-- Tailwind CSS (for custom UI) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css'])
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body class="hold-transition sidebar-mini bg-gray-100">
     <div class="wrapper">
+        <div class="flex">
+            <!-- Sidebar -->
+            <aside class="bg-gradient-to-b from-[#ab5f00] to-white fixed top-0 left-0 h-full w-64 shadow-lg">
+                @include('layouts.sidebar')
+            </aside>
 
-
-
-        <div class="flex justify-start items-start">
-
-            @include('layouts.sidebar')
-
-            <div class="flex flex-col w-full p-2">
-
-
-                <nav class="bg-white w-full border-b-1 border-gray-200 px-5 py-3 shadow-sm rounded-xl">
-
-                    <a class="" href="#" role="button">
+            <!-- Main Content -->
+            <div class="flex flex-col flex-1 ml-64">
+                <!-- Navbar -->
+                <nav class="bg-white w-full border-b border-gray-200 px-5 py-3 shadow-sm">
+                    <a href="#" role="button">
                         <i class="fas fa-bars"></i>
                     </a>
-
                 </nav>
-                <!-- /.navbar -->
-
-                <!-- Sidebar -->
 
 
-                <!-- Content -->
-                <div class="content-wrapper p-6">
-                    @yield('content')
+                <div class="flex justify-start items-start">
+
+                    @include('layouts.sidebar')
+
+                    <div class="flex flex-col w-full p-2">
+
+
+                        <nav class="bg-white w-full border-b-1 border-gray-200 px-5 py-3 shadow-sm rounded-xl">
+
+                            <a class="" href="#" role="button">
+                                <i class="fas fa-bars"></i>
+                            </a>
+
+                        </nav>
+                        <!-- /.navbar -->
+
+                        <!-- Sidebar -->
+
+
+                        <!-- Content -->
+                        <div class="content-wrapper p-6">
+                            @yield('content')
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <!-- ./wrapper -->
+            <!-- ./wrapper -->
 
-    <!-- jQuery -->
-    <script src="{{ asset('admin/plugins/jquery/jquery.min.js') }}"></script>
+            <!-- jQuery -->
+            <script src="{{ asset('admin/plugins/jquery/jquery.min.js') }}"></script>
 
-    <!-- Bootstrap 4 -->
-    <script src="{{ asset('admin/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+            <!-- Bootstrap 4 -->
+            <script src="{{ asset('admin/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-    <!-- AdminLTE App -->
-    <script src="{{ asset('admin/js/adminlte.min.js') }}"></script>
+            <!-- AdminLTE App -->
+            <script src="{{ asset('admin/js/adminlte.min.js') }}"></script>
 
-    <!-- Custom JS -->
-    <script src="{{ asset('admin/js/demo.js') }}"></script>
+            <!-- Custom JS -->
+            <script src="{{ asset('admin/js/custom.js') }}"></script>
 
-    <script>
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-    </script>
+            <script>
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+            </script>
 
-    @yield('customJs')
-    @yield('customCss')
+            @yield('customJs')
+            @yield('customCss')
 </body>
 
 </html>

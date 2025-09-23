@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Address;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 
@@ -24,7 +25,6 @@ class AddressController extends Controller
         'pincode' => 'required|string',
         'state' => 'required|string',
         'city' => 'required|string',
-        'landmark' => 'nullable|string',
         'address_type' => 'required|string',
         'is_default' => 'nullable|boolean',
         'latitude' => 'nullable|numeric',
@@ -47,7 +47,6 @@ class AddressController extends Controller
     $address->pincode = $data['pincode'];
     $address->state = $data['state'];
     $address->city = $data['city'];
-    $address->landmark = $data['landmark'] ?? null;
     $address->address_type = $data['address_type'];
     $address->is_default = $data['is_default'] ?? false;
     $address->latitude = $data['latitude'] ?? null;
@@ -73,7 +72,6 @@ public function update(Request $request)
             'pincode' => 'required|string',
             'state' => 'required|string',
             'city' => 'required|string',
-            'landmark' => 'nullable|string',
             'address_type' => 'required|string',
             'is_default' => 'nullable|boolean',
             'latitude' => 'nullable|numeric',
@@ -106,7 +104,6 @@ public function update(Request $request)
         $address->pincode = $data['pincode'];
         $address->state = $data['state'];
         $address->city = $data['city'];
-        $address->landmark = $data['landmark'] ?? null;
         $address->address_type = $data['address_type'];
         $address->latitude = $data['latitude'] ?? null;
         $address->longitude = $data['longitude'] ?? null;
@@ -119,6 +116,12 @@ public function update(Request $request)
             'message' => 'Address updated successfully'
         ]);
     } catch (\Throwable $th) {
+        Log::info('API Request:', [
+            'error' => $th->getMessage(),
+            'file'  => $th->getFile(),
+            'line'  => $th->getLine(),
+            'trace' => $th->getTraceAsString(),
+        ]);
         return response()->json([
             'status' => $th->getCode() ?: 500,
             'message' => $th->getMessage(),

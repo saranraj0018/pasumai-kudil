@@ -6,7 +6,7 @@
     <title>{{ $title ?? 'Authentication' }} - Pasumaikudil</title>
 
     <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css'])
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
