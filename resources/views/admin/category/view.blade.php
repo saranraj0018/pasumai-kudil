@@ -1,8 +1,10 @@
 <!-- resources/views/livewire/category-manager.blade.php -->
-<div class="p-4">
+@extends('layouts.app')
+@section('content')
+<div class="p-4 " x-data="{ open: false }">
     <div class="flex justify-between mb-4">
         <h2 class="text-xl font-bold">Categories</h2>
-        <button class="bg-[#ab5f00] text-white px-4 py-2 rounded">Create</button>
+        <button @click="open = true"  class="bg-[#ab5f00] text-white px-4 py-2 rounded">Create</button>
     </div>
 
     <div class="overflow-x-auto bg-white rounded-xl shadow-md">
@@ -62,60 +64,6 @@
             </tbody>
         </table>
     </div>
-
-        <!-- Modal -->
-{{--        <div class="fixed inset-0 flex items-center justify-center z-50">--}}
-{{--            <div class="bg-white p-6 rounded-2xl w-[600px] shadow-xl">--}}
-{{--                <h2 class="text-xl font-bold text-gray-800 mb-6">--}}
-{{--                    {{ $category_id ? 'Edit Category' : 'Add Category' }}--}}
-{{--                </h2>--}}
-
-{{--                <form class="grid grid-cols-1 md:grid-cols-2 gap-6">--}}
-{{--                    <!-- Left Column -->--}}
-{{--                    <div class="space-y-4">--}}
-{{--                        <div>--}}
-{{--                            <label class="block text-sm font-medium text-gray-700">Name</label>--}}
-{{--                            <input type="text" name="name"--}}
-{{--                                   class="w-full border rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-green-500 focus:border-green-500">--}}
-{{--                            @error('name')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror--}}
-{{--                        </div>--}}
-
-{{--                        <div>--}}
-{{--                            <label class="block text-sm font-medium text-gray-700">Status</label>--}}
-{{--                            <select --}}
-{{--                                    class="w-full border rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-green-500 focus:border-green-500">--}}
-{{--                                <option value="1">Active</option>--}}
-{{--                                <option value="0">Inactive</option>--}}
-{{--                            </select>--}}
-{{--                        </div>--}}
-{{--                    </div>--}}
-
-{{--                    <!-- Right Column -->--}}
-{{--                    <div class="space-y-4">--}}
-{{--                        <div>--}}
-{{--                            <label class="block text-sm font-medium text-gray-700">Image</label>--}}
-{{--                            <input type="file"--}}
-{{--                                   class="w-full border rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-green-500 focus:border-green-500">--}}
-
-{{--                            <img src="{{ asset('storage/') }}" class="h-20 mt-3 rounded-lg shadow-md object-cover">--}}
-{{--                        </div>--}}
-{{--                    </div>--}}
-
-{{--                    <!-- Footer -->--}}
-{{--                    <div class="md:col-span-2 flex justify-end gap-3 pt-4 border-t">--}}
-{{--                        <button type="button"--}}
-{{--                                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">--}}
-{{--                            Cancel--}}
-{{--                        </button>--}}
-{{--                        <button type="submit"--}}
-{{--                                class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition">--}}
-{{--                            Save--}}
-{{--                        </button>--}}
-{{--                    </div>--}}
-{{--                </form>--}}
-{{--            </div>--}}
-{{--        </div>--}}
-
-
-
+    @include('admin.category.model')
 </div>
+@endsection
