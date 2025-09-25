@@ -48,7 +48,7 @@ Route::group(['prefix' => 'user'], function () {
      Route::post('/notification/delete', [HomeController::class,'notificationDelete']);
 
      //coupons
-     Route::get('/coupons', [CouponController::class, 'index']);
+     Route::post('/coupons', [CouponController::class, 'index']);
 
      //Address
         Route::get('/address/list', [AddressController::class, 'index']);

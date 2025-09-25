@@ -24,7 +24,7 @@ Route::prefix('admin')->group(function () {
 
         Route::prefix('category')->group(function () {
         Route::get('/list', [CategoryController::class,'view'])->name('view.category');
-
+        Route::post('/save', [CategoryController::class,'save'])->name('save.category');
         });
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
     });
