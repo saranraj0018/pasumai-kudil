@@ -2,7 +2,7 @@
 
     <div x-data="{
         products: [],
-        showModal: true,
+        showModal: false,
         modalTitle: '',
         form: {
             id: null,

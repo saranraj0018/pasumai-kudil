@@ -1,11 +1,10 @@
-    <!-- resources/views/livewire/category-manager.blade.php -->
-    @extends('layouts.app')
-    @section('content')
-        <div  id="categoryTableBody"  class="p-4" x-data="{ open: false }">
-            <div class="flex justify-between mb-4">
-                <h2 class="text-xl font-bold">Categories</h2>
-                <button @click="document.querySelector('#categoryModal').__x.$data.open = true" class="bg-[#ab5f00] text-white px-4 py-2 rounded">Create</button>
-            </div>
+
+<x-layouts.app>
+    <div   class="p-4" x-data="{ open: false }">
+        <div class="flex justify-between mb-4">
+            <h2 class="text-xl font-bold">Categories</h2>
+            <button @click="document.querySelector('#categoryModal').__x.$data.open = true" class="bg-[#ab5f00] text-white px-4 py-2 rounded">Create</button>
+        </div>
 
         <div class="overflow-x-auto bg-white rounded-xl shadow-md">
             <table class="w-full text-sm text-left text-gray-700 border-collapse">
@@ -20,7 +19,7 @@
                     <th class="px-3 py-2 text-center">Actions</th>
                 </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
+                <tbody id="categoryTableBody" class="divide-y divide-gray-200">
                 @foreach($categories as $cat)
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $cat->id }}</td>
@@ -66,7 +65,6 @@
         @include('admin.category.model')
     </div>
 
-    @endsection
-    @section('customJs')
-        <script src="{{ asset('admin/js/category.js') }}"></script>
-    @endsection
+</x-layouts.app>
+<script src="{{ asset('admin/js/category.js') }}"></script>
+

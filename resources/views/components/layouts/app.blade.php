@@ -25,6 +25,8 @@
                 </div>
             </div>
         </div>
+        <!-- Toast Container -->
+        <div id="toast-container" class="fixed top-5 right-5 space-y-2 z-50"></div>
     </div>
 
 

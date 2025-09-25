@@ -32,9 +32,8 @@ $(function () {
                         // Reset the form so next time it's clean
                         document.getElementById("categoryForm").reset();
                         $.get("/admin/category/list", function (html) {
-                            let $tbody = $(html);
-                            console.log($tbody)
-                            $("#categoryTableBody").html(html);
+                            let $tbody = $(html).find("#categoryTableBody").html();
+                            $("#categoryTableBody").html($tbody);
                         });
                     }, 500);
 
