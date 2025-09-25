@@ -22,9 +22,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/dashboard', [Dashboard::class, 'index'])->name('admin.dashboard');
 
         Route::prefix('category')->group(function () {
-            Route::get('/list', [CategoryController::class, 'view'])->name('view.category');
+        Route::get('/list', [CategoryController::class,'view'])->name('view.category');
+        Route::post('/save', [CategoryController::class,'save'])->name('save.category');
         });
-
 
         Route::prefix('products')->controller(ProductsController::class)->group(function () {
             Route::get('/', 'index')->name('products');

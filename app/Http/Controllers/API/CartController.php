@@ -168,12 +168,11 @@ public function removeFromCart(Request $request)
         $totalAmount = $subtotal - $coupon_discount + $finalDeliveryCharge + $total_tax;
         $billSummary = [
             "totalItems" => $totalItems,
-            "itemsAmount" => $subtotal ,
-            "discount" => $coupon_discount,
+            "itemsAmount" => number_format($subtotal,1) ,
+            "discount" => number_format($coupon_discount,1),
             "deliveryCharge" => (int)$finalDeliveryCharge,
             "SGST" => !empty($total_tax) ? number_format($total_tax/2 ,2) : '0.0',
             "IGST" => !empty($total_tax) ? number_format($total_tax/2 ,2) : '0.0',
-            "platformFee" => 0,
             "totalAmount" => number_format($totalAmount, 1),
         ];
         $address = Address::where("created_by",auth()->id())->where('is_default',1)->get();
