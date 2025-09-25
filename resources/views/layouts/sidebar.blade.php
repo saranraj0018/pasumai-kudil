@@ -40,10 +40,17 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#"
+                    <a href="{{ route('view.users') }}"
                        class="flex items-center gap-3 px-3 py-2 rounded transition hover:bg-[#ab5f00]/80">
-                        <i class="fas fa-carrot w-5"></i>
-                        <span>Vegetables</span>
+                        <i class="fas fa-layer-group w-5"></i>
+                        <span>Users</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('view.coupons') }}"
+                       class="flex items-center gap-3 px-3 py-2 rounded transition hover:bg-[#ab5f00]/80">
+                        <i class="fas fa-layer-group w-5"></i>
+                        <span>Coupons</span>
                     </a>
                 </li>
             </ul>
