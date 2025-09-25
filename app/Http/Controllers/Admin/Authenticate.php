@@ -14,19 +14,21 @@ class Authenticate extends Controller
 {
     public function adminAuthenticate(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required'
         ]);
 
-        if (!$validator->passes()){
+        if (!$validator->passes()) {
             return redirect()->route('admin.login')
                 ->withErrors($validator)
                 ->withInput($request->only('email'));
         }
 
-        if (!Auth::guard('admin')->attempt(['email' => $request['email'],
-            'password' => $request['password']], $request->get('remember'))){
+        if (!Auth::guard('admin')->attempt([
+            'email' => $request['email'],
+            'password' => $request['password']
+        ], $request->get('remember'))) {
             return redirect()->route('admin.login')->withErrors(['password' => 'Either Email/Password is incorrect'])
                 ->withInput($request->only('email'));
         }
@@ -34,7 +36,7 @@ class Authenticate extends Controller
         $admin = Auth::guard('admin')->user();
         $role_id = Role::pluck('id')->all();
 
-        if (!empty($admin->role) && !empty($role_id) && !in_array($admin->role,$role_id)){
+        if (!empty($admin->role) && !empty($role_id) && !in_array($admin->role, $role_id)) {
             Auth::guard('admin')->logout();
             return redirect()->route('admin.login')
                 ->withErrors(['email' => 'You are not authorized to access'])
@@ -53,12 +55,12 @@ class Authenticate extends Controller
 
     public function registerUpdate(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'role' => ['required'],
             'name' => ['required', 'string', 'max:255'],
             'mobile_number' => ['required', 'digits:10'],
             'email' => ['required', 'email', 'max:255', 'unique:' . Admin::class],
-            'password' => ['required', 'string', 'confirmed','min:8'],
+            'password' => ['required', 'string', 'confirmed', 'min:8'],
             'code' => [
                 'required',
                 function ($attribute, $value, $fail) {
@@ -69,23 +71,22 @@ class Authenticate extends Controller
             ],
         ]);
 
-        if (!$validator->passes()){
+        if (!$validator->passes()) {
             return redirect()->route('admin.register')
                 ->withErrors($validator)
-                ->withInput($request->only('email','user_name', 'role', 'referral_code'));
+                ->withInput($request->only('email', 'user_name', 'role', 'referral_code'));
         }
 
         $admin = new Admin();
-        $admin->name     = $request['name'];
+        $admin->name          = $request['name'];
         $admin->email         = $request['email'];
         $admin->password      = Hash::make($request['password']);;
         $admin->role          = $request['role'];
         $admin->mobile_number = $request['mobile_number'];
-        $admin->code = $request['code'];
+        $admin->code          = $request['code'];
         $admin->save();
 
         Auth::guard('admin')->login($admin);
         return redirect()->route('admin.dashboard');
     }
-
 }
