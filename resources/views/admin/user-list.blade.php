@@ -1,5 +1,4 @@
-@extends('layouts.app')
-@section('content')
+<x-layouts.app>
 <div class="p-4">
     <div class="flex justify-between mb-4 items-center">
         <h2 class="text-xl font-bold">Users</h2>
@@ -82,4 +81,4 @@
     }
     attachPaginationEvents();
 </script>
-@endsection
+</x-layouts.app>

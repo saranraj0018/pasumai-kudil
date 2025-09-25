@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Cache;
 
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+
 if (!function_exists('getCartQuantities')) {
     function getCartQuantities()
     {
@@ -13,6 +16,7 @@ if (!function_exists('getCartQuantities')) {
             $item['variant_id'] => $item['quantity']
         ]);
     }
+}
 
     if (!function_exists('intValue')) {
         function intValue($value)
@@ -20,4 +24,5 @@ if (!function_exists('getCartQuantities')) {
             return intval($value);
         }
     }
-}
+
+

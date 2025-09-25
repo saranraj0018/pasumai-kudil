@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3463ffc365f5b99c0417d905f6b36d78",
+    "content-hash": "fe7dcccefb5f151b5fdc25139033714a",
     "packages": [
         {
             "name": "brick/math",
@@ -1052,6 +1052,54 @@
                 }
             ],
             "time": "2025-08-22T14:27:06+00:00"
+        },
+        {
+            "name": "krish033/netty",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Krish033/netty.git",
+                "reference": "88e27453f8d9b60804d881421ee334519ae74df7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Krish033/netty/zipball/88e27453f8d9b60804d881421ee334519ae74df7",
+                "reference": "88e27453f8d9b60804d881421ee334519ae74df7",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/framework": "^10.0 || ^11.0 || ^12.0",
+                "php": "^8.2"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Krish033\\Netty\\MessageServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Krish033\\Netty\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Krish033",
+                    "email": "srik51977@gmail.com"
+                }
+            ],
+            "description": "Netty is a Laravel package crafted with ❤️ to simplify SMS & OTP workflows using NettyFish APIs. Instead of wiring up HTTP clients, manually handling payloads, and fighting with configs, Netty gives you: ",
+            "support": {
+                "issues": "https://github.com/Krish033/netty/issues",
+                "source": "https://github.com/Krish033/netty/tree/v1.0.0"
+            },
+            "time": "2025-09-22T12:05:25+00:00"
         },
         {
             "name": "laravel/framework",
