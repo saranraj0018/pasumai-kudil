@@ -39,24 +39,26 @@ async function sendRequest(url, data, method = "POST", onSuccess = null, onError
 /**
  * Common Input validate error Helper (Fetch-based)
  * @param field
- * @returns {Promise<boolean>}
+ * @returns {boolean}
  */
-async function validateField(field) {
+function validateField(field) {
     const element = $(field.id);
-    const value = element.val().trim();
+    const value = element.val()?.trim() ?? "";
     const errorEl = element.siblings(".error-message");
 
     if (field.condition(value)) {
         element.addClass("border-red-500 ring-1 ring-red-500");
-        if(errorEl.length === 0) {
-            element.after('<div class="error-message text-red-500 text-sm mt-1">' + field.message + '</div>');
+        if (errorEl.length === 0) {
+            element.after(
+                `<div class="error-message text-red-500 text-sm mt-1">${field.message}</div>`
+            );
         } else {
             errorEl.text(field.message);
         }
         return false;
     } else {
         element.removeClass("border-red-500 ring-1 ring-red-500");
-        if(errorEl.length) errorEl.remove();
+        if (errorEl.length) errorEl.remove();
         return true;
     }
 }
