@@ -12,6 +12,8 @@
 
             <x-slot:menus>
                 <x-menu.item route="view.category" name="Category" icon="fa-layer-group" />
+                <x-menu.item route="view.coupons" name="Coupons" icon="fa-ticket-alt" />
+                <x-menu.item route="view.users" name="Users" icon="fa-users" />
                 <x-menu.item name="Vegetables" icon="fa-carrot" />
                 <x-menu.item route="products" name="Products" icon="fa-boxes" />
             </x-slot:menus>

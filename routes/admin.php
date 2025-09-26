@@ -29,11 +29,16 @@ Route::prefix('admin')->group(function () {
         Route::post('/save', [CategoryController::class,'save'])->name('save.category');
         });
 
+       //user list
         Route::get('/users', [UserlistController::class, 'index'])->name('view.users');
-        Route::get('/coupons', [CouponController::class, 'index'])->name('view.coupons');
-        Route::post('/coupons', [CouponController::class, 'store'])->name('store.coupons');
-        Route::put('/coupons/{id}', [CouponController::class, 'update'])->name('update.coupons');
-        Route::delete('/coupons/{id}', [CouponController::class, 'destroy'])->name('delete.coupons');
+
+        //coupons
+        Route::prefix('coupon')->group(function () {
+        Route::get('/list', [CouponController::class, 'view'])->name('view.coupons');
+        Route::post('/save', [CouponController::class, 'save'])->name('save.coupons');
+        Route::post('/update', [CouponController::class, 'update'])->name('update.coupons');
+        Route::post('/delete', [CouponController::class, 'destroy'])->name('delete.coupons');
+        });
 
         Route::prefix('products')->controller(ProductsController::class)->group(function () {
             Route::get('/', 'index')->name('products');
