@@ -8,85 +8,103 @@ use Illuminate\Http\Request;
 
 class CouponController extends Controller
 {
-     public function index(Request $request)
+     public function view(Request $request)
     {
-        $coupons = Coupon::latest()->paginate(10);
+        $coupons = Coupon::orderBy('created_at', 'desc')->paginate(10);
 
         return view('admin.coupons.view', compact('coupons'));
     }
 
-    public function store(Request $request)
+   public function save(Request $request)
 {
-    $data = $request->validate([
-        'coupon_code' => 'required|string|max:255',
+    $request->validate([
+        'coupon_code'   => 'required|string|max:255',
         'discount_type' => 'required|in:1,2',
-        'discount_value' => 'required|numeric',
-        'description' => 'required|string',
-        'apply_for' => 'required|in:1,2',
-        'max_price' => 'nullable|numeric',
-        'min_price' => 'nullable|numeric',
-        'order_count' => 'nullable|integer',
-        'expires_at' => 'required|date',
-        'status' => 'required|boolean'
+        'discount_value'=> 'required|numeric',
+        'description'   => 'required|string',
+        'apply_for'     => 'required|in:1,2',
+        'max_price'     => 'nullable|numeric',
+        'min_price'     => 'nullable|numeric',
+        'order_count'   => 'nullable|integer',
+        'expires_at'    => 'required|date',
+        'status'        => 'required|boolean',
     ]);
 
-    $coupon = new \App\Models\Coupon();
-
-    $coupon->coupon_code = $data['coupon_code'];
-    $coupon->discount_type = $data['discount_type'];
-    $coupon->discount_value = $data['discount_value'];
-    $coupon->description = $data['description'];
-    $coupon->apply_for = $data['apply_for'];
-    $coupon->max_price = $data['max_price'] ?? null;
-    $coupon->min_price = $data['min_price'] ?? null;
-    $coupon->order_count = $data['order_count'] ?? null;
-    $coupon->expires_at = $data['expires_at'];
-    $coupon->status = $data['status'];
+    $coupon = new Coupon();
+    $coupon->coupon_code   = $request['coupon_code'];
+    $coupon->discount_type = $request['discount_type'];
+    $coupon->discount_value= $request['discount_value'];
+    $coupon->description   = $request['description'];
+    $coupon->apply_for     = $request['apply_for'];
+    $coupon->max_price     = $request['max_price'] ?? 0;
+    $coupon->min_price     = $request['min_price'] ?? 0;
+    $coupon->order_count   = $request['order_count'] ?? 0;
+    $coupon->expires_at    = $request['expires_at'];
+    $coupon->status        = $request['status'];
 
     $coupon->save();
 
-    return response()->json(['success' => 'Coupon added successfully']);
+    return response()->json([
+        'success' => true,
+        'message' => 'Coupon created successfully',
+        'coupon'  => $coupon
+    ]);
 }
 
-public function update(Request $request, $id)
+public function update(Request $request)
 {
-    $coupon = \App\Models\Coupon::findOrFail($id);
-
-    $data = $request->validate([
-        'coupon_code' => 'required|string|max:255',
+    $request->validate([
+        'coupon_id'     => 'required|exists:coupons,id',
+        'coupon_code'   => 'required|string|max:255',
         'discount_type' => 'required|in:1,2',
-        'discount_value' => 'required|numeric',
-        'description' => 'required|string',
-        'apply_for' => 'required|in:1,2',
-        'max_price' => 'nullable|numeric',
-        'min_price' => 'nullable|numeric',
-        'order_count' => 'nullable|integer',
-        'expires_at' => 'required|date',
-        'status' => 'required|boolean'
+        'discount_value'=> 'required|numeric',
+        'description'   => 'required|string',
+        'apply_for'     => 'required|in:1,2',
+        'max_price'     => 'nullable|numeric',
+        'min_price'     => 'nullable|numeric',
+        'order_count'   => 'nullable|integer',
+        'expires_at'    => 'required|date',
+        'status'        => 'required|boolean',
     ]);
 
-    $coupon->coupon_code = $data['coupon_code'];
-    $coupon->discount_type = $data['discount_type'];
-    $coupon->discount_value = $data['discount_value'];
-    $coupon->description = $data['description'];
-    $coupon->apply_for = $data['apply_for'];
-    $coupon->max_price = $data['max_price'] ?? null;
-    $coupon->min_price = $data['min_price'] ?? null;
-    $coupon->order_count = $data['order_count'] ?? null;
-    $coupon->expires_at = $data['expires_at'];
-    $coupon->status = $data['status'];
+    $coupon = Coupon::findOrFail($request->coupon_id);
+
+    $coupon->coupon_code    = $request->coupon_code;
+    $coupon->discount_type  = $request->discount_type;
+    $coupon->discount_value = $request->discount_value;
+    $coupon->description    = $request->description;
+    $coupon->apply_for      = $request->apply_for;
+    $coupon->max_price      = $request->max_price ?? 0;
+    $coupon->min_price      = $request->min_price ?? 0;
+    $coupon->order_count    = $request->order_count ?? 0;
+    $coupon->expires_at     = $request->expires_at;
+    $coupon->status         = $request->status;
 
     $coupon->save();
 
-    return response()->json(['success' => 'Coupon updated successfully']);
+    return response()->json([
+        'success' => true,
+        'message' => 'Coupon updated successfully',
+        'coupon'  => $coupon
+    ]);
 }
 
-   public function destroy($id)
-    {
-        $coupon = Coupon::findOrFail($id);
-        $coupon->delete();
+  public function destroy(Request $request)
+{
+    $coupon = Coupon::find($request->id);
 
-        return response()->json(['success' => 'Coupon deleted successfully']);
+    if (!$coupon) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Coupon not found'
+        ], 404);
     }
 
+    $coupon->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Coupon deleted successfully'
+    ]);
+}
 }
