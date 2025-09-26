@@ -1,9 +1,11 @@
 
 <x-layouts.app>
-    <div   class="p-4" x-data="{ open: false }">
+    <div class="p-4">
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Categories</h2>
-            <button @click="document.querySelector('#categoryModal').__x.$data.open = true" class="bg-[#ab5f00] text-white px-4 py-2 rounded">Create</button>
+            <button id="createCategoryBtn" class="bg-[#ab5f00] text-white px-4 py-2 rounded">
+                Create
+            </button>
         </div>
 
         <div class="overflow-x-auto bg-white rounded-xl shadow-md">
@@ -47,7 +49,12 @@
                         </td>
                         <td class="px-4 py-3 flex justify-center gap-4">
                             <!-- Edit -->
-                            <button class="text-blue-600 hover:text-blue-800 transition">
+                            <button
+                                class="text-blue-600 hover:text-blue-800 transition editCategoryBtn"
+                                data-id="{{ $cat->id }}"
+                                data-name="{{ $cat->name }}"
+                                data-status="{{ $cat->status }}"
+                                data-image="{{ $cat->image ? asset('storage/'.$cat->image) : '' }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
 

@@ -15,29 +15,51 @@ class CategoryController extends Controller
     }
 
     public function save(Request $request){
-        $request->validate([
+        $rules = [
             'category_name' => 'required|max:255',
-            'category_image' => 'required|image|mimes:jpeg,png,jpg',
             'category_status' => 'required|boolean',
-        ]);
+        ];
 
-        $category = new Category();
+        // only require image if creating OR no existing image provided
+        if (empty($request['category_id']) && !$request->has('existing_image')) {
+            $rules['category_image'] = 'required|image|mimes:jpeg,png,jpg';
+        } else if ($request->hasFile('category_image')) {
+            // validate new uploaded image if provided
+            $rules['category_image'] = 'image|mimes:jpeg,png,jpg';
+        }
+
+        $request->validate($rules);
+
+        if (!empty($request['category_id'])) {
+            $message = 'Category Updated successfully';
+            $category = Category::find($request['category_id']);
+        } else{
+            $category = new Category();
+            $message = 'Category saved successfully';
+        }
+
         $category->name = $request['category_name'];
+        $category->status = $request['category_status'];
+        $category->admin_id = Auth::guard('admin')->id();
 
+        // handle image upload
         if ($request->hasFile('category_image')) {
             $img_name = $request->file('category_image')->getClientOriginalName();
             $img_name = time() . '_' . $img_name;
             $request->category_image->storeAs('categories/', $img_name, 'public');
             $category->image =  'categories/'.$img_name;
+        } else if ($request->has('existing_image')) {
+            // keep the existing image path
+            $category->image = $request->existing_image;
         }
 
-        $category->status  = $request['category_status'];
-        $category->admin_id = Auth::guard('admin')->id();
         $category->save();
+
         return response()->json([
             'success' => true,
-            'message' => 'Category created successfully',
+            'message' => $message,
             'category' => $category
         ]);
     }
+
 }
