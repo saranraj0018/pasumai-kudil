@@ -37,6 +37,8 @@ class HomeController extends Controller {
             });
 
         $categories = Category::orderBy('id')
+            ->where('status', 1)
+            ->take(4)
             ->get()
             ->map(function ($category) {
                 return [
