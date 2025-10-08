@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Setting;
+
 use Illuminate\Http\Request;
 use App\Models\Coupon;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +33,8 @@ class CouponController extends Controller
                 ->orWhereDate('expires_at', '>', now())
                 ->get()
                 ->map(function ($coupon) use ($request) {
-                    $coupon_amount = self::getCouponDetails($coupon, $request['total_amount']) ?? 0;
+                    $coupon_amount = CartController::getCouponDetails($coupon, $request['total_amount']) ?? 0;
+
                     return [
                        "coupon_id" => $coupon->id,
                             "coupon_code" => $coupon->coupon_code,
@@ -65,7 +68,6 @@ class CouponController extends Controller
         if (!$coupon) {
             return 0;
         }
-
         $discount = 0;
         $discount_value = $coupon->discount_value;
 
@@ -85,6 +87,7 @@ class CouponController extends Controller
         }
 
         if ($coupon->apply_for == 2 && in_array($coupon->discount_type, [1, 2])) {
+
             $order = Order::where('user_id', auth()->id())->where('status',4)->count();
 
             if (!empty($coupon->order_count) && $order + 1 == $coupon->order_count) {
@@ -113,6 +116,8 @@ class CouponController extends Controller
             }
 
             Cache::forget('coupon_id_' . Auth::id());
+            Setting::where('data_key', 'temp_coupon_'.Auth::id())->where('data_value',$request['coupon_id'])->delete();
+
 
             return response()->json([
                 'status' => 200,
