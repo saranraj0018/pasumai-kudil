@@ -1,126 +1,88 @@
 <x-layouts.app>
+    <div class="p-4" x-data="{ open: false }">
+        <input 
+        type="text" 
+        placeholder="Search products..." 
+        class="border p-2 rounded w-20 mb-4 shadow-md search_product">
 
-    <div x-data="{
-        products: [],
-        showModal: false,
-        modalTitle: '',
-        form: {
-            id: null,
-            name: '',
-            image: '',
-            description: '',
-            benefits: '',
-        },
+        <div class="flex justify-between mb-4">
+            <h2 class="text-xl font-bold">Products</h2>
+            <button @click="document.querySelector('#productCreateModal').__x.$data.open = true"
+                class="bg-[#ab5f00] text-white px-4 py-2 rounded">
+                Create Product
+            </button>
+        </div>
 
-        init() {
-            this.fetchProducts();
-        },
-
-        fetchProducts() {
-            // Fetch products from backend
-            fetch('/api/products')
-                .then(res => res.json())
-                .then(data => this.products = data);
-        },
-
-        openCreateModal() {
-            this.modalTitle = 'Create Product';
-            this.form = { id: null, name: '', image: '', description: '', benefits: '' };
-            this.showModal = true;
-        },
-
-        editProduct(product) {
-            this.modalTitle = 'Edit Product';
-            this.form = { ...product };
-            this.showModal = true;
-        },
-
-        closeModal() {
-            this.showModal = false;
-        },
-
-        submitForm() {
-            if (this.form.id) {
-                this.updateProduct();
-            } else {
-                this.createProduct();
-            }
-        },
-
-        createProduct() {
-            fetch('/api/products', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(this.form)
-            })
-            this.closeModal();
-            this.fetchProducts();
-        },
-
-        updateProduct() {
-            fetch(`/api/products/${this.form.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(this.form)
-            })
-            this.closeModal();
-            this.fetchProducts();
-        },
-
-        deleteProduct(id) {
-            if (!confirm('Are you sure?')) return;
-            fetch(`/api/products/${id}`, { method: 'DELETE' })
-            this.fetchProducts()
-        }
-    }" x-init="init()">
-
-<div class="max-w-7xl mx-auto p-6">
-
-    {{-- Create Product Button --}}
-    <div class="flex justify-between items-center mb-4">
-        <h1 class="text-3xl font-bold mb-6 text-[#d98c33]">Product Management</h1>
-        <x-button
-            @click="openCreateModal()">
-            Create Product
-        </x-button>
-    </div>
-
-    {{-- Product Table --}}
-    <div class="bg-white shadow rounded overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-[#d98c33]/20">
-                <tr>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Name</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Image</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Description</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Benefits</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                <template x-for="product in products" :key="product.id">
-                    <tr>
-                        <td class="px-6 py-4 text-sm" x-text="product.name"></td>
-                        <td class="px-6 py-4 text-sm">
-                            <img :src="product.image" alt="Image" class="h-12 w-12 object-cover rounded">
-                        </td>
-                        <td class="px-6 py-4 text-sm" x-text="product.description"></td>
-                        <td class="px-6 py-4 text-sm" x-text="product.benefits"></td>
-                        <td class="px-6 py-4 text-sm space-x-2">
-                            <button @click="editProduct(product)" class="px-3 py-1 bg-blue-500 text-white rounded">Edit</button>
-                            <button @click="deleteProduct(product.id)" class="px-3 py-1 bg-red-500 text-white rounded">Delete</button>
-                        </td>
+        <div class="overflow-x-auto bg-white rounded-xl shadow-md">
+            <table id="products" class="w-full text-sm text-left text-gray-700 border-collapse">
+                <thead>
+                    <tr class="bg-[#ab5f00] text-white text-sm uppercase tracking-wider">
+                    <th class="px-3 py-2">S.No</th>
+                    <th class="px-3 py-2">Name</th>
+                    <th class="px-3 py-2">Image</th>
+                    <th class="px-3 py-2">Description</th>
+                    <th class="px-3 py-2">Benefits</th>
+                    <th class="px-3 py-2 text-center">Actions</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody id="productTableBody" class="divide-y divide-gray-200">
+                    @foreach ($products as $product)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
+                            <td class="px-4 py-3">{{ $product->name }}</td>
+                            <td class="px-4 py-3">
+                                   @if($product->image)
+                                <img src="{{ asset('storage/'.$product->image) }}"
+                                     class="h-10 w-10 object-cover rounded-lg shadow-sm border" />
+                            @else
+                                <span class="text-gray-400 italic">No Image</span>
+                            @endif  
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ $product->description }}
+                            </td>
+                            <td class="px-4 py-3">
+                                 {{ $product->benefits }}
+                            </td>
+                           <td class="px-4 py-3 flex justify-center gap-4">
+                            <!-- Edit -->
+                            <button
+                                class="text-blue-600 hover:text-blue-800 transition editProduct"
+                                data-id="{{ $product->id }}"
+                                data-name="{{ $product->name }}"
+                                data-description="{{ $product->description }}"
+                                data-benefits="{{ $product->benefits }}"
+                                data-category="{{ $product->details->category_id }}"
+                                data-sale_price="{{ $product->details->sale_price }}"
+                                data-regular_price="{{ $product->details->regular_price }}"
+                                data-purchase_price="{{ $product->details->purchase_price }}"
+                                data-weight="{{ $product->details->weight }}"
+                                data-weight_unit="{{ $product->details->weight_unit }}"
+                                data-stock="{{ $product->details->stock }}"
+                                data-tax_type="{{ $product->details->tax_type }}"
+                                data-tax_percentage="{{ $product->details->tax_percentage }}"
+                                data-is_featured="{{ $product->details->is_featured_product }}"
+                                data-image="{{ $product->image ? asset('storage/'.$product->image) : '' }}">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
 
-    {{-- Modal for Create/Edit --}}
-    <div x-show="showModal" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-        @include('components.domains.products.product-form')
-    </div>
-</div>
+                            <!-- Delete -->
+                            <button class="text-red-600 hover:text-red-800 deleteProduct" data-id="{{ $product->id }}">
+                                <i class="fa-solid fa-delete-left"></i>
+                            </button>
+                        </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
+        <div class="p-4">
+        {{ $products->links() }}
+        </div>
+
+        @include('admin.products.product_create_modal')
     </div>
 </x-layouts.app>
+
+<script src="{{ asset('admin/js/product.js') }}"></script>
