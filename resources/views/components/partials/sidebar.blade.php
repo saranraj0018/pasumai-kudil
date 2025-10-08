@@ -15,11 +15,17 @@
                 <x-menu.item route="view.coupons" name="Coupons" icon="fa-ticket-alt" />
                 <x-menu.item route="view.users" name="Users" icon="fa-users" />
                 <x-menu.item name="Vegetables" icon="fa-carrot" />
-                <x-menu.item route="products" name="Products" icon="fa-boxes" />
+                <x-menu.item route="lists.products" name="Products" icon="fa-boxes" />
             </x-slot:menus>
         </x-menu.list>
-
-        <x-menu.item name="Milk" icon="fa-glass-whiskey" />
+        <x-menu.list>
+            <x-slot:trigger>
+                <x-menu.item trigger name="Milk" icon="fa-glass-whiskey" />
+            </x-slot:trigger>
+            <x-slot:menus>
+                <x-menu.item  name="User List" icon="fas fa-user"/>
+            </x-slot:menus>
+        </x-menu.list>
         <x-menu.item name="Dairy Products" icon="fa-cheese" />
     </ul>
 </aside>

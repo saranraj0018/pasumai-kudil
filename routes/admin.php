@@ -41,8 +41,14 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::prefix('products')->controller(ProductsController::class)->group(function () {
-            Route::get('/', 'index')->name('products');
+            Route::get('/lists', 'productLists')->name('lists.products');
+            Route::post('/save_product', 'saveProduct')->name('save_product.products');
+            Route::post('/delete_product', 'deleteProduct')->name('delete_product.products');
+            Route::get('/search_product', 'searchProduct')->name('search_product.products');
         });
+
+      
+        
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
     });
 });
