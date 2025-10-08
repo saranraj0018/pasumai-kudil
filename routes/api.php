@@ -9,7 +9,7 @@ use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\ProfileController;
 use App\Http\Controllers\API\CouponController;
 use App\Http\Controllers\API\AddressController;
-
+use App\Http\Controllers\API\OrderController;
 
 Route::group(['prefix' => 'user'], function () {
     Route::post('/register', [AuthController::class, 'userRegister']);
@@ -57,6 +57,9 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/address/set-default', [AddressController::class, 'setDefaultAddress']);
         Route::post('/address/delete', [AddressController::class, 'delete']);
 
+        //orders
+          Route::get('/orders', [OrderController::class, 'index']);
+          Route::post('/get-single-order', [OrderController::class, 'getSingleOrder']);
 
         //Cart
         Route::post('/add-to-cart', [CartController::class, 'addToCart']);
