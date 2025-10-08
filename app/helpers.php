@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Cache;
-
+use Razorpay\Api\Api;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,5 +24,36 @@ if (!function_exists('getCartQuantities')) {
             return intval($value);
         }
     }
+
+
+if (!function_exists('razorPay')) {
+    function razorPay()
+    {
+        return new class() {
+            protected $api;
+
+            public function __construct()
+            {
+                $this->api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
+            }
+
+            public function createOrder($amount, $currency = 'INR')
+            {
+                try {
+                    $order = $this->api->order->create([
+                        'amount' => $amount * 100,
+                        'currency' => $currency,
+                        'receipt' => 'order_' . uniqid(),
+                        'payment_capture' => 1,
+                    ]);
+
+                    return $order;
+                } catch (Exception $e) {
+                    return ['error' => $e->getMessage()];
+                }
+            }
+        };
+    }
+}
 
 

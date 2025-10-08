@@ -7,9 +7,14 @@ use App\Models\Address;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Setting;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class CartController extends Controller
 {
@@ -152,14 +157,44 @@ public function removeFromCart(Request $request)
             }
         }
         $coupon_id = !empty($request['coupon_id']) ? $request['coupon_id'] : Cache::get('coupon_id_' . Auth::id(), null);
+
+        if (empty($coupon_id)) {
+            $setting = Setting::where('data_key', 'temp_coupon_' . Auth::id())
+                ->where('expires_at', '>=', now())
+                ->first();
+            $coupon_id = $setting->data_value ?? 0;
+        }
+
         $coupon = null;
+        $coupon_status = true;
         if (!empty($coupon_id)) {
-            Cache::put('coupon_id_' . Auth::id(), $coupon_id, now()->addMinutes(60));
+            $key = 'coupon_id_' . Auth::id();
             $coupon = Coupon::where('status',1)->where(function ($query) {
                 $query->whereNull('expires_at') // Include if expires_at is NULL
                 ->orWhereDate('expires_at', '>', now()); // Include if expires_at is in the future
             })->find($coupon_id);
+           $user_coupon = Setting::where('data_key', 'temp_coupon_' . Auth::id())->where('expires_at', '>=', now())
+               ->where('data_value', $coupon->id)->first();
+            if (!empty($coupon) && Cache::has($key) ) {
+                Cache::get($key);
+            } elseif (!empty($coupon->apply_for) && $coupon->apply_for == 2 && empty($user_coupon)) {
+                $check_apply_coupon = self::getCouponDetails($coupon,$subtotal);
+                if (empty($check_apply_coupon)) {
+                    $coupon_status = false;
+                } else {
+                    $cache_coupon = new Setting();
+                    $cache_coupon->data_key = 'temp_coupon_' . Auth::id();
+                    $cache_coupon->data_value = $coupon_id;
+                    $cache_coupon->expires_at = now()->addMinutes(5);
+                    $cache_coupon->save();
+                }
+
+            } elseif (!empty($coupon->apply_for) && $coupon->apply_for == 1){
+                Cache::put($key, $coupon_id, now()->addMinutes(5));
+            }
+
             $coupon_discount = self::getCouponDetails($coupon,$subtotal);
+
         }
         // Determine if delivery is free (e.g., free for orders above 500)
         $finalDeliveryCharge = 0;
@@ -180,8 +215,9 @@ public function removeFromCart(Request $request)
             'status' => 200,
             "productData" => $productData,
             "billSummary" => $billSummary,
-            "couponDetail" => $coupon,
+            "couponDetail" =>  $coupon,
             "addressDetails" => $address,
+            "coupon_status" => $coupon_status,
         ]);
     }
 
@@ -202,7 +238,8 @@ public function removeFromCart(Request $request)
 //    }
 
     public static function getCouponDetails($coupon, $total_amount) {
-        if (!$coupon) {
+
+        if (empty($coupon)) {
             return 0;
         }
 
@@ -225,9 +262,23 @@ public function removeFromCart(Request $request)
         }
 
         if ($coupon->apply_for == 2 && in_array($coupon->discount_type, [1, 2])) {
-            $order = Order::where('user_id', auth()->id())->where('status',4)->count();
+            $used_coupons = Order::where('coupon_id',$coupon->id)->where('status',4)->count() ?? 0;
 
-            if (!empty($coupon->order_count) && $order + 1 == $coupon->order_count) {
+            $applied_count = Setting::where('data_value',$coupon->id)
+                ->where('expires_at', '>=', now())
+                ->count(); # 1 -> b
+
+            $user_count = Setting::where('data_value',$coupon->id)
+                ->where('expires_at', '>=', now())
+                ->where('data_key', 'temp_coupon_' . Auth::id())
+                ->first(); # 1 -> b
+
+            $order = $used_coupons + $applied_count;
+            if (!empty($coupon->order_count) && $coupon->order_count > $order) {
+                return ($coupon->discount_type == 1)
+                    ? ($total_amount * $discount_value / 100)
+                    : (int)$discount_value;
+            } elseif ($order >= $coupon->order_count && !empty($user_count)) {
                 return ($coupon->discount_type == 1)
                     ? ($total_amount * $discount_value / 100)
                     : (int)$discount_value;
@@ -236,5 +287,153 @@ public function removeFromCart(Request $request)
 
         return $discount;
     }
+
+    public function createOrder(Request $request)
+    {
+            $validator = Validator::make($request->all(), [
+                "orderAmount" => 'required|numeric',
+                "paymentMode" => 'required|string',
+                "addressId" => 'required|string',
+            ]);
+
+            #check if successful
+            if ($validator->fails())
+                return response()->json([
+                    'status' => 500,
+                    'message' => $validator->errors()->first(),
+                ], 500);
+            $razorPayOrder = razorPay()->createOrder($request['orderAmount']);
+            Cache::put('order_id_'.Auth::id(), $razorPayOrder->id, now()->addMinutes(30));
+            Log::info('Stored insert id', [ Cache::get('order_id_'.Auth::id())]);
+
+            Cache::put('address_id_'.Auth::id(), $request['addressId'],now()->addMinutes(30));
+            return response()->json([
+                'status' => 200,
+                'message' => 'Order created successfully!',
+                'orderId' => $razorPayOrder->id,
+            ], 200);
+
+    }
+
+
+    public function saveOrder(Request $request) {
+
+        try {
+        $validator = Validator::make($request->all(), [
+            "transactionId" => "required",
+            "orderId" => "required"
+        ]);
+
+        if ($validator->fails())
+            return response()->json([
+                'status' => 422,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        DB::beginTransaction();
+//        if($request['orderId'] != Cache::get('order_id_'.Auth::id()))
+//            throw new \Exception('Order Not found', 404);
+
+
+        $coupon_amount = 0;
+        if (!empty($request['coupon_id']) && $request['total_amount'] > 0) {
+            $coupon = Coupon::find($request['coupon_id']);
+            $coupon_amount = self::getCouponDetails($coupon, $request['total_amount']);
+        }
+
+        $orderDetails = collect(Cache::get("cart_".auth()->id(), []))->map(function($item) {
+
+            $product  = Product::with('details')->find($item['product_id']);
+
+
+            $variant = $product->details;
+            if ($variant->id != intval($item['variant_id'])) {
+                return response()->json([
+                    'status' => 409,
+                    'message' => 'Variant not found for this product',
+                ]);
+            }
+
+
+            return [
+                ...$item,
+                'category_id' => $product->details->category_id,
+                'product_name' => $product->name,
+                'product_id' => intval($item["product_id"]),
+                'net_amount' => !empty($variant->sale_price) ? intval($variant->sale_price) * intval($item['quantity']) :
+                    intval($variant->regular_price) * intval($item['quantity']),
+
+                'gross_amount' => !empty($product->details->sale_price) && $product->details->tax_type == 2 && !empty($product->details->tax_percentage)
+                    ? ((($product->details->sale_price * $product->details->tax_percentage) / 100) + $product->details->sale_price) * intval($item['quantity'])
+                    : (!empty($product->details->regular_price) && $product->details->tax_type == 2 && !empty($product->details->tax_percentage)
+                        ? ((($product->details->regular_price * $product->details->tax_percentage) / 100) + $product->details->regular_price) * intval($item['quantity'])
+                        : 0),
+
+                'gst_type' => $product->details->tax_type,
+                'gst_percentage' => $product->details->tax_percentage,
+                'gst_amount' =>  !empty($product->details->sale_price) && $product->details->tax_type == 2 && !empty($product->details->tax_percentage)
+                    ? (($product->details->sale_price * $product->details->tax_percentage) / 100)  *  (intval($item['quantity']))
+                    : (!empty($product->details->regular_price) && $product->details->tax_type == 2 && !empty($product->details->tax_percentage)
+                        ? (($product->details->regular_price * $product->details->tax_percentage) / 100) *  (intval($item['quantity']))
+                        : 0),
+                'weight' => $variant->value * $item['quantity']
+            ];
+        });
+
+        $shipping = 0;
+        $order = \App\Models\Order::create([
+            'order_id' => $request['orderId'],
+            'user_id' => auth()->id(),
+            'address_id' => Cache::get('address_id_'.auth()->id()),
+            'phone' => auth()->user()->mobile,
+            'email' => auth()->user()->email,
+            'status' => 1,
+            'net_amount' => $orderDetails->sum('net_amount'),
+            'gst_amount' => $orderDetails->sum('gst_amount'),
+            'gross_amount' => $coupon_amount - ($orderDetails->sum('gross_amount') + $shipping),
+            'shipping_amount' => $shipping,
+            'notes' => 'Creating new Order',
+            'coupon_id' => !empty($coupon) ? $coupon?->id : null,
+            'coupon_amount' => $coupon_amount,
+            'created_by' => auth()->id()
+        ]);
+
+        //$variant = collect(json_decode($product->details->varients,true))->firstWhere('id', $item['variant_id']);
+        $orderDetails->map(function($detail) use($order) {
+
+            $order->orderDetails()->create($detail);
+        });
+
+
+        DB::commit();
+
+        $order->payment()->create([
+            "razorpay_payment_id" => $request->transactionId,
+            "amount" => $order->gross_amount,
+            "currency" => "INR",
+            "method" => "UPI",
+            "email" => auth()->user()->email,
+            "phone" => auth()->user()->mobile
+        ]);
+
+            $userId = auth()->id();
+            Cache::forget("cart_{$userId}");
+            Cache::forget("coupon_id_{$userId}");
+            Cache::forget('address_id_'.Auth::id());
+          //  Cache::forget('order_id_'.Auth::id());
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Translation Completed!'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollback();
+            return response()->json([
+                'status' => $th->getCode(),
+                'message' => $th->getMessage(),
+            ],  500);
+        }
+
+    }
+
 
 }
