@@ -14,4 +14,9 @@ class Payment extends Model
         "email",
         "phone",
     ];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
 }

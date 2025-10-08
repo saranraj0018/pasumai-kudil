@@ -64,3 +64,22 @@
         </form>
     </div>
 </div>
+
+<div id="deleteCategoryModal" x-data="{ open: false, deleteId: null }">
+    <template x-if="open">
+        <div class="fixed inset-0 flex items-center justify-center z-50">
+            <div class="absolute inset-0 bg-black/40" @click="open = false"></div>
+            <div class="bg-white p-6 rounded-xl shadow-xl w-[400px] relative z-10">
+                <h2 class="text-lg font-bold mb-4 text-gray-800">Confirm Delete</h2>
+                <p class="text-gray-600 mb-6">Are you sure you want to delete this coupon?</p>
+                <div class="flex justify-end gap-3">
+                    <button @click="open = false"
+                        class="px-4 py-1 border rounded-lg hover:bg-gray-100">Cancel</button>
+                    <button @click="deleteCategory(deleteId)"
+                        class="px-4 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>
+

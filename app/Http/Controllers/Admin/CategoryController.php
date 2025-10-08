@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class CategoryController extends Controller
 {
     public function view(){
-        $categories = Category::all();
+       $categories = Category::paginate(10);
         return view('admin.category.view', compact('categories'));
     }
 
@@ -61,5 +61,21 @@ class CategoryController extends Controller
             'category' => $category
         ]);
     }
+
+    public function destroy(Request $request)
+    {
+        if (!$request->id) {
+            return response()->json(['success' => false, 'message' => 'category ID is required'], 400);
+        }
+
+        $category = Category::find($request->id);
+        if (!$category) {
+            return response()->json(['success' => false, 'message' => 'category not found'], 404);
+        }
+
+        $category->delete();
+        return response()->json(['success' => true, 'message' => 'category deleted successfully']);
+    }
+
 
 }

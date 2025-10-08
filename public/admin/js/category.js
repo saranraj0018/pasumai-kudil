@@ -99,6 +99,44 @@ $(function () {
             }
         );
     });
+
+      // ==== DELETE =====
+    $(document).on("click", ".btnDeleteCategory", function () {
+        let id = $(this).data("id");
+        let modalScope = document.querySelector('#deleteCategoryModal').__x.$data;
+        modalScope.deleteId = id;
+        modalScope.open = true;
+    });
+
+    window.deleteCategory = function (id) {
+        sendRequest(
+            "/admin/category/delete",
+            { id: id },
+            "POST",
+            function (res) {
+                if (res.success) {
+                    showToast("Category deleted successfully!", "success", 2000);
+                    reloadCategoryList();
+                } else {
+                    showToast(res.message, "error", 2000);
+                }
+                document.querySelector('#deleteCategoryModal').__x.$data.open = false;
+            },
+            function (err) {
+                showToast(err.message || "Delete failed", "error", 2000);
+                document.querySelector('#deleteCategoryModal').__x.$data.open = false;
+            }
+        );
+    };
+
+
+    // ===== Helpers =====
+    function reloadCategoryList() {
+        $.get("/admin/category/list", function (html) {
+            let $tbody = $(html).find("#categoryTableBody").html();
+            $("#categoryTableBody").html($tbody);
+        });
+    }
 });
 
 
