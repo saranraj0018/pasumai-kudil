@@ -1,9 +1,8 @@
 <x-layouts.app>
-    <div class="p-4" x-data="{ open: false }">
+    <div class="p-4">
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Coupons</h2>
-            <button @click="document.querySelector('#couponModal').__x.$data.open = true"
-                class="bg-[#ab5f00] text-white px-4 py-2 rounded">
+            <button id="createCouponBtn" class="bg-[#ab5f00] text-white px-4 py-2 rounded">
                 Create
             </button>
         </div>
@@ -58,12 +57,21 @@
                             </td>
                             <td class="px-4 py-3 flex justify-center gap-4">
                                 <!-- Edit -->
-                                <button class="text-blue-600 hover:text-blue-800 transition btnEditCoupon">
+                                <button class="text-blue-600 hover:text-blue-800 transition editCouponBtn"
+                                    data-id="{{ $coupon->id }}" data-code="{{ $coupon->coupon_code }}"
+                                    data-type="{{ $coupon->discount_type }}"
+                                    data-value="{{ $coupon->discount_value }}"
+                                    data-description="{{ $coupon->description }}"
+                                    data-apply="{{ $coupon->apply_for }}" data-max="{{ $coupon->max_price }}"
+                                    data-min="{{ $coupon->min_price }}" data-order="{{ $coupon->order_count }}"
+                                    data-expires="{{ $coupon->expires_at ? \Carbon\Carbon::parse($coupon->expires_at)->format('Y-m-d') : '' }}"
+                                    data-status="{{ $coupon->status }}">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
 
                                 <!-- Delete -->
-                                <button class="text-red-600 hover:text-red-800 transition btnDeleteCoupon" data-id="{{ $coupon->id }}">
+                                <button class="text-red-600 hover:text-red-800 transition btnDeleteCoupon"
+                                    data-id="{{ $coupon->id }}">
                                     <i class="fa-solid fa-delete-left"></i>
                                 </button>
                             </td>
@@ -74,8 +82,8 @@
         </div>
 
         <div class="p-4">
-        {{ $coupons->links() }}
-         </div>
+            {{ $coupons->links() }}
+        </div>
 
         @include('admin.coupons.modal')
     </div>

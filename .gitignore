@@ -3,6 +3,7 @@
 /public/build
 /public/hot
 /public/storage
+/public/admin/plugins   
 /storage/*.key
 /storage/pail
 /bootstrap/cache/*.php
@@ -22,3 +23,4 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+public/admin/plugins/bootstrap-4-master/.gitattributes
