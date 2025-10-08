@@ -11,20 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('coupons', function (Blueprint $table) {
-            $table->id();
-            $table->string('coupon_code')->unique();
-            $table->enum('discount_type', ['1', '2'])->default('2');
-             $table->decimal('discount_value', 10, 2);
-            $table->text('description');
-            $table->enum('apply_for', ['1', '2'])->default('1');
-            $table->double('max_price')->nullable()->default(0);
-            $table->double('min_price')->default(0);
-             $table->integer('order_count')->nullable();
-             $table->boolean('status')->default(1);
-             $table->date('expires_at')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('coupons')) {
+            Schema::create('coupons', function (Blueprint $table) {
+                $table->id();
+                $table->string('coupon_code')->unique();
+                $table->enum('discount_type', ['1', '2'])->default('2');
+                $table->decimal('discount_value', 10, 2);
+                $table->text('description');
+                $table->enum('apply_for', ['1', '2'])->default('1');
+                $table->double('max_price')->nullable()->default(0);
+                $table->double('min_price')->default(0);
+                $table->integer('order_count')->nullable();
+                $table->boolean('status')->default(1);
+                $table->date('expires_at')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
