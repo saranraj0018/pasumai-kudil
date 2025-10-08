@@ -84,8 +84,6 @@ class ProductsController extends Controller
                 'product_details' => $product_details
             ], 200);
         } catch (Exception $e) {
-            print_r($e->getMessage());
-            exit;
             DB::rollBack();
             return response()->json([
                 'success' => false,
