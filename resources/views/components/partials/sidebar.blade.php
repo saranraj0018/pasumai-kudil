@@ -12,20 +12,22 @@
 
             <x-slot:menus>
                 <x-menu.item route="view.category" name="Category" icon="fa-layer-group" />
-                <x-menu.item route="view.coupons" name="Coupons" icon="fa-ticket-alt" />
-                <x-menu.item route="view.users" name="Users" icon="fa-users" />
-                <x-menu.item name="Vegetables" icon="fa-carrot" />
                 <x-menu.item route="lists.products" name="Products" icon="fa-boxes" />
+                <x-menu.item route="view.banner" name="Banner" icon="fa-image" />
+                <x-menu.item route="view.coupons" name="Coupons" icon="fa-ticket-alt" />
+                <x-menu.item route="view.orders" name="Orders" icon="fa-shopping-bag" />
+                <x-menu.item route="view.users" name="Users" icon="fa-users" />
             </x-slot:menus>
         </x-menu.list>
+
         <x-menu.list>
             <x-slot:trigger>
                 <x-menu.item trigger name="Milk" icon="fa-glass-whiskey" />
             </x-slot:trigger>
             <x-slot:menus>
                 <x-menu.item  name="User List" icon="fas fa-user"/>
+                <x-menu.item route="view.milk.subscription" name="Subscription" icon="fa-calendar-check" />
             </x-slot:menus>
         </x-menu.list>
-        <x-menu.item name="Dairy Products" icon="fa-cheese" />
     </ul>
 </aside>

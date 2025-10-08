@@ -59,7 +59,7 @@
                             </button>
 
                             <!-- Delete -->
-                            <button class="text-red-600 hover:text-red-800 transition">
+                            <button class="text-red-600 hover:text-red-800 transition btnDeleteCategory" data-id="{{ $cat->id }}">
                                 <i class="fa-solid fa-delete-left"></i>
                             </button>
                         </td>
@@ -68,6 +68,9 @@
                 @endforeach
                 </tbody>
             </table>
+        </div>
+         <div class="p-4">
+            {{ $categories->links() }}
         </div>
         @include('admin.category.model')
     </div>

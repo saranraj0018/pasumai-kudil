@@ -1,11 +1,54 @@
 $(function () {
-    // Coupon form submit
+
+    // ===== OPEN CREATE COUPON MODAL =====
+    $(document).on("click", "#createCouponBtn", function () {
+        document.getElementById("couponForm").reset();
+        $("#coupon_id").val("");
+        $("#coupon_label").text("Add Coupon");
+        $("#save_coupon").text("Save");
+
+         let modal = document.getElementById("couponModal");
+        let alpine = modal.__x.$data;
+        alpine.open = true;
+    });
+
+    // ===== OPEN EDIT COUPON MODAL =====
+   $(document).on("click", ".editCouponBtn", function () {
+        $("#coupon_id").val($(this).data("id"));
+        $("#coupon_code").val($(this).data("code"));
+        $("#discount_type").val($(this).data("type"));
+        $("#discount_value").val($(this).data("value"));
+        $("#description").val($(this).data("description"));
+        $("#apply_for").val($(this).data("apply"));
+        $("#max_price").val($(this).data("max"));
+        $("#min_price").val($(this).data("min"));
+        $("#order_count").val($(this).data("order"));
+        $("#expires_at").val($(this).data("expires"));
+        $("#status").val($(this).data("status"));
+
+       if ($(this).data("apply") == 2) {
+       $("#expires_at").prop("disabled", true);
+       } else {
+       $("#expires_at").prop("disabled", false);
+       }
+
+
+        $("#coupon_label").text("Edit Coupon");
+        $("#save_coupon").text("Update");
+
+        let modal = document.getElementById("couponModal");
+        let alpine = modal.__x.$data;
+        alpine.open = true;
+    });
+
+    // ===== COUPON FORM SUBMIT =====
     $(document).on("submit", "#couponForm", function (e) {
         e.preventDefault();
-        let isValid = true;
 
-        // Fields to validate
-        const fields = [
+        let applyFor = $("#apply_for").val();
+
+        // validation fields
+        let fields = [
             { id: "#coupon_code", condition: (val) => val === "", message: "Coupon code is required" },
             { id: "#discount_type", condition: (val) => val === "", message: "Please select discount type" },
             { id: "#discount_value", condition: (val) => val === "" || val <= 0, message: "Discount value is required" },
@@ -15,31 +58,35 @@ $(function () {
             { id: "#status", condition: (val) => val === "", message: "Please select status" },
         ];
 
-        fields.forEach((field) => {
-            if (!validateField(field)) isValid = false;
+        if (applyFor == 2) {
+        fields.push({
+            id: "#order_count",
+            condition: (val) => val === "" || val <= 0,
+            message: "Order count is required for this coupon type"
         });
+    }
+
+        let isValid = true;
+        for (const field of fields) {
+            const result = validateField(field);
+            if (!result) isValid = false;
+        }
 
         if (!isValid) return;
 
         let formData = new FormData(this);
         sendRequest(
-            "/admin/coupon/save",
+            "/admin/coupon/save", // same route add/update handle
             formData,
             "POST",
             function (res) {
                 if (res.success) {
-                    showToast("Coupon saved successfully!", "success", 2000);
+                    showToast(res.message, "success", 2000);
                     setTimeout(() => {
                         let modalScope = document.querySelector('#couponModal').__x.$data;
-                        if (modalScope.hasOwnProperty('open')) {
-                            modalScope.open = false; // close modal
-                        }
-                        // Reset form
+                        modalScope.open = false; // close modal
                         document.getElementById("couponForm").reset();
-                        $.get("/admin/coupon/list", function (html) {
-                            let $tbody = $(html).find("#couponTableBody").html();
-                            $("#couponTableBody").html($tbody);
-                        });
+                        reloadCouponList();
                     }, 500);
                 } else {
                     showToast("Something went wrong!", "error", 2000);
@@ -56,9 +103,8 @@ $(function () {
             }
         );
     });
-   
 
-    // ===== Coupon DELETE =====
+    // ===== DELETE COUPON =====
     $(document).on("click", ".btnDeleteCoupon", function () {
         let id = $(this).data("id");
         let modalScope = document.querySelector('#deleteCouponModal').__x.$data;
@@ -87,8 +133,7 @@ $(function () {
         );
     };
 
-
-    // ===== Helpers =====
+    // ===== HELPERS =====
     function reloadCouponList() {
         $.get("/admin/coupon/list", function (html) {
             let $tbody = $(html).find("#couponTableBody").html();
@@ -97,5 +142,3 @@ $(function () {
     }
 
 });
-
-

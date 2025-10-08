@@ -62,5 +62,8 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/add-to-cart', [CartController::class, 'addToCart']);
         Route::post('/cart', [CartController::class, 'getCart']);
         Route::post('/cart/remove', [CartController::class, 'removeFromCart']);
+
+        Route::post('/create-order', [CartController::class, 'createOrder']);
+        Route::post('/order/save', [CartController::class, 'saveOrder']);
     });
 });

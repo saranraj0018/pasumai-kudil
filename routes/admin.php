@@ -3,10 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\Dashboard;
 use App\Http\Controllers\Admin\Authenticate;
+use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\UserlistController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\ProductsController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\SubscriptionController;
 
 Route::prefix('admin')->group(function () {
 
@@ -24,20 +27,34 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/dashboard', [Dashboard::class, 'index'])->name('admin.dashboard');
 
-        Route::prefix('category')->group(function () {
-        Route::get('/list', [CategoryController::class,'view'])->name('view.category');
-        Route::post('/save', [CategoryController::class,'save'])->name('save.category');
+        //categories
+        Route::prefix('category')->controller(CategoryController::class)->group(function () {
+            Route::get('/list', 'view')->name('view.category');
+            Route::post('/save', 'save')->name('save.category');
+            Route::post('/delete', 'destroy')->name('delete.category');
+        });
+
+        //banners
+        Route::prefix('banner')->controller(BannerController::class)->group(function () {
+            Route::get('/list', 'view')->name('view.banner');
+            Route::post('/save', 'save')->name('save.banner');
+            Route::post('/delete', 'destroy')->name('delete.banner');
         });
 
        //user list
         Route::get('/users', [UserlistController::class, 'index'])->name('view.users');
 
+        //orders
+        Route::prefix('orders')->controller(OrderController::class)->group(function () {
+            Route::get('/list', 'view')->name('view.orders');
+            Route::post('/update-status', 'updateStatus')->name('update.order.status');
+        });
+
         //coupons
-        Route::prefix('coupon')->group(function () {
-        Route::get('/list', [CouponController::class, 'view'])->name('view.coupons');
-        Route::post('/save', [CouponController::class, 'save'])->name('save.coupons');
-        Route::post('/update', [CouponController::class, 'update'])->name('update.coupons');
-        Route::post('/delete', [CouponController::class, 'destroy'])->name('delete.coupons');
+        Route::prefix('coupon')->controller(CouponController::class)->group(function () {
+            Route::get('/list', 'view')->name('view.coupons');
+            Route::post('/save', 'save')->name('save.coupon');
+            Route::post('/delete', 'destroy')->name('delete.coupon');
         });
 
         Route::prefix('products')->controller(ProductsController::class)->group(function () {
@@ -50,6 +67,12 @@ Route::prefix('admin')->group(function () {
       
         
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
+    });
+
+    Route::prefix('milk')->controller(App\Http\Controllers\Admin\SubscriptionController::class)->group(function () {
+         Route::get('/subscription', 'view')->name('view.milk.subscription');
+         Route::post('/save', 'save')->name('save.milk.subscription');
+         Route::post('/delete', 'destroy')->name('delete.milk.subscription');
     });
 });
 
