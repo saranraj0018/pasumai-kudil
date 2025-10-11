@@ -3,7 +3,7 @@
         <input 
         type="text" 
         placeholder="Search products..." 
-        class="border p-2 rounded w-20 mb-4 shadow-md search_product">
+        class="border p-2 rounded w-40 mb-4 shadow-md search_product">
 
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Products</h2>
@@ -26,12 +26,13 @@
                     </tr>
                 </thead>
                 <tbody id="productTableBody" class="divide-y divide-gray-200">
+                    @if ($products->isNotEmpty())
                     @foreach ($products as $product)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
-                            <td class="px-4 py-3">{{ $product->name }}</td>
+                            <td class="px-4 py-3">{{ $product->name ?? ''}}</td>
                             <td class="px-4 py-3">
-                                   @if($product->image)
+                            @if($product->image)
                                 <img src="{{ asset('storage/'.$product->image) }}"
                                      class="h-10 w-10 object-cover rounded-lg shadow-sm border" />
                             @else
@@ -39,29 +40,29 @@
                             @endif  
                             </td>
                             <td class="px-4 py-3">
-                                {{ $product->description }}
+                                {{ $product->description ?? ''}}
                             </td>
                             <td class="px-4 py-3">
-                                 {{ $product->benefits }}
+                                 {{ $product->benefits ?? ''}}
                             </td>
                            <td class="px-4 py-3 flex justify-center gap-4">
                             <!-- Edit -->
                             <button
                                 class="text-blue-600 hover:text-blue-800 transition editProduct"
                                 data-id="{{ $product->id }}"
-                                data-name="{{ $product->name }}"
-                                data-description="{{ $product->description }}"
-                                data-benefits="{{ $product->benefits }}"
-                                data-category="{{ $product->details->category_id }}"
-                                data-sale_price="{{ $product->details->sale_price }}"
-                                data-regular_price="{{ $product->details->regular_price }}"
-                                data-purchase_price="{{ $product->details->purchase_price }}"
-                                data-weight="{{ $product->details->weight }}"
-                                data-weight_unit="{{ $product->details->weight_unit }}"
-                                data-stock="{{ $product->details->stock }}"
-                                data-tax_type="{{ $product->details->tax_type }}"
-                                data-tax_percentage="{{ $product->details->tax_percentage }}"
-                                data-is_featured="{{ $product->details->is_featured_product }}"
+                                data-name="{{ $product->name ?? ''}}"
+                                data-description="{{ $product->description ?? '' }}"
+                                data-benefits="{{ $product->benefits ?? ''}}"
+                                data-category="{{ $product->details->category_id ?? ''}}"
+                                data-sale_price="{{ $product->details->sale_price ?? ''}}"
+                                data-regular_price="{{ $product->details->regular_price ?? ''}}"
+                                data-purchase_price="{{ $product->details->purchase_price ?? ''}}"
+                                data-weight="{{ $product->details->weight ??'' }}"
+                                data-weight_unit="{{ $product->details->weight_unit ?? ''}}"
+                                data-stock="{{ $product->details->stock ?? ''}}"
+                                data-tax_type="{{ $product->details->tax_type ?? ''}}"
+                                data-tax_percentage="{{ $product->details->tax_percentage ?? ''}}"
+                                data-is_featured="{{ $product->details->is_featured_product ?? ''}}"
                                 data-image="{{ $product->image ? asset('storage/'.$product->image) : '' }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
@@ -73,6 +74,11 @@
                         </td>
                         </tr>
                     @endforeach
+                    @else
+                        <tr>
+                            <td colspan="5" class="text-center">No Products found</td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
         </div>
