@@ -87,7 +87,6 @@ $(function () {
                 }
             },
             function (err) {
-                console.log(err.errors);
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -141,7 +140,7 @@ $(function () {
         alpine.form.tax_percentage = product.tax_percentage || "";
         alpine.form.is_featured_product = product.is_featured || "";
         alpine.existing_image = product.image || "";
-        alpine.previewUrl =  product.image || "";
+        alpine.previewUrl = product.image || "";
         $("#variantContainer").empty();
         $.ajax({
             url: "edit_product",
@@ -386,79 +385,96 @@ $(function () {
         }
     });
 
-   $(document).on("click", "#productCreateModal [x-show='stepNumber < steps.length - 1']", function () {
-    setTimeout(() => {
-        if ($("[x-show='stepNumber === 2']").is(":visible")) {
-            variantList = [];
-               $(".variantRow").each(function (index) {
-                variantList.push({
-                    sale_price: $(this).find(".salePrice").val(),
-                    regular_price: $(this).find(".regularPrice").val(),
-                    purchase_price: $(this).find(".purchasePrice").val(),
-                    weight: $(this).find(".weight").val(),
-                    weight_unit: $(this).find(".weightUnit").val(),
-                    tax_type: $(this).find(".taxType").val(),
-                    tax_percentage: $(this).find(".taxPercentage").val(),
-                    stock: $(this).find(".stock").val(),
-                });
-            });
+    $(document).on(
+        "click",
+        "#productCreateModal [x-show='stepNumber < steps.length - 1']",
+        function () {
+            setTimeout(() => {
+                if ($("[x-show='stepNumber === 2']").is(":visible")) {
+                    variantList = [];
+                    $(".variantRow").each(function (index) {
+                        variantList.push({
+                            sale_price: $(this).find(".salePrice").val(),
+                            regular_price: $(this).find(".regularPrice").val(),
+                            purchase_price: $(this)
+                                .find(".purchasePrice")
+                                .val(),
+                            weight: $(this).find(".weight").val(),
+                            weight_unit: $(this).find(".weightUnit").val(),
+                            tax_type: $(this).find(".taxType").val(),
+                            tax_percentage: $(this)
+                                .find(".taxPercentage")
+                                .val(),
+                            stock: $(this).find(".stock").val(),
+                        });
+                    });
 
-            renderVariantReview();
+                    renderVariantReview();
+                }
+            }, 200);
         }
-    }, 200);
-    });
+    );
 
-function renderVariantReview() {
-    if (variantList.length === 0) {
-        $("#viewVariantProducts").html(
-            `<p class="text-gray-500 italic">No variant details available.</p>`
-        );
-        return;
-    }
+    function renderVariantReview() {
+        if (variantList.length === 0) {
+            $("#viewVariantProducts").html(
+                `<p class="text-gray-500 italic">No variant details available.</p>`
+            );
+            return;
+        }
 
-    let html = `
+        let html = `
         <h4 class="text-md font-semibold mb-3">Variant Details</h4>
         <div>
     `;
 
-    variantList.forEach((v, i) => {
-        html += `
+        variantList.forEach((v, i) => {
+            html += `
         <div class="bg-gray-50 rounded-lg p-4 shadow-sm mt-2">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <span class="font-semibold">Sale Price:</span>
-                    <p class="text-gray-700">${v.sale_price ? '$' + v.sale_price : '-'}</p>
+                    <p class="text-gray-700">${
+                        v.sale_price ? "$" + v.sale_price : "-"
+                    }</p>
                 </div>
                 <div>
                     <span class="font-semibold">Regular Price:</span>
-                    <p class="text-gray-700">${v.regular_price ? '$' + v.regular_price : '-'}</p>
+                    <p class="text-gray-700">${
+                        v.regular_price ? "$" + v.regular_price : "-"
+                    }</p>
                 </div>
                 <div>
                     <span class="font-semibold">Purchase Price:</span>
-                    <p class="text-gray-700">${v.purchase_price ? '$' + v.purchase_price : '-'}</p>
+                    <p class="text-gray-700">${
+                        v.purchase_price ? "$" + v.purchase_price : "-"
+                    }</p>
                 </div>
                 <div>
                     <span class="font-semibold">Weight:</span>
-                    <p class="text-gray-700">${v.weight ? v.weight + ' ' + v.weight_unit : '-'}</p>
+                    <p class="text-gray-700">${
+                        v.weight ? v.weight + " " + v.weight_unit : "-"
+                    }</p>
                 </div>
                 <div>
                     <span class="font-semibold">Tax Type:</span>
-                    <p class="text-gray-700">${v.tax_type || '-'}</p>
+                    <p class="text-gray-700">${v.tax_type || "-"}</p>
                 </div>
                 <div>
                     <span class="font-semibold">Tax Percentage:</span>
-                    <p class="text-gray-700">${v.tax_percentage ? v.tax_percentage + '%' : '-'}</p>
+                    <p class="text-gray-700">${
+                        v.tax_percentage ? v.tax_percentage + "%" : "-"
+                    }</p>
                 </div>
                 <div>
                     <span class="font-semibold">Stock:</span>
-                    <p class="text-gray-700">${v.stock || '-'}</p>
+                    <p class="text-gray-700">${v.stock || "-"}</p>
                 </div>
             </div>
         </div>`;
-    });
+        });
 
-    html += `</div>`;
-    $("#viewVariantProducts").html(html);
-}
-
+        html += `</div>`;
+        $("#viewVariantProducts").html(html);
+    }
 });
