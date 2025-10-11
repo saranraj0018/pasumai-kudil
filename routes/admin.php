@@ -62,9 +62,16 @@ Route::prefix('admin')->group(function () {
             Route::post('/save_product', 'saveProduct')->name('save_product.products');
             Route::post('/delete_product', 'deleteProduct')->name('delete_product.products');
             Route::get('/search_product', 'searchProduct')->name('search_product.products');
+            Route::get('/edit_product', 'editProduct')->name('edit_product.products');
         });
 
-      
+        Route::prefix('users')->controller(UserlistController::class)->group(function () {
+            Route::get('/lists', 'userLists')->name('lists.users');
+            Route::get('/user-profile-view', 'userProfileView')->name('user_view.users');
+            Route::get('/transaction-history', 'transactionHistory')->name('transaction_history.users');
+            Route::post('/add_wallet', 'addWallet')->name('add_wallet.users');
+           
+        });
         
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
     });
