@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\OrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
@@ -57,7 +58,9 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/address/set-default', [AddressController::class, 'setDefaultAddress']);
         Route::post('/address/delete', [AddressController::class, 'delete']);
 
-
+        //orders
+        Route::get('/orders', [OrderController::class, 'index']);
+        Route::post('/get-single-order', [OrderController::class, 'getSingleOrder']);
         //Cart
         Route::post('/add-to-cart', [CartController::class, 'addToCart']);
         Route::post('/cart', [CartController::class, 'getCart']);

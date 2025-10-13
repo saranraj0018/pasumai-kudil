@@ -79,7 +79,8 @@ class OrderController extends Controller
             'data'   => [
                 'orderId'        => $order->order_id,
                 'orderDate'      => Carbon::parse($order->created_at)->format('Y-m-d'),
-                'order_status'   => $order->status,
+                'order_status'   => $order->status == 1 ? 'Ordered' : ($order->status == 2 ? 'On-Hold' :
+                    ($order->status == 3 ? 'Order Shipped' : ($order->status == 4 ? 'Order Delivery' : 'Cancelled'))),
                 'orderAmount'    => number_format($order->gross_amount, 1),
                 'orderItems'     => $elements,
                 'product_names'  => $product_names,

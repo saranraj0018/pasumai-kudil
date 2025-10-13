@@ -7,6 +7,7 @@ use App\Models\Address;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductDetail;
 use App\Models\Setting;
 
 use Illuminate\Http\Request;
@@ -111,8 +112,6 @@ public function removeFromCart(Request $request)
         $totalItems = $coupon_discount = $subtotal = $total_weight = $total_tax = 0 ;
 
         foreach ($cart_list as $item) {
-
-            $total_tax = 0;
             $product = Product::with('details')->find($item['product_id']);
 
             if (!empty($product) && !empty($product->details?->id) ) {
@@ -124,11 +123,11 @@ public function removeFromCart(Request $request)
                 $totalItems += $item['quantity'];
                 $total_weight += $variant['weight'] * $item['quantity'] ?? 0;
 
-                $total_tax += !empty($product->details->tax_type == 2) && !empty($product->details->tax_percentage) ? $subtotal * $product->details->tax_percentage/100 : 0;
-
+                $total_tax += !empty($product->details->tax_type == 2) && !empty($product->details->tax_percentage) ? $subtotal * $product->details->tax_percentage / 100 : 0;
                 // Weight Calculation Logic
                 $weightValue = isset($variant['weight']) ? floatval($variant['weight']) : 0;
                 $weightUnit = isset($variant['weight_unit']) ? strtolower($variant['weight_unit']) : '';
+
 
 
                 if ($weightUnit === "g" && $weightValue >= 1000) {
@@ -156,6 +155,7 @@ public function removeFromCart(Request $request)
                 ];
             }
         }
+
         $coupon_id = !empty($request['coupon_id']) ? $request['coupon_id'] : Cache::get('coupon_id_' . Auth::id(), null);
 
         if (empty($coupon_id)) {
@@ -334,13 +334,15 @@ public function removeFromCart(Request $request)
 //            throw new \Exception('Order Not found', 404);
 
 
-        $coupon_amount = 0;
-        if (!empty($request['coupon_id']) && $request['total_amount'] > 0) {
+            $coupon_amount = 0;
+
+            if (!empty($request['coupon_id']) && !empty($request['total_amount'])) {
+
             $coupon = Coupon::find($request['coupon_id']);
             $coupon_amount = self::getCouponDetails($coupon, $request['total_amount']);
         }
-
-        $orderDetails = collect(Cache::get("cart_".auth()->id(), []))->map(function($item) {
+            $shipping = 0;
+        $orderDetails = collect(Cache::get("cart_".auth()->id(), []))->map(function($item) use($coupon_amount, $shipping) {
 
             $product  = Product::with('details')->find($item['product_id']);
 
@@ -353,21 +355,19 @@ public function removeFromCart(Request $request)
                 ]);
             }
 
+            $variant = ProductDetail::find($item['variant_id']);
+            if ($variant) {
+                $variant->stock = max(0, $variant->stock - intval($item['quantity']));
+                $variant->save();
+            }
 
             return [
                 ...$item,
                 'category_id' => $product->details->category_id,
                 'product_name' => $product->name,
                 'product_id' => intval($item["product_id"]),
-                'net_amount' => !empty($variant->sale_price) ? intval($variant->sale_price) * intval($item['quantity']) :
+                'net_amount' =>  !empty($variant->sale_price) ? intval($variant->sale_price) * intval($item['quantity']) :
                     intval($variant->regular_price) * intval($item['quantity']),
-
-                'gross_amount' => !empty($product->details->sale_price) && $product->details->tax_type == 2 && !empty($product->details->tax_percentage)
-                    ? ((($product->details->sale_price * $product->details->tax_percentage) / 100) + $product->details->sale_price) * intval($item['quantity'])
-                    : (!empty($product->details->regular_price) && $product->details->tax_type == 2 && !empty($product->details->tax_percentage)
-                        ? ((($product->details->regular_price * $product->details->tax_percentage) / 100) + $product->details->regular_price) * intval($item['quantity'])
-                        : 0),
-
                 'gst_type' => $product->details->tax_type,
                 'gst_percentage' => $product->details->tax_percentage,
                 'gst_amount' =>  !empty($product->details->sale_price) && $product->details->tax_type == 2 && !empty($product->details->tax_percentage)
@@ -375,21 +375,21 @@ public function removeFromCart(Request $request)
                     : (!empty($product->details->regular_price) && $product->details->tax_type == 2 && !empty($product->details->tax_percentage)
                         ? (($product->details->regular_price * $product->details->tax_percentage) / 100) *  (intval($item['quantity']))
                         : 0),
-                'weight' => $variant->value * $item['quantity']
+                'weight' => $variant->value * $item['quantity'],
             ];
         });
 
-        $shipping = 0;
+
         $order = \App\Models\Order::create([
             'order_id' => $request['orderId'],
             'user_id' => auth()->id(),
-            'address_id' => Cache::get('address_id_'.auth()->id()),
-            'phone' => auth()->user()->mobile,
+            'address_id' => 53,
+            'phone' => auth()->user()->mobile_number,
             'email' => auth()->user()->email,
             'status' => 1,
             'net_amount' => $orderDetails->sum('net_amount'),
             'gst_amount' => $orderDetails->sum('gst_amount'),
-            'gross_amount' => $coupon_amount - ($orderDetails->sum('gross_amount') + $shipping),
+            'gross_amount' => ($orderDetails->sum('net_amount') + $shipping) - $coupon_amount,
             'shipping_amount' => $shipping,
             'notes' => 'Creating new Order',
             'coupon_id' => !empty($coupon) ? $coupon?->id : null,
@@ -412,14 +412,14 @@ public function removeFromCart(Request $request)
             "currency" => "INR",
             "method" => "UPI",
             "email" => auth()->user()->email,
-            "phone" => auth()->user()->mobile
+            "phone" => auth()->user()->mobile_number
         ]);
 
             $userId = auth()->id();
             Cache::forget("cart_{$userId}");
             Cache::forget("coupon_id_{$userId}");
             Cache::forget('address_id_'.Auth::id());
-          //  Cache::forget('order_id_'.Auth::id());
+            Cache::forget('order_id_'.Auth::id());
 
             return response()->json([
                 'status' => 200,
