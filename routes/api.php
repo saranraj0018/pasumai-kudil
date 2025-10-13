@@ -11,7 +11,6 @@ use App\Http\Controllers\API\ProfileController;
 use App\Http\Controllers\API\CouponController;
 use App\Http\Controllers\API\AddressController;
 
-
 Route::group(['prefix' => 'user'], function () {
     Route::post('/register', [AuthController::class, 'userRegister']);
     Route::post('/otp', [AuthController::class, 'VerifyOtp']);
@@ -59,8 +58,9 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/address/delete', [AddressController::class, 'delete']);
 
         //orders
-        Route::get('/orders', [OrderController::class, 'index']);
-        Route::post('/get-single-order', [OrderController::class, 'getSingleOrder']);
+          Route::get('/orders', [OrderController::class, 'index']);
+          Route::post('/get-single-order', [OrderController::class, 'getSingleOrder']);
+
         //Cart
         Route::post('/add-to-cart', [CartController::class, 'addToCart']);
         Route::post('/cart', [CartController::class, 'getCart']);

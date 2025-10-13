@@ -10,27 +10,47 @@ use Carbon\Carbon;
 
 class OrderController extends Controller
 {
-    public function index() {
-        $orders = Order::with('orderDetails')->whereHas('payment')->where('user_id', Auth::id())->select(
-            'id',
-            'order_id as orderId',
-            'status as orderStatus',
-            'gross_amount as orderAmount',
-            'created_at as orderDate'
-        )->orderBy('created_at', 'desc')->get();
+  public function index()
+{
+    $userId = Auth::id();
 
+    $orders = Order::with(['orderDetails', 'payment'])
+        ->where('user_id', $userId)
+        ->orderBy('created_at', 'desc')
+        ->select('id', 'order_id as orderId', 'status as orderStatus', 'gross_amount as orderAmount', 'created_at as orderDate')
+        ->get();
+
+    if ($orders->isEmpty()) {
         return response()->json([
-            'status' => 200,
-            'data' => $orders->map(function ($order) {
-                return [
-                    'order_id'      => $order->orderId,
-                    'order_status'  => $order->orderStatus == 1 ? 'Ordered' : ($order->orderStatus == 2 ? 'On-Hold' : ($order->orderStatus == 3 ? 'Order Shipped' : ($order->orderStatus == 4 ? 'Order Delivery' : 'Cancelled'))),
-                    'order_amount'  => number_format($order->orderAmount, 1),
-                    'order_date'    => $order->orderDate,
-                    'product_name'  => $order->orderDetails->pluck('product_name')->implode(', ') ?: 'No Product'
-                ];
-            })
+            'status' => 404,
+            'message' => "No orders found for user ID {$userId}"
         ]);
+    }
+
+    return response()->json([
+        'status' => 200,
+        'data' => $orders->map(function ($order) {
+            return [
+                'order_id'      => $order->orderId,
+                'order_status' => $this->getOrderStatusText($order->orderStatus),
+                'order_amount'  => number_format($order->orderAmount, 1),
+                'order_date'    => Carbon::parse($order->orderDate)->format('d M Y, h:i A'),
+                'product_name'  => $order->orderDetails->pluck('product_name')->implode(', ') ?: 'No Product',
+            ];
+        }),
+    ]);
+}
+
+private function getOrderStatusText($status)
+    {
+        return match ((int) $status) {
+            1 => 'Ordered',
+            2 => 'On Hold',
+            3 => 'Shipped',
+            4 => 'Delivered',
+            5 => 'Cancelled',
+            default => 'Unknown',
+        };
     }
 
     public function getSingleOrder(Request $request)
@@ -56,7 +76,7 @@ class OrderController extends Controller
             return [
                 'product_id'      => $item->product_id,
                 'product_name'    => $item->quantity . ' x ' . ($item->product->name ?? $item->product_name),
-                'image'           => $item->product->image ?? $item->image,
+                'product_image' => ($item->product->image ?? $item->image) ? url('/storage/' . ($item->product->image ?? $item->image)) : null,
                 'originalPrice'   => number_format($item->variants->regular_price ?? 0, 2),
                 'discountedPrice' => number_format($item->variants->sale_price ?? 0, 2),
                 'description'     => $item->product->description ?? $item->description ?? 'No description',
