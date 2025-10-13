@@ -115,6 +115,8 @@ class ProfileController extends Controller
                         'liked_status' => in_array($product->id, (array) json_decode($user->likedProducts) ?? []),
                         'product_kg' => $product?->details?->weight ? ($product->details->weight . ' ' . $product->details->weight_unit) : null,
                         'stock_count' => $product->details->stock,
+                        'quantity' => $product->details->quantity ?? 0,
+                        'isFeaturedProduct' => $product->details->is_featured_product ?? 0,
                         'variation_id' => $product->details?->id ?? null,
                     ];
                 })

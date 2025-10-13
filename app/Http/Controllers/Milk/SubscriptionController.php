@@ -13,12 +13,16 @@ class SubscriptionController extends Controller
         $subscriptions = Subscription::orderBy('id')->get();
 
         $planDetails = $subscriptions->map(function ($plan) {
+              $duration = null;
+            if ($plan->min_duration !== null && $plan->max_duration !== null && $plan->plan_duration_unit) {
+                $duration = $plan->min_duration . '-' . $plan->max_duration . ' ' . $plan->plan_duration_unit;
+            }
             return [
                 'plan_id' => $plan->id,
                 'plan_amount' => $plan->plan_amount,
                 'plan_pack' => $plan->plan_pack,
                 'plan_type' => $plan->plan_type,
-                'plan_duration' => $plan->plan_duration,
+                'plan_duration' => $duration,
                 'plan_details' => $plan->plan_details ?? [],
                 'quantity' => $plan->quantity ?? [],
                 'pack' => $plan->pack ?? [],
