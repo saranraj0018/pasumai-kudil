@@ -17,7 +17,7 @@ class OrderController extends Controller
     $orders = Order::with(['orderDetails', 'payment'])
         ->where('user_id', $userId)
         ->orderBy('created_at', 'desc')
-        ->select('id', 'order_id as orderId', 'status as orderStatus', 'net_amount as orderAmount', 'created_at as orderDate')
+        ->select('id', 'order_id as orderId', 'status as orderStatus', 'gross_amount as orderAmount', 'created_at as orderDate')
         ->get();
 
     if ($orders->isEmpty()) {
@@ -100,7 +100,7 @@ private function getOrderStatusText($status)
                 'orderId'        => $order->order_id,
                 'orderDate'      => Carbon::parse($order->created_at)->format('Y-m-d'),
                 'order_status'   => $order->status,
-                'orderAmount'    => number_format($order->net_amount, 1),
+                'orderAmount'    => number_format($order->gross_amount, 1),
                 'orderItems'     => $elements,
                 'product_names'  => $product_names,
                 'rating_status'  => $order->rating_status === 1,
