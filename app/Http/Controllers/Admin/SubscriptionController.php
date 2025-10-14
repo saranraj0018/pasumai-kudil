@@ -41,7 +41,7 @@ class SubscriptionController extends Controller
         $sub->plan_details = $request->plan_details ?? null;
         $sub->quantity = $request->quantity ?? null;
         $sub->pack = $request->pack ?? null;
-       $sub->delivery_days = $request->plan_type === 'Customize' ? $request->delivery_days : null;
+        $sub->delivery_days = $request->plan_type === 'Customize' ? $request->delivery_days : null;
         $sub->save();
 
         $message = $request->id ? 'Subscription updated successfully' : 'Subscription created successfully';
