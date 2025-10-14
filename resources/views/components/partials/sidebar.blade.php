@@ -25,8 +25,9 @@
                 <x-menu.item trigger name="Milk" icon="fa-glass-whiskey" />
             </x-slot:trigger>
             <x-slot:menus>
-                <x-menu.item  name="User List" icon="fas fa-user"/>
+                <x-menu.item route="lists.users" name="User List" icon="fas fa-user"/>
                 <x-menu.item route="view.milk.subscription" name="Subscription" icon="fa-calendar-check" />
+                <x-menu.item name="Shipping" route="lists.shipping" icon="fa-solid fa-truck" />
             </x-slot:menus>
         </x-menu.list>
     </ul>
