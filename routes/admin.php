@@ -9,7 +9,9 @@ use App\Http\Controllers\Admin\UserlistController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ShippingController;
 use App\Http\Controllers\Admin\SubscriptionController;
+
 
 Route::prefix('admin')->group(function () {
 
@@ -71,6 +73,12 @@ Route::prefix('admin')->group(function () {
             Route::get('/transaction-history', 'transactionHistory')->name('transaction_history.users');
             Route::post('/add_wallet', 'addWallet')->name('add_wallet.users');
            
+        });
+
+        Route::prefix('shipping')->controller(ShippingController::class)->group(function () {
+            Route::get('/shipping', 'index')->name('lists.shipping');
+            Route::post('/save-shipping', 'saveShipping')->name('save_shipping.shipping');
+            Route::post('/delete-shipping', 'deleteShipping')->name('delete_shipping.shipping');
         });
         
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
