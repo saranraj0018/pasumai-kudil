@@ -1,9 +1,9 @@
 <x-layouts.app>
     <div class="p-4" x-data="{ open: false }">
         <input 
-        type="text" 
+        type="text" id="searchInput"
         placeholder="Search products..." 
-        class="border p-2 rounded w-40 mb-4 shadow-md search_product">
+        class="border p-2 rounded w-40 mb-4 shadow-md">
 
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Products</h2>
@@ -13,7 +13,7 @@
             </button>
         </div>
 
-        <div class="overflow-x-auto bg-white rounded-xl shadow-md">
+        <div class="overflow-x-auto bg-white rounded-xl shadow-md" id="productTableWrapper">
             <table id="products" class="w-full text-sm text-left text-gray-700 border-collapse">
                 <thead>
                     <tr class="bg-[#ab5f00] text-white text-sm uppercase tracking-wider">
@@ -81,10 +81,10 @@
                     @endif
                 </tbody>
             </table>
-        </div>
-
-        <div class="p-4">
-        {{ $products->links() }}
+            
+            <div class="p-4">
+                {{ $products->appends(['search' => $search])->links() }}
+            </div>
         </div>
 
         @include('admin.products.product_create_modal')

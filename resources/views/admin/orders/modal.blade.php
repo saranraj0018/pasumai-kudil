@@ -76,7 +76,7 @@
         <!-- Footer Buttons -->
         <div class="flex justify-end gap-3 p-5 border-t">
             <button id="cancelModalBtn" class="px-5 py-2 border rounded-lg hover:bg-gray-100">Cancel</button>
-            <button id="saveStatusBtn" class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Save</button>
+            <button id="saveStatusBtn" class="bg-[#ab5f00] text-white px-5 py-2 rounded-lg hover:bg-[#9c5200]">Save</button>
         </div>
     </div>
 </div>

@@ -50,7 +50,7 @@
             <!-- Modal Box -->
             <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-[90%] relative z-50">
 
-                <h2 class="text-2xl font-bold mb-6 text-gray-800" id="product_label">Add Product</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800" x-text="modalTitle" id="product_label">Add Product</h2>
                 <form id="productAddForm" enctype="multipart/form-data" novalidate
                     class="flex flex-col justify-start items-start w-full  h-[75vh] overflow-y-scroll">
                     @csrf
@@ -275,7 +275,7 @@
                         <button type="button" @click="closeModal()"
                             class="px-5 py-2 rounded-lg border border-gray-300 hover:bg-gray-100">Cancel</button>
                         <button type="submit" class="bg-[#ab5f00] text-white px-5 py-2 rounded-lg hover:bg-[#ab5f00]"
-                            id="save_product">Save</button>
+                            id="save_product" x-text="buttonText">Save</button>
                     </div>
                 </form>
             </div>

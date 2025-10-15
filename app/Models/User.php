@@ -87,6 +87,11 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo(Wallet::class, 'id', 'user_id');
     }
+
+    public function subscriptions()
+    {
+      return $this->belongsTo(UserSubscription::class, 'id','user_id');
+    }
 }
 
 
