@@ -34,8 +34,6 @@ class Order extends Model
         return $this->hasMany(OrderDetail::class, 'order_id', 'id');
     }
 
-
-
     public function userAddress()
     {
         return $this->belongsTo(Address::class, 'address_id', 'id');

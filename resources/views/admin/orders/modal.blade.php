@@ -22,7 +22,13 @@
                 </div>
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <h3 class="font-semibold text-gray-700 mb-2">Billing Address</h3>
-                    <p id="orderBillingAddress">—</p>
+                    <p><strong>Name:</strong> <span id="addressCustomerName">—</span></p>
+                    <p><strong>Mobile Number:</strong> <span id="addressCustomerMobile">—</span></p>
+                    <p><strong>Address:</strong> <span id="addressCustomerAddress">—</span></p>
+                    <p><strong>Address Type:</strong> <span id="addressCustomerAddressType">—</span></p>
+                    <p><strong>State:</strong> <span id="addressCustomerState">—</span></p>
+                    <p><strong>City:</strong> <span id="addressCustomerCity">—</span></p>
+                    <p><strong>Pincode:</strong> <span id="addressCustomerPincode">—</span></p>
                 </div>
             </div>
 
@@ -76,7 +82,7 @@
         <!-- Footer Buttons -->
         <div class="flex justify-end gap-3 p-5 border-t">
             <button id="cancelModalBtn" class="px-5 py-2 border rounded-lg hover:bg-gray-100">Cancel</button>
-            <button id="saveStatusBtn" class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Save</button>
+            <button id="saveStatusBtn" class="bg-[#ab5f00] text-white px-5 py-2 rounded-lg hover:bg-[#9c5200]">Save</button>
         </div>
     </div>
 </div>

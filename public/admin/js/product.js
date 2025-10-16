@@ -1,24 +1,41 @@
 $(function () {
-    $(document).on("keyup", ".search_product", function (e) {
-        let query = $(this).val();
+    const input = document.getElementById("searchInput");
 
-        $.ajax({
-            url: "search_product",
-            type: "GET",
-            data: {
-                query: query,
-            },
-            success: function (response) {
-                if (response.success) {
-                    $("#productTableBody").html(response.html);
-                    $(".p-4").html(response.pagination);
-                }
-            },
-            error: function (xhr) {
-                console.error(xhr.responseText);
-            },
-        });
+    input.addEventListener("input", function () {
+        let search = this.value;
+        loadUsers(
+            `{{ route('lists.products') }}?search=${encodeURIComponent(search)}`
+        );
     });
+
+    function loadUsers(url) {
+        fetch(url)
+            .then((res) => res.text())
+            .then((html) => {
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(html, "text/html");
+                let newContent = doc.querySelector(
+                    "#productTableWrapper"
+                ).innerHTML;
+                document.getElementById("productTableWrapper").innerHTML =
+                    newContent;
+
+                attachPaginationEvents();
+            })
+            .catch((err) => console.error(err));
+    }
+
+    function attachPaginationEvents() {
+        document
+            .querySelectorAll('#productTableWrapper a[href*="page="]')
+            .forEach((link) => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    loadUsers(this.href);
+                });
+            });
+    }
+    attachPaginationEvents();
 
     $(document).on("submit", "#productAddForm", function (e) {
         e.preventDefault();
@@ -120,11 +137,12 @@ $(function () {
         };
         // Show modal
         $("#productCreateModal").css("display", "flex");
-        $("#product_label").text("Edit Product");
-        $("#save_product").text("Update");
+        
         let modal = document.getElementById("productCreateModal");
         let alpine = modal.__x.$data;
         alpine.open = true;
+        alpine.modalTitle = "Edit Product";
+        alpine.buttonText = "Update";
         alpine.form.product_id = product.id || "";
         alpine.form.name = product.name || "";
         alpine.form.category_id = product.category || "";

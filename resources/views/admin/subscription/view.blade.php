@@ -41,7 +41,9 @@
                     data-details="{{ $sub->plan_details }}"
                    data-quantity="{{ $sub->quantity }}"
                    data-pack_details="{{ $sub->pack }}"
-                  data-delivery_days="{{ $sub->delivery_days }}">
+                  data-delivery_days="{{ $sub->delivery_days }}"
+                  data-plan_name="{{ $sub->plan_name }}"
+                  data-is_show_mobile="{{ $sub->is_show_mobile }}">
                     <i class="fa-solid fa-pen-to-square"></i>
                 </button>
                             <button class="text-red-600 hover:text-red-800 transition btnDeleteSubscription"
