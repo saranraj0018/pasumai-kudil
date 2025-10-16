@@ -29,7 +29,7 @@
 
                 <div class="mt-6">
                     @if ($user->account_holder_name || $user->bank_name || $user->account_number || $user->ifsc_code)
-                        <button 
+                        <button
                             @click="document.querySelector('#addAccountModal').__x.$data.open = true"
                             class="bg-[#ab5f00] hover:bg-[#8b4d00] transition text-white px-4 py-2 rounded-lg shadow update_account"
                             data-id="{{ $user->id }}"
@@ -40,9 +40,9 @@
                             Update Account
                         </button>
                     @else
-                        <button 
+                        <button
                             @click="document.querySelector('#addAccountModal').__x.$data.open = true"
-                            class="bg-[#ab5f00] hover:bg-[#8b4d00] transition text-white px-4 py-2 rounded-lg shadow add_account">
+                            class="bg-[#276221] hover:bg-[#52a447] transition text-white px-4 py-2 rounded-lg shadow add_account">
                             Add Account
                         </button>
                     @endif
@@ -68,7 +68,7 @@
                         <i class="fa-solid fa-receipt"></i> Transaction History
                     </a>
 
-                    <button 
+                    <button
                         @click="document.querySelector('#addWalletModal').__x.$data.open = true"
                         class="bg-[#ab5f00] hover:bg-[#8b4d00] transition text-white px-4 py-2 rounded-lg shadow">
                         Add / Deduct
