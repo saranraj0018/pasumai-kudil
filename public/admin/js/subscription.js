@@ -112,7 +112,7 @@ $("#add_delivery_day_btn").on("click", function() {
     $(document).on("click", ".editSubscriptionBtn", function() {
         closeModal();
         let btn = $(this);
-
+        $("#subscription_title").text("Edit Subscription");
         $("#subscription_id").val(btn.data("id"));
         $("#plan_type").val(btn.data("type"));
         $("#plan_amount").val(btn.data("amount"));

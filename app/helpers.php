@@ -25,6 +25,14 @@ if (!function_exists('getCartQuantities')) {
         }
     }
 
+if (!function_exists('showDate')) {
+    function showDate($date, $format = 'd/m/Y')
+    {
+        return \Carbon\Carbon::parse($date)->format($format);
+    }
+}
+
+
 
 if (!function_exists('razorPay')) {
     function razorPay()

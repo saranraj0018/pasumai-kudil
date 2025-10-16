@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Shippings;
+use App\Models\Shipping;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -11,8 +11,8 @@ class ShippingController extends Controller
 {
     public function index(Request $request)
     {
-        $this->data['get_shipping'] = Shippings::first();
-    
+        $this->data['get_shipping'] = Shipping::first();
+
         return view('admin.shipping.view')->with($this->data);
     }
 
@@ -23,15 +23,15 @@ class ShippingController extends Controller
         ];
         $request->validate($rules);
         try {
- 
+
         if (!empty($request['shipping_id'])) {
             $message = 'Shipping Updated successfully';
-            $shipping = Shippings::find($request['shipping_id']);
+            $shipping = Shipping::find($request['shipping_id']);
         } else{
-            $shipping = new Shippings();
+            $shipping = new Shipping();
             $message = 'Shipping saved successfully';
         }
-           
+
             $shipping->city  = $request['city'];
             $shipping->latitude = $request['latitude'] ?? '';
             $shipping->longitude  = $request['longitude'] ?? '';
@@ -54,5 +54,5 @@ class ShippingController extends Controller
         }
     }
 
-   
+
 }

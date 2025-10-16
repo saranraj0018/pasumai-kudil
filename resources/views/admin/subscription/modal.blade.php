@@ -1,10 +1,10 @@
 <!-- Subscription Modal -->
 <div id="subscriptionModal" x-data="{ open: false }" x-show="open"
     class="fixed inset-0 flex items-center justify-center z-50 overflow-auto bg-black/40 p-4" style="display:none;">
-    
+
     <!-- Modal Container -->
     <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-3xl md:max-w-4xl lg:max-w-5xl relative z-10">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800">Add Subscription</h2>
+        <h2 class="text-2xl font-bold mb-6 text-gray-800" id="subscription_title">Add Subscription</h2>
         <form id="subscriptionForm" class="space-y-6">
             @csrf
             <input type="hidden" name="id" id="subscription_id">
@@ -21,7 +21,7 @@
                         <option value="Customize">Customize</option>
                     </select>
                 </div>
- 
+
                 <!-- Plan Pack -->
                 <div id="plan_pack_container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Plan Pack</label>

@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ShippingController;
 use App\Http\Controllers\Admin\SubscriptionController;
+use App\Http\Controllers\Admin\HubController;
 
 
 Route::prefix('admin')->group(function () {
@@ -52,6 +53,11 @@ Route::prefix('admin')->group(function () {
             Route::post('/update-status', 'updateStatus')->name('update.order.status');
         });
 
+        // hub
+        Route::prefix('hub')->controller(HubController::class)->group(function () {
+            Route::get('/list', 'view')->name('list.hub');
+        });
+
         //coupons
         Route::prefix('coupon')->controller(CouponController::class)->group(function () {
             Route::get('/list', 'view')->name('view.coupons');
@@ -72,7 +78,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/user-profile-view', 'userProfileView')->name('user_view.users');
             Route::get('/transaction-history', 'transactionHistory')->name('transaction_history.users');
             Route::post('/add_wallet', 'addWallet')->name('add_wallet.users');
-           
+
         });
 
         Route::prefix('shipping')->controller(ShippingController::class)->group(function () {
@@ -80,7 +86,7 @@ Route::prefix('admin')->group(function () {
             Route::post('/save-shipping', 'saveShipping')->name('save_shipping.shipping');
             Route::post('/delete-shipping', 'deleteShipping')->name('delete_shipping.shipping');
         });
-        
+
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
     });
 
