@@ -1,15 +1,18 @@
 <!-- Subscription Modal -->
 <div id="subscriptionModal" x-data="{ open: false }" x-show="open"
     class="fixed inset-0 flex items-center justify-center z-50 overflow-auto bg-black/40 p-4" style="display:none;">
-    
     <!-- Modal Container -->
     <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-3xl md:max-w-4xl lg:max-w-5xl relative z-10">
         <h2 class="text-2xl font-bold mb-6 text-gray-800">Add Subscription</h2>
-        <form id="subscriptionForm" class="space-y-6">
+        <form id="subscriptionForm" class="space-y-3">
             @csrf
             <input type="hidden" name="id" id="subscription_id">
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Plan Name</label>
+                    <input type="text" name="plan_name" id="plan_name"
+                        class="form-input w-full border rounded-lg p-2">
+                </div>
                 <!-- Plan Type -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Plan Type</label>
@@ -21,17 +24,15 @@
                         <option value="Customize">Customize</option>
                     </select>
                 </div>
- 
                 <!-- Plan Pack -->
                 <div id="plan_pack_container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Plan Pack</label>
                     <div class="flex items-center border rounded-lg overflow-hidden">
-                        <input type="number" name="plan_pack" id="plan_pack"
-                            class="w-full p-2 outline-none border-0" placeholder="Enter number">
+                        <input type="number" name="plan_pack" id="plan_pack" class="w-full p-2 outline-none border-0"
+                            placeholder="Enter number">
                         <span class="bg-gray-100 px-3 py-2 text-gray-700 text-sm border-l">Month</span>
                     </div>
                 </div>
-
                 <!-- Delivery Days -->
                 <div id="delivery_days_container" class="hidden">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Days</label>
@@ -45,14 +46,12 @@
                     </div>
                     <div id="delivery_days_list" class="mt-2"></div>
                 </div>
-
                 <!-- Plan Amount -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Plan Amount</label>
                     <input type="number" name="plan_amount" id="plan_amount"
                         class="form-input w-full border rounded-lg p-2">
                 </div>
-
                 <!-- Duration -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Duration</label>
@@ -62,15 +61,12 @@
                         <span class="bg-gray-100 px-3 py-2 text-gray-700 text-sm border-l">Days</span>
                     </div>
                 </div>
-            </div>
-
-            <!-- Plan Details -->
-            <div>
+                 <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Plan Details</label>
-                <textarea name="plan_details" id="plan_details"
-                    class="form-input w-full border rounded-lg p-2"></textarea>
+                <textarea name="plan_details" id="plan_details" class="form-input w-full border rounded-lg p-2"></textarea>
             </div>
-
+            </div>
+            <!-- Plan Details -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
@@ -79,11 +75,17 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pack</label>
-                    <input type="text" name="pack" id="pack"
-                        class="form-input w-full border rounded-lg p-2">
+                    <input type="text" name="pack" id="pack" class="form-input w-full border rounded-lg p-2">
                 </div>
             </div>
-
+            <div>
+                <label class="inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="is_show_mobile" name="is_show_mobile" value="1" class="sr-only peer">
+                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600">
+                    </div>
+                    <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Is show mobile</span>
+                </label>
+            </div>
             <!-- Buttons -->
             <div class="flex justify-end gap-3 pt-4">
                 <button type="button" id="cancelSubscriptionModal"
@@ -94,7 +96,6 @@
         </form>
     </div>
 </div>
-
 
 <div id="deleteSubscriptionModal" style="display:none">
     <div class="fixed inset-0 flex items-center justify-center z-50">

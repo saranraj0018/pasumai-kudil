@@ -63,7 +63,6 @@ Route::prefix('admin')->group(function () {
             Route::get('/lists', 'productLists')->name('lists.products');
             Route::post('/save_product', 'saveProduct')->name('save_product.products');
             Route::post('/delete_product', 'deleteProduct')->name('delete_product.products');
-            Route::get('/search_product', 'searchProduct')->name('search_product.products');
             Route::get('/edit_product', 'editProduct')->name('edit_product.products');
         });
 
@@ -72,6 +71,9 @@ Route::prefix('admin')->group(function () {
             Route::get('/user-profile-view', 'userProfileView')->name('user_view.users');
             Route::get('/transaction-history', 'transactionHistory')->name('transaction_history.users');
             Route::post('/add_wallet', 'addWallet')->name('add_wallet.users');
+            Route::post('/save_user', 'saveUser')->name('save_user.users');
+            Route::get('/get_subscription', 'getCustomSubscription')->name('get_subscription.users');
+            Route::post('/add_user_account', 'addUserAccount')->name('add_user_account.users');
            
         });
 
@@ -82,6 +84,7 @@ Route::prefix('admin')->group(function () {
         });
         
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
+        Route::post('/user_logout', [Authenticate::class, 'user_logout'])->name('admin.user_logout');
     });
 
     Route::prefix('milk')->controller(App\Http\Controllers\Admin\SubscriptionController::class)->group(function () {

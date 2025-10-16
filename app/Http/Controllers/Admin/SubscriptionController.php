@@ -24,6 +24,7 @@ class SubscriptionController extends Controller
             'plan_details' => 'nullable|string',
             'quantity' => 'nullable|string',
             'pack' => 'nullable|string',
+            'plan_name' => 'required|string',
             'delivery_days' => 'nullable|string',
         ]);
 
@@ -33,15 +34,17 @@ class SubscriptionController extends Controller
         if ($request->id && !$sub) {
             return response()->json(['success' => false, 'message' => 'Subscription not found'], 404);
         }
-
+ 
         $sub->plan_amount = $request->plan_amount;
         $sub->plan_pack = $request->plan_type !== 'Customize' ? (int)$request->plan_pack : 0;
+        $sub->plan_name = $request->plan_name;
         $sub->plan_type = $request->plan_type;
         $sub->plan_duration = $request->plan_duration;
-        $sub->plan_details = $request->plan_details ?? null;
+        $sub->plan_details = json_decode($request->plan_details) ?? null;
         $sub->quantity = $request->quantity ?? null;
         $sub->pack = $request->pack ?? null;
         $sub->delivery_days = $request->plan_type === 'Customize' ? $request->delivery_days : null;
+        $sub->is_show_mobile = $request->is_show_mobile ?? 0;
         $sub->save();
 
         $message = $request->id ? 'Subscription updated successfully' : 'Subscription created successfully';

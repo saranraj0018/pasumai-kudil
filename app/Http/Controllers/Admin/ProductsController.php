@@ -13,10 +13,18 @@ use Illuminate\Support\Facades\Log;
 
 class ProductsController extends Controller
 {
-    public function productLists()
+    public function productLists(Request $request)
     {
-        $this->data['products'] = Product::with('details')->orderBy('created_at', 'desc')->paginate(10);
+        $search = $request->input('query');
+        $this->data['products'] = Product::with('details')
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%");
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
         $this->data['category'] = Category::get();
+        $this->data['search'] = $search;
         return view('admin.products.index')->with($this->data);
     }
 
@@ -26,7 +34,6 @@ class ProductsController extends Controller
             'product_name'   => 'required|string|max:255',
             'category_id'    => 'required',
          ];
-
 
         if (empty($request['product_id']) && !$request->has('existing_image')) {
             $rules['image'] = 'required|image|mimes:jpeg,png,jpg';
@@ -131,7 +138,7 @@ class ProductsController extends Controller
             'error' => $e->getMessage(),
         ], 500);
     }
-
+    
     }
 
     public function deleteProduct(Request $request)
@@ -151,60 +158,6 @@ class ProductsController extends Controller
             'success' => true,
             'message' => 'Product deleted successfully'
         ]);
-    }
-
-    public function searchProduct(Request $request)
-    {
-        $search = $request->input('query');
-
-        $products = Product::with('details')
-            ->when($search, function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-                //   ->orWhere('description', 'like', "%{$search}%")
-                //   ->orWhere('benefits', 'like', "%{$search}%");
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $html = '';
-        $count = 1;
-        foreach ($products as $product) {
-            $html .= '
-        <tr class="hover:bg-gray-50 transition-colors">
-            <td class="px-4 py-3 font-medium text-gray-900">' . $count . '</td>
-            <td class="px-4 py-3">' . e($product->name) . '</td>
-            <td class="px-4 py-3">';
-            if ($product->image) {
-                $html .= '<img src="' . asset('storage/' . $product->image) . '" class="h-10 w-10 object-cover rounded-lg shadow-sm border" />';
-            } else {
-                $html .= '<span class="text-gray-400 italic">No Image</span>';
-            }
-            $html .= '</td>
-            <td class="px-4 py-3">' . e($product->description) . '</td>
-            <td class="px-4 py-3">' . e($product->benefits) . '</td>
-            <td class="px-4 py-3 flex justify-center gap-4">
-                <button class="text-blue-600 hover:text-blue-800 transition editProduct"
-                    data-id="' . $product->id . '"
-                    data-name="' . e($product->name) . '"
-                    data-description="' . e($product->description) . '"
-                    data-benefits="' . e($product->benefits) . '">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-
-                <button class="text-red-600 hover:text-red-800 deleteProduct" data-id="' . $product->id . '">
-                    <i class="fa-solid fa-delete-left"></i>
-                </button>
-            </td>
-        </tr>';
-
-            $count++;
-        }
-
-        return response()->json([
-            'success' => true,
-            'html' => $html,
-            'product' => $products
-        ], 200);
     }
 
     public function editProduct(Request $request)
