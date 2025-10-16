@@ -9,7 +9,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductDetail;
 use App\Models\Setting;
-
+use App\Models\Shipping;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -96,6 +97,7 @@ public function removeFromCart(Request $request)
 
     public function getCart(Request $request)
     {
+
         $userId = auth()->id() ?? session()->getId();
         $cartKey = "cart_{$userId}";
 
@@ -196,16 +198,19 @@ public function removeFromCart(Request $request)
             $coupon_discount = self::getCouponDetails($coupon,$subtotal);
 
         }
-        // Determine if delivery is free (e.g., free for orders above 500)
+        $address_id = Address::where('user_id', Auth::id())->where('is_default',1)->first()->id;
         $finalDeliveryCharge = 0;
+        if (!empty($address_id)) {
+            $finalDeliveryCharge = self::calculateShipping($address_id);
+        }
 
 
-        $totalAmount = $subtotal - $coupon_discount + $finalDeliveryCharge + $total_tax;
+        $totalAmount = ($subtotal + $finalDeliveryCharge + $total_tax) - $coupon_discount; ;
         $billSummary = [
             "totalItems" => $totalItems,
             "itemsAmount" => number_format($subtotal,1) ,
             "discount" => number_format($coupon_discount,1),
-            "deliveryCharge" => (int)$finalDeliveryCharge,
+            "deliveryCharge" => $finalDeliveryCharge,
             "SGST" => !empty($total_tax) ? number_format($total_tax/2 ,2) : '0.0',
             "IGST" => !empty($total_tax) ? number_format($total_tax/2 ,2) : '0.0',
             "totalAmount" => number_format($totalAmount, 1),
@@ -222,20 +227,7 @@ public function removeFromCart(Request $request)
     }
 
 
-//    public static function calculateShipping(int $amount, float $weight) {
-//
-//        if(self::where('config_name', 'free_delivery')->first()->config_value == '1' &&
-//            intval(self::where('config_name', 'free_delivery_amount')->first()->config_value) <= $amount) {
-//            return 0;
-//        } else {
-//            if ($weight < 1 ){
-//                return  self::where('config_name', 'minimum_delivery_amount')
-//                    ->first()
-//                    ->config_value ?? 0;
-//            }
-//            return intval(self::where('config_name', '=', 'delivery_fees')->first()->config_value) * $weight;
-//        }
-//    }
+
 
     public static function getCouponDetails($coupon, $total_amount) {
 
@@ -304,7 +296,6 @@ public function removeFromCart(Request $request)
                 ], 500);
             $razorPayOrder = razorPay()->createOrder($request['orderAmount']);
             Cache::put('order_id_'.Auth::id(), $razorPayOrder->id, now()->addMinutes(30));
-            Log::info('Stored insert id', [ Cache::get('order_id_'.Auth::id())]);
 
             Cache::put('address_id_'.Auth::id(), $request['addressId'],now()->addMinutes(30));
             return response()->json([
@@ -330,9 +321,12 @@ public function removeFromCart(Request $request)
                 'message' => $validator->errors()->first(),
             ], 422);
         DB::beginTransaction();
-//        if($request['orderId'] != Cache::get('order_id_'.Auth::id()))
-//            throw new \Exception('Order Not found', 404);
+        if($request['orderId'] != Cache::get('order_id_'.Auth::id()))
+            throw new \Exception('Order Not found', 404);
 
+            $address_id = Address::where('user_id', Auth::id())->where('is_default',1)->first()->id;
+            if ($address_id != Cache::get('address_id_'.Auth::id()))
+                throw new \Exception('Address Not found', 404);
 
             $coupon_amount = 0;
 
@@ -342,6 +336,9 @@ public function removeFromCart(Request $request)
             $coupon_amount = self::getCouponDetails($coupon, $request['total_amount']);
         }
             $shipping = 0;
+            if (!empty($address_id)) {
+                $shipping = self::calculateShipping($address_id);
+            }
         $orderDetails = collect(Cache::get("cart_".auth()->id(), []))->map(function($item) use($coupon_amount, $shipping) {
 
             $product  = Product::with('details')->find($item['product_id']);
@@ -433,6 +430,70 @@ public function removeFromCart(Request $request)
             ],  500);
         }
 
+    }
+
+    public static function calculateShipping(int $address_id)
+    {
+        if (empty($address_id)) {
+            return 0;
+        }
+
+        $address_details = Address::find($address_id);
+        if (empty($address_details)) {
+            return 0;
+        }
+
+        // Get vendor details (assuming one vendor for now)
+        $vendor = Shipping::first();
+        if (empty($vendor)) {
+            return 0;
+        }
+
+        $vendor_lat = $vendor->latitude;
+        $vendor_long = $vendor->longitude;
+        $address_lat = $address_details->latitude;
+        $address_long = $address_details->longitude;
+        $free_shipping = $vendor->free_shipping ?? 0;
+        $extra_charge = $vendor->extra_km ?? 0;
+
+        $distance = self::getDistanceFromGoogleMaps($vendor_lat, $vendor_long, $address_lat, $address_long);
+
+        if ($distance > 0 && $distance <= $free_shipping) {
+            $shipping_cost = 0; // free within 3 km
+        } else {
+            $extra_distance = $distance - $free_shipping;
+            $shipping_cost = $extra_distance * $extra_charge; // ₹50 per km after 3 km
+        }
+
+        return round($shipping_cost, 2);
+    }
+
+    private static function getDistanceFromGoogleMaps($lat1, $lon1, $lat2, $lon2)
+    {
+        $apiKey = env('GOOGLE_MAPS_API_KEY');
+
+        $url = "https://maps.googleapis.com/maps/api/distancematrix/json";
+        $params = [
+            'origins' => "$lat1,$lon1",
+            'destinations' => "$lat2,$lon2",
+            'key' => $apiKey,
+            'units' => 'metric',
+        ];
+
+        $response = Http::get($url, $params);
+
+        if ($response->successful()) {
+            $data = $response->json();
+
+            if (
+                isset($data['rows'][0]['elements'][0]['distance']['value'])
+            ) {
+                // Convert meters to kilometers
+                return $data['rows'][0]['elements'][0]['distance']['value'] / 1000;
+            }
+        }
+
+        return 0; // fallback if API fails
     }
 
 

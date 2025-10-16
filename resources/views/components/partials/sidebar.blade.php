@@ -19,7 +19,7 @@
                 <x-menu.item route="view.users" name="Users" icon="fa-users" />
             </x-slot:menus>
         </x-menu.list>
-
+        <x-menu.item route="list.hub" name="Hub List" icon="fa-brands fa-hubspot" />
         <x-menu.list>
             <x-slot:trigger>
                 <x-menu.item trigger name="Milk" icon="fa-glass-whiskey" />

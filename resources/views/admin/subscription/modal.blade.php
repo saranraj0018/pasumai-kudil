@@ -1,10 +1,11 @@
 <!-- Subscription Modal -->
 <div id="subscriptionModal" x-data="{ open: false }" x-show="open"
     class="fixed inset-0 flex items-center justify-center z-50 overflow-auto bg-black/40 p-4" style="display:none;">
+
     <!-- Modal Container -->
     <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-3xl md:max-w-4xl lg:max-w-5xl relative z-10">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800">Add Subscription</h2>
-        <form id="subscriptionForm" class="space-y-3">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800" id="subscription_title">Add Subscription</h2>
+        <form id="subscriptionForm" class="space-y-6">
             @csrf
             <input type="hidden" name="id" id="subscription_id">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -24,6 +25,7 @@
                         <option value="Customize">Customize</option>
                     </select>
                 </div>
+
                 <!-- Plan Pack -->
                 <div id="plan_pack_container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Plan Pack</label>
@@ -78,6 +80,7 @@
                     <input type="text" name="pack" id="pack" class="form-input w-full border rounded-lg p-2">
                 </div>
             </div>
+
             <div>
                 <label class="inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="is_show_mobile" name="is_show_mobile" value="1" class="sr-only peer">
@@ -86,6 +89,7 @@
                     <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Is show mobile</span>
                 </label>
             </div>
+
             <!-- Buttons -->
             <div class="flex justify-end gap-3 pt-4">
                 <button type="button" id="cancelSubscriptionModal"
@@ -96,6 +100,7 @@
         </form>
     </div>
 </div>
+
 
 <div id="deleteSubscriptionModal" style="display:none">
     <div class="fixed inset-0 flex items-center justify-center z-50">

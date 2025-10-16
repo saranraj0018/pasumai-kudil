@@ -25,7 +25,6 @@ $(function () {
             "POST",
             function (res) {
                 if (res.success) {
-                    console.log("test");
                     showToast("Shipping saved successfully!", "success", 2000);
                     setTimeout(() => {
                         let modalScope =
