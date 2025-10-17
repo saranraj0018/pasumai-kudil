@@ -1,6 +1,14 @@
 <x-layouts.app>
     <div class="p-4" x-data="{ open: false }">
-        <div class="overflow-x-auto bg-white rounded-xl shadow-md">
+         <input type="text" name="search" id="searchInput" value="{{ $search ?? '' }}" placeholder="Search name or mobile number..." class="bg-white border rounded px-3 py-2 focus:ring-2 focus:ring-green-500">
+        <div class="flex justify-between mb-4 items-center">
+            <h2 class="text-xl font-bold">Users</h2>
+            <button @click="document.querySelector('#userCreateModal').__x.$data.open = true"
+                class="bg-[#ab5f00] text-white px-4 py-2 rounded">
+                Create User
+            </button>
+        </div>
+        <div id="userListTableWrapper" class="overflow-x-auto bg-white rounded-xl shadow-md">
             <table id="users_table" class="w-full text-sm text-left text-gray-700 border-collapse">
                 <thead>
                     <tr class="bg-[#ab5f00] text-white text-sm uppercase tracking-wider">
@@ -39,9 +47,45 @@
                     @endif
                 </tbody>
             </table>
+            <div class="p-4">
+                {{ $getuser->appends(['search' => $search])->links() }}
+            </div>
         </div>
-        <div class="p-4">
-            {{ $getuser->links() }}
-        </div>
+        @include('admin.users.add_user_modal')
     </div>
 </x-layouts.app>
+<script src="{{ asset('admin/js/users.js') }}"></script>
+<script>
+    const input = document.getElementById('searchInput');
+    console.log(input);
+
+    input.addEventListener('input', function() {
+        let search = this.value;
+        loadUsers(`{{ route('lists.users') }}?search=${encodeURIComponent(search)}`);
+    });
+
+    function loadUsers(url) {
+        fetch(url)
+            .then(res => res.text())
+            .then(html => {
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(html, 'text/html');
+                let newContent = doc.querySelector('#userListTableWrapper').innerHTML;
+                document.getElementById('userListTableWrapper').innerHTML = newContent;
+
+                attachPaginationEvents();
+            })
+            .catch(err => console.error(err));
+    }
+
+    function attachPaginationEvents() {
+        document.querySelectorAll('#userListTableWrapper a[href*="page="]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadUsers(this.href);
+            });
+        });
+
+    }
+    attachPaginationEvents();
+</script>

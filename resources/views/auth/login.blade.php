@@ -38,8 +38,8 @@
                             placeholder="••••••••" />
                         <button type="button" @click="show = !show"
                             class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg">
-                            <i x-show="!show">👁️</i>
-                            <i x-show="show">🙈</i>
+                            <i x-show="!show" class="fa fa-eye-slash" aria-hidden="true"></i>
+                            <i x-show="show" class="fa fa-eye" aria-hidden="true"></i>
                         </button>
                     </div>
                     @error('password')

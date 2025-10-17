@@ -29,15 +29,22 @@ class UserlistController extends Controller
             ->paginate(10);
 
         $this->data['search'] = $search;
-        $this->data['subscription_plan'] = Subscription::get();
         return view('admin.user-list')->with($this->data);
     }
 
     public function userLists(Request $request)
     {
-
-        $this->data['getuser'] = User::with('get_wallet')->paginate(5);
-
+        $search = $request->input('search');
+        $this->data['getuser'] = User::with('get_wallet')
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('mobile_number', 'like', "%{$search}%");
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        $this->data['subscription_plan'] = Subscription::get();
+        $this->data['search'] = $search;
         return view('admin.users.users_list')->with($this->data);
     }
 
@@ -203,7 +210,7 @@ class UserlistController extends Controller
       if($request->ajax()){
         if($request->get_custom_subscription){
             $getsubs = Subscription::where('id',$request->subs_id)->first();
-            
+
             return response()->json([
                 'success' => true,
                 'subs' => $getsubs
@@ -229,7 +236,7 @@ class UserlistController extends Controller
                     'ifsc_code' => $request['ifsc_code'],
                     'account_holder_name' => $request['account_holder_name']
                 ]);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Account details added sucessfully!',
