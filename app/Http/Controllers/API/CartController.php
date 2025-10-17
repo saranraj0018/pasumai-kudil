@@ -198,7 +198,7 @@ public function removeFromCart(Request $request)
             $coupon_discount = self::getCouponDetails($coupon,$subtotal);
 
         }
-        $address_id = Address::where('user_id', Auth::id())->where('is_default',1)->first()->id;
+        $address_id = Address::where('created_by', Auth::id())->where('is_default',1)->first()->id;
         $finalDeliveryCharge = 0;
         if (!empty($address_id)) {
             $finalDeliveryCharge = self::calculateShipping($address_id);
@@ -324,7 +324,7 @@ public function removeFromCart(Request $request)
         if($request['orderId'] != Cache::get('order_id_'.Auth::id()))
             throw new \Exception('Order Not found', 404);
 
-            $address_id = Address::where('user_id', Auth::id())->where('is_default',1)->first()->id;
+            $address_id = Address::where('created_by', Auth::id())->where('is_default',1)->first()->id;
             if ($address_id != Cache::get('address_id_'.Auth::id()))
                 throw new \Exception('Address Not found', 404);
 

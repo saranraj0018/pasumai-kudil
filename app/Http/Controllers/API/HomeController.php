@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller {
     public function index(Request $request) {
-        $bannerList = Banner::where('type', 'main')
+        $bannerList = Banner::where('type', 'GroceryMain')
             ->orderBy('id', 'asc')
             ->get()
             ->map(function ($banner) {
