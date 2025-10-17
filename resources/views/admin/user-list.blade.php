@@ -1,12 +1,9 @@
 <x-layouts.app>
 <div class="p-4" x-data="{ open: false }">
-       <input type="text" name="search" id="searchInput" value="{{ $search ?? '' }}" placeholder="Search name or mobile number..." class="bg-white border rounded px-3 py-2 focus:ring-2 focus:ring-green-500">
+    
     <div class="flex justify-between mb-4 items-center">
-        <h2 class="text-xl font-bold">Users</h2>
-        <button @click="document.querySelector('#userCreateModal').__x.$data.open = true"
-                class="bg-[#ab5f00] text-white px-4 py-2 rounded">
-                Create User
-        </button>
+        <h2 class="text-xl font-bold">Users List</h2>
+        <input type="text" name="search" id="searchInput" value="{{ $search ?? '' }}" placeholder="Search name or mobile number..." class="bg-white border rounded px-3 py-2 focus:ring-2 focus:ring-green-500">
     </div>
 
     <div class="overflow-x-auto bg-white rounded-xl shadow-md" id="userTableWrapper">
@@ -43,12 +40,9 @@
             {{ $users->appends(['search' => $search])->links() }}
         </div>
     </div>
-     @include('admin.users.add_user_modal')
 </div>
-
 </x-layouts.app>
 
-<script src="{{ asset('admin/js/users.js') }}"></script>
 {{-- Ajax Script --}}
 <script>
     const input = document.getElementById('searchInput');

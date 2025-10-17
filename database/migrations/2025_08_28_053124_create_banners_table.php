@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('banners', function (Blueprint $table) {
             $table->id();
             $table->string('image_url');
-            $table->enum('type', ['main', 'sub']);
+            $table->enum('type', ['GroceryMain', 'GrocerySub', 'MilkMain', 'MilkSub']);
             $table->integer('priority')->default(0);
             $table->timestamps();
         });

@@ -54,7 +54,7 @@
                 </div>
                 <!-- Duration -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Valid Days</label>
                     <div class="flex items-center border rounded-lg overflow-hidden">
                         <input type="number" name="plan_duration" id="plan_duration"
                             class="w-full p-2 outline-none border-0" placeholder="Enter duration">
