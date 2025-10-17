@@ -77,7 +77,6 @@
         </form>
     </div>
 </x-layouts.app>
-
 <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&callback=initGoogleMaps" async defer></script>
 
 <script>
@@ -102,14 +101,13 @@
             errors: {},
 
             async initMapAndAutocomplete() {
-                // Wait for Google Maps to load
                 const waitForGoogle = setInterval(() => {
                     if (googleMapsLoaded && this.$refs.cityInput) {
                         clearInterval(waitForGoogle);
 
                         const defaultCenter = this.form.latitude && this.form.longitude
                             ? { lat: this.form.latitude, lng: this.form.longitude }
-                            : { lat: 20.5937, lng: 78.9629 }; // India default
+                            : { lat: 20.5937, lng: 78.9629 }; // Default India center
 
                         // Initialize Map
                         this.map = new google.maps.Map(document.getElementById('map'), {
@@ -118,13 +116,23 @@
                             mapId: "DEMO_MAP_ID",
                         });
 
-                        // Marker setup
+                        // Create Draggable Marker
                         this.marker = new google.maps.Marker({
                             position: defaultCenter,
                             map: this.map,
+                            draggable: true,
                         });
 
-                        // Autocomplete setup
+                        // Handle marker drag to update address + city
+                        const geocoder = new google.maps.Geocoder();
+                        this.marker.addListener("dragend", () => {
+                            const position = this.marker.getPosition();
+                            this.form.latitude = position.lat();
+                            this.form.longitude = position.lng();
+                            this.updateAddressFromLatLng(geocoder, position);
+                        });
+
+                        // Setup city autocomplete
                         const autocomplete = new google.maps.places.Autocomplete(this.$refs.cityInput, {
                             types: ['(cities)']
                         });
@@ -141,9 +149,30 @@
                             this.map.setCenter(location);
                             this.map.setZoom(10);
                             this.marker.setPosition(location);
+
+                            // Update address too
+                            this.updateAddressFromLatLng(geocoder, location);
                         });
                     }
                 }, 300);
+            },
+
+            // Reverse geocode to get address and city from coordinates
+            updateAddressFromLatLng(geocoder, latLng) {
+                geocoder.geocode({ location: latLng }, (results, status) => {
+                    if (status === "OK" && results[0]) {
+                        this.form.address = results[0].formatted_address;
+
+                        // Try to extract city name
+                        const cityComponent = results[0].address_components.find(c =>
+                            c.types.includes("locality") || c.types.includes("administrative_area_level_2")
+                        );
+                        if (cityComponent) {
+                            this.form.city = cityComponent.long_name;
+                            this.$refs.cityInput.value = cityComponent.long_name;
+                        }
+                    }
+                });
             },
 
             submitForm() {
