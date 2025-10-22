@@ -143,10 +143,10 @@ class UserlistController extends Controller
             $end_date = $start_date->copy()->addDays($daycount);
         }
 
-         $validdaycount = (int) ($subscription->plan_duration ?? 0);
+        $validdaycount = (int) ($subscription->plan_duration ?? 0);
         $valid_date = $end_date->copy()->addDays($validdaycount);
 
-         $start_date_formatted = $start_date->format('Y-m-d');
+        $start_date_formatted = $start_date->format('Y-m-d');
         $end_date_formatted   = $end_date->format('Y-m-d');
         $valid_date_formatted = $valid_date->format('Y-m-d');
 
@@ -158,12 +158,17 @@ class UserlistController extends Controller
         }
 
          $user = User::where('email', $request['email'])->first();
+
         if (!$user) {
             $user = new User();
             $user->name          = $request['name'];
             $user->mobile_number = $request['mobile_number'];
             $user->email         = $request['email'] ?? null;
             $user->image         = $image;
+            $user->city          = $request['city'];
+            $user->latitude      = $request['latitude'] ?? '';
+            $user->longitude     = $request['longitude'] ?? '';
+            $user->address       = $request['address'] ?? '';
             $user->save();
         }
 

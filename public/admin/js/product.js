@@ -137,7 +137,7 @@ $(function () {
         };
         // Show modal
         $("#productCreateModal").css("display", "flex");
-        
+
         let modal = document.getElementById("productCreateModal");
         let alpine = modal.__x.$data;
         alpine.open = true;
@@ -495,4 +495,14 @@ $(function () {
         html += `</div>`;
         $("#viewVariantProducts").html(html);
     }
+
+    $(document).on("click", ".add_product", function (e) {
+        alert(1);
+        $("#productCreateModal").css("display", "flex");
+        let modal = document.getElementById("productCreateModal");
+        let alpine = modal.__x.$data;
+        alpine.open = true;
+        alpine.modalTitle = "Add Product";
+        alpine.buttonText = "Save";
+    });
 });

@@ -1,5 +1,5 @@
 $(function () {
-   
+
     $(document).on("submit", "#userAddForm", function (e) {
         e.preventDefault();
         let isValid = true;
@@ -19,7 +19,12 @@ $(function () {
                 id: "#plan_id",
                 condition: (val) => val === "",
                 message: "Plan Name is required",
-            }
+            },
+            {
+                id: "#cityInput",
+                condition: (val) => val === "",
+                message: "City is required",
+            },
         ];
 
         fields.forEach((field) => {
@@ -113,3 +118,5 @@ $(function () {
     });
 });
 });
+
+
