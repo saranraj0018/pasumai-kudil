@@ -497,7 +497,6 @@ $(function () {
     }
 
     $(document).on("click", ".add_product", function (e) {
-        alert(1);
         $("#productCreateModal").css("display", "flex");
         let modal = document.getElementById("productCreateModal");
         let alpine = modal.__x.$data;

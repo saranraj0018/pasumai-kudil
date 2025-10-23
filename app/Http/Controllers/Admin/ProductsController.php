@@ -16,7 +16,7 @@ class ProductsController extends Controller
     public function productLists(Request $request)
     {
         $search = $request->input('query');
-        $this->data['products'] = Product::with('details')
+        $this->data['products'] = Product::with('details', 'order_details')
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })
@@ -43,7 +43,7 @@ class ProductsController extends Controller
         }
 
         $request->validate($rules);
- 
+
      DB::beginTransaction();
 
     try {
@@ -59,7 +59,7 @@ class ProductsController extends Controller
         $product->name = $request['product_name'];
         $product->description = $request['description'];
         $product->benefits = $request['benefits'] ?? null;
-       
+
         if ($request->hasFile('image')) {
             $img_name = time() . '_' . $request->file('image')->getClientOriginalName();
             $request->image->storeAs('products/', $img_name, 'public');
@@ -99,7 +99,7 @@ class ProductsController extends Controller
                         Log::error("Variant with ID {$variantData['id']} not found for update.");
                     }
                 } else {
-                 
+
                 $product_details = new ProductDetail();
                 $product_details->product_id  = $product->id;
                 $product_details->category_id = $request['category_id'];
@@ -117,7 +117,7 @@ class ProductsController extends Controller
                     Log::info("Created variant ID {$product_details->id}");
                 }
             }
-        }  
+        }
 
         ProductDetail::where('product_id', $product->id)
             ->whereNotIn('id', $variantIdsInRequest)
@@ -138,7 +138,7 @@ class ProductsController extends Controller
             'error' => $e->getMessage(),
         ], 500);
     }
-    
+
     }
 
     public function deleteProduct(Request $request)

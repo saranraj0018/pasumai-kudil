@@ -44,7 +44,7 @@ Route::prefix('admin')->group(function () {
             Route::post('/delete', 'destroy')->name('delete.banner');
         });
 
-       //user list
+        //user list
         Route::get('/users', [UserlistController::class, 'index'])->name('view.users');
 
         //orders
@@ -81,7 +81,8 @@ Route::prefix('admin')->group(function () {
             Route::post('/save_user', 'saveUser')->name('save_user.users');
             Route::get('/get_subscription', 'getCustomSubscription')->name('get_subscription.users');
             Route::post('/add_user_account', 'addUserAccount')->name('add_user_account.users');
-
+            Route::post('/subscription_cancel', 'cancelSubscription')->name('subscription_cancel.users');
+            Route::post('/modify_subscription', 'modifySubscription')->name('modify_subscription.users');
         });
 
         Route::prefix('shipping')->controller(ShippingController::class)->group(function () {
@@ -95,13 +96,8 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::prefix('milk')->controller(App\Http\Controllers\Admin\SubscriptionController::class)->group(function () {
-         Route::get('/subscription', 'view')->name('view.milk.subscription');
-         Route::post('/save', 'save')->name('save.milk.subscription');
-         Route::post('/delete', 'destroy')->name('delete.milk.subscription');
+        Route::get('/subscription', 'view')->name('view.milk.subscription');
+        Route::post('/save', 'save')->name('save.milk.subscription');
+        Route::post('/delete', 'destroy')->name('delete.milk.subscription');
     });
 });
-
-
-
-
-

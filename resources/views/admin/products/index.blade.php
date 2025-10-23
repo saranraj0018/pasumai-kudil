@@ -66,11 +66,13 @@
                                 data-image="{{ $product->image ? asset('storage/'.$product->image) : '' }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
-
+ 
                             <!-- Delete -->
+                            @if ($product->order_details->isEmpty())
                             <button class="text-red-600 hover:text-red-800 deleteProduct" data-id="{{ $product->id }}">
                                 <i class="fa-solid fa-delete-left"></i>
                             </button>
+                            @endif
                         </td>
                         </tr>
                     @endforeach

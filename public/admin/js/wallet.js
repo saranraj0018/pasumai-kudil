@@ -144,7 +144,7 @@ $(function () {
         };
         // Show modal
         $("#addAccountModal").css("display", "flex");
-        
+
         let modal = document.getElementById("addAccountModal");
         let alpine = modal.__x.$data;
         alpine.open = true;
@@ -165,4 +165,154 @@ $(function () {
         alpine.modalTitle = "Add Account Details";
         alpine.buttonText = "Save";
     });
+
+    $(document).on("submit", "#subscriptionCancelForm", function (e) {
+        e.preventDefault();
+        let isValid = true;
+
+        const fields = [
+            {
+                id: "#status",
+                condition: (val) => val === "",
+                message: "Status field is required",
+            },
+            {
+                id: "#description",
+                condition: (val) => val === "",
+                message: "Description field is required",
+            },
+        ];
+
+        fields.forEach((field) => {
+            if (!validateField(field)) isValid = false;
+        });
+
+        if (!isValid) return;
+
+        let formData = new FormData(this);
+        sendRequest(
+            "/admin/users/subscription_cancel",
+            formData,
+            "POST",
+            function (res) {
+                if (res.success) {
+                    showToast("Subscription cancelled successfully!", "success", 2000);
+                    setTimeout(() => {
+                        let modalScope = document.querySelector(
+                            "#addSubscriptionModal"
+                        ).__x.$data;
+                        if (modalScope.hasOwnProperty("open")) {
+                            modalScope.open = false; // close modal
+                        }
+                        // Reset form
+                        document.getElementById("subscriptionCancelForm").reset();
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    showToast("Something went wrong!", "error", 2000);
+                }
+            },
+            function (err) {
+                console.log(err.errors);
+                if (err.errors) {
+                    let msg = "";
+                    $.each(err.errors, function (k, v) {
+                        msg += v[0] + "<br>";
+                    });
+                    showToast(msg, "error", 2000);
+                    window.location.reload();
+                } else {
+                    showToast(err.message || "Unexpected error", "error", 2000);
+                }
+            }
+        );
+    });
+
+    $(document).on("submit", "#modifySubscriptionForm", function (e) {
+        e.preventDefault();
+        let isValid = true;
+
+        const fields = [
+            {
+                id: "#date_range",
+                condition: (val) => val === "",
+                message: "Date field is required",
+            },
+            {
+                id: "#description",
+                condition: (val) => val === "",
+                message: "Description field is required",
+            },
+        ];
+
+        fields.forEach((field) => {
+            if (!validateField(field)) isValid = false;
+        });
+
+        if (!isValid) return;
+
+        let formData = new FormData(this);
+        sendRequest(
+            "/admin/users/modify_subscription",
+            formData,
+            "POST",
+            function (res) {
+                if (res.success) {
+                    showToast(
+                        "Subscription date has been modified successfully!",
+                        "success",
+                        2000
+                    );
+                    setTimeout(() => {
+                        let modalScope = document.querySelector(
+                            "#modifySubscriptionModal"
+                        ).__x.$data;
+                        if (modalScope.hasOwnProperty("open")) {
+                            modalScope.open = false; // close modal
+                        }
+                        // Reset form
+                        document
+                            .getElementById("modifySubscriptionForm")
+                            .reset();
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    showToast("Something went wrong!", "error", 2000);
+                }
+            },
+            function (err) {
+                console.log(err.errors);
+                if (err.errors) {
+                    let msg = "";
+                    $.each(err.errors, function (k, v) {
+                        msg += v[0] + "<br>";
+                    });
+                    showToast(msg, "error", 2000);
+                    window.location.reload();
+                } else {
+                    showToast(err.message || "Unexpected error", "error", 2000);
+                }
+            }
+        );
+    });
+
+    document.addEventListener("alpine:init", () => {
+            Alpine.data("dateRangePicker", () => ({
+                init() {
+                    flatpickr("#date_range", {
+                        mode: "range",
+                        dateFormat: "Y-m-d",
+                        altInput: true,
+                        altFormat: "F j, Y",
+                        allowInput: true,
+                        onChange: function (selectedDates, dateStr) {
+                            // Optional: console log selected range
+                            console.log("Selected Range:", dateStr);
+                        },
+                    });
+                },
+            }));
+    });
+
+
 });

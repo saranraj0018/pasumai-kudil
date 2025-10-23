@@ -51,6 +51,7 @@ class UserlistController extends Controller
     public function userProfileView(Request $request)
     {
         $this->data['user'] = User::with('get_wallet')->where('id', $request->id)->first();
+        $this->data['getuserSubscription'] = UserSubscription::where('user_id', $request->id)->first();
         return view('admin.users.users_view')->with($this->data);
     }
 
@@ -255,4 +256,65 @@ class UserlistController extends Controller
             ], 500);
         }
     }
+
+    public function cancelSubscription(Request $request)
+    {
+         try {
+
+            $exist_check = UserSubscription::where('user_id', $request['user_id'])->first();
+            if (!$exist_check) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active subscription found for this user.'
+                ], 404);
+            }
+            $update_status = UserSubscription::where('user_id', $request['user_id'])->update([
+                'status'   => $request['status'],
+                'description' => $request['description']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Subscription cancelled successfully!',
+             ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save Subscription',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function modifySubscription(Request $request)
+    {
+        try {
+            $exist_check = UserSubscription::where('user_id', $request['user_id'])->first();
+            if (!$exist_check) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active subscription found for this user.'
+                ], 404);
+            }
+            $update_status = UserSubscription::where('user_id', $request['user_id'])->update([
+                'cancelled_date'  => json_encode([
+                 'start_date' => $request->start_date,
+                 'end_date' => $request->end_date
+                    ]),
+                'description' => $request['description']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Subscription date has been successfully updated!',
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save Subscription',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }
