@@ -45,8 +45,7 @@ $(function () {
                 }
             },
             function (err) {
-                console.log(err.errors);
-                if (err.errors) {
+                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
                         msg += v[0] + "<br>";

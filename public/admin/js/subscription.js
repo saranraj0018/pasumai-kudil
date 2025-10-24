@@ -1,5 +1,6 @@
 $(document).ready(function () {
     let deliveryDayList = [];
+     let deliveryDaysWithAmount = [];
     let deleteId = null;
 
     // ===== Helper functions =====
@@ -69,7 +70,7 @@ $(document).ready(function () {
             isValid = false;
         }
 
-        if(planName == ""){
+        if (planName == "") {
             showFieldError("#plan_name", "Plan name is required");
             isValid = false;
         }
@@ -96,10 +97,14 @@ $(document).ready(function () {
 
     // ===== Plan type change =====
     $("#plan_type").on("change", function () {
-        if ($(this).val() === "Customize") {
+          $("#customize_amount_list").empty();
+          $("#plan_amount").val("");
+         if ($(this).val() === "Customize") {
+            $("#amount").text("Per Day Amount");
             $("#plan_pack_container").hide();
             $("#delivery_days_container").show();
         } else {
+            $("#amount").text("Plan Amount");
             $("#plan_pack_container").show();
             $("#delivery_days_container").hide();
             deliveryDayList = [];
@@ -108,29 +113,28 @@ $(document).ready(function () {
     });
 
     // ===== Add delivery day =====
-    $("#add_delivery_day_btn").on("click", function () {
-        let val = parseInt($("#delivery_days_input").val());
-        if (!isNaN(val) && val > 0) {
-            deliveryDayList.push(val);
+    // $("#add_delivery_day_btn").on("click", function () {
+    //     let val = parseInt($("#delivery_days_input").val());
+    //     if (!isNaN(val) && val > 0) {
+    //         deliveryDayList.push(val);
+    //         let $daySpan = $(`
+    //         <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
+    //             ${val} Days
+    //             <button type="button" class="ml-2 text-red-500 remove-delivery-day">&times;</button>
+    //         </span>
+    //     `);
 
-            let $daySpan = $(`
-            <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
-                ${val} Days
-                <button type="button" class="ml-2 text-red-500 remove-delivery-day">&times;</button>
-            </span>
-        `);
+    //         // Add remove handler
+    //         $daySpan.find(".remove-delivery-day").on("click", function () {
+    //             let index = deliveryDayList.indexOf(val);
+    //             if (index > -1) deliveryDayList.splice(index, 1);
+    //             $daySpan.remove();
+    //         });
 
-            // Add remove handler
-            $daySpan.find(".remove-delivery-day").on("click", function () {
-                let index = deliveryDayList.indexOf(val);
-                if (index > -1) deliveryDayList.splice(index, 1);
-                $daySpan.remove();
-            });
-
-            $("#delivery_days_list").append($daySpan);
-            $("#delivery_days_input").val("");
-        }
-    });
+    //         $("#delivery_days_list").append($daySpan);
+    //         $("#delivery_days_input").val("");
+    //     }
+    // });
 
     // ===== Open create modal =====
     $("#createSubscriptionBtn").on("click", function () {
@@ -155,7 +159,7 @@ $(document).ready(function () {
         $("#pack").val(btn.data("pack_details"));
         $("#plan_name").val(btn.data("plan_name"));
         var isShowMobile = btn.data("is_show_mobile");
-        $("#is_show_mobile").prop('checked', isShowMobile == 1);
+        $("#is_show_mobile").prop("checked", isShowMobile == 1);
         // Delivery days fix for Customize
         deliveryDayList = [];
         $("#delivery_days_list").empty();
@@ -166,7 +170,6 @@ $(document).ready(function () {
             let days = JSON.parse(btn.attr("data-delivery_days"));
             days.forEach((d) => {
                 deliveryDayList.push(d);
-
                 let $daySpan = $(`
             <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
                 ${d} Days
@@ -202,7 +205,7 @@ $(document).ready(function () {
         formData.append("_token", $("input[name=_token]").val());
 
         if ($("#plan_type").val() === "Customize") {
-            formData.set("delivery_days", JSON.stringify(deliveryDayList));
+            formData.set("delivery_days", JSON.stringify(deliveryDaysWithAmount));
         }
 
         sendRequest(
@@ -276,4 +279,112 @@ $(document).ready(function () {
             $("#subscriptionTableBody").html($tbody);
         });
     }
+
+    //       $("#plan_amount").on("keyup", function () {
+    //          if ($('#plan_type').val() === "Customize") {
+    //             if(deliveryDayList != ''){
+    //  console.log(deliveryDayList);
+    //             }else{
+    //               showToast("Please Enter Delivery Days", "error", 1000);
+    //               $(this).val('');
+    //             }
+    //          }
+    //       });
+    // Function to recalculate and update the customize amount list
+    // function updateCustomizeAmountList() {
+    //     if ($("#plan_type").val() !== "Customize") return;
+    //     let perDayAmount = parseFloat($("#plan_amount").val()) || 0;
+    //     let totalAmount = 0;
+    //     // Clear old list
+    //     $("#customize_amount_list").empty();
+    //     // If no days added, stop
+    //     if (!deliveryDayList.length) return;
+    //     // Loop through each delivery day
+    //     deliveryDayList.forEach(function (days, index) {
+    //         let dayAmount = days * perDayAmount;
+    //         totalAmount += dayAmount;
+    //         let amountwithdays = days + '-' + dayAmount;
+    //         deliveryDaysWithAmount.push(amountwithdays);
+    //         let $customizeAmountSpan = $(`
+    //         <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
+    //             ${days} × ${perDayAmount} = ₹${dayAmount}
+    //         </span>
+    //     `);
+    //         $("#customize_amount_list").append($customizeAmountSpan);
+    //     });
+
+    //     // Append total at bottom
+    //     $("#customize_amount_list").append(`
+    //     <div class="mt-2 font-semibold text-blue-600">
+    //         Total Plan Amount: ₹${totalAmount}
+    //     </div>
+    // `);
+    // }
+
+    function updateCustomizeAmountList() {
+        if ($("#plan_type").val() !== "Customize") return;
+        let perDayAmount = parseFloat($("#plan_amount").val()) || 0;
+        let totalAmount = 0;
+        $("#customize_amount_list").empty();
+        deliveryDaysWithAmount = [];
+        if (!deliveryDayList.length) return;
+        let uniqueDays = [...new Set(deliveryDayList)];
+        uniqueDays.forEach(function (days, index) {
+            let dayAmount = days * perDayAmount;
+            totalAmount += dayAmount;
+          deliveryDaysWithAmount.push({
+              days: days,
+              amount: dayAmount,
+          });
+             // Create display span
+            let $customizeAmountSpan = $(`
+            <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
+                ${days} × ${perDayAmount} = ₹${dayAmount}
+            </span>
+        `);
+            $("#customize_amount_list").append($customizeAmountSpan);
+        });
+
+        $("#customize_amount_list").append(`
+        <div class="mt-2 font-semibold text-blue-600">
+            Total Plan Amount: ₹${totalAmount}
+        </div>
+    `);
+
+        console.log("deliveryDaysWithAmount:", deliveryDaysWithAmount);
+    }
+
+
+    // When per-day amount changes
+    $("#plan_amount").on("keyup change", function () {
+        updateCustomizeAmountList();
+    });
+
+    // Add new delivery day
+    $("#add_delivery_day_btn").on("click", function () {
+        let val = parseInt($("#delivery_days_input").val());
+        if (!isNaN(val) && val > 0) {
+            deliveryDayList.push(val);
+            let $daySpan = $(`
+            <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
+                ${val} Days
+                <button type="button" class="ml-2 text-red-500 remove-delivery-day">&times;</button>
+            </span>
+        `);
+
+            // Add remove handler
+            $daySpan.find(".remove-delivery-day").on("click", function () {
+                let index = deliveryDayList.indexOf(val);
+                if (index > -1) deliveryDayList.splice(index, 1);
+                $daySpan.remove();
+                updateCustomizeAmountList();
+            });
+
+            $("#delivery_days_list").append($daySpan);
+            $("#delivery_days_input").val("");
+            updateCustomizeAmountList();
+        } else {
+            showToast("Please enter valid delivery days", "error", 1000);
+        }
+    });
 });
