@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class CategoryController extends Controller
 {
     public function view(){
-       $categories = Category::paginate(10);
+       $categories = Category::with('products')->paginate(10);
         return view('admin.category.view', compact('categories'));
     }
 

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('free_shipping', 8, 2)->default(0);
             $table->decimal('extra_km', 8, 2)->default(0);
             $table->string('address')->nullable();
+            $table->boolean('status')->default(0);
             $table->timestamps();
         });
     }

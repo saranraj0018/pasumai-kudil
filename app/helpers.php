@@ -65,3 +65,17 @@ if (!function_exists('razorPay')) {
 }
 
 
+if (!function_exists('milkPackTypes')) {
+    function milkPackTypes()
+    {
+        return [
+            '500ml' => '500 ml',
+            '1ltr'  => '1 Ltr',
+            '2ltr'  => '2 Ltr',
+            '1/2ltr' => '½ Ltr',
+        ];
+    }
+}
+
+
+

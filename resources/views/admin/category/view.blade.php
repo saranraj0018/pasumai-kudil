@@ -57,11 +57,12 @@
                                 data-image="{{ $cat->image ? asset('storage/'.$cat->image) : '' }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
-
                             <!-- Delete -->
+                            @if ($cat->products->isEmpty())
                             <button class="text-red-600 hover:text-red-800 transition btnDeleteCategory" data-id="{{ $cat->id }}">
                                 <i class="fa-solid fa-delete-left"></i>
                             </button>
+                            @endif
                         </td>
 
                     </tr>

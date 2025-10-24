@@ -18,14 +18,13 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Plan Type</label>
                     <select name="plan_type" id="plan_type"
-                        class="block w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-700 focus:border-[#ab5f00] focus:ring focus:ring-[#ab5f00]/30">
+                        class="block w-full rounded-lg border border-gray-300 bg-white p-3 text-gray-700 focus:border-[#ab5f00] focus:ring focus:ring-[#ab5f00]/30">
                         <option value="">Select Plan Type</option>
                         <option value="Basic">Basic</option>
                         <option value="Best Value">Best Value</option>
                         <option value="Customize">Customize</option>
                     </select>
                 </div>
-
                 <!-- Plan Pack -->
                 <div id="plan_pack_container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Plan Pack</label>
@@ -50,9 +49,10 @@
                 </div>
                 <!-- Plan Amount -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Plan Amount</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" id="amount">Plan Amount</label>
                     <input type="number" name="plan_amount" id="plan_amount"
                         class="form-input w-full border rounded-lg p-2">
+                    <div id="customize_amount_list" class="mt-2"></div>
                 </div>
                 <!-- Duration -->
                 <div>
@@ -70,17 +70,28 @@
             </div>
             <!-- Plan Details -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {{-- <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pack</label>
+                    <input type="text" name="pack" id="pack" class="form-input w-full border rounded-lg p-2">
+                   </div> --}}
+                   <div class="mb-4">
+    <label for="milk_pack_type" class="block text-sm font-medium text-gray-700">Milk Pack Type</label>
+    <select name="pack" id="pack" class="form-select w-full border rounded-lg p-3">
+        <option value="">Select Milk Pack Type</option>
+        @foreach (milkPackTypes() as $key => $value)
+            <option value="{{ $key }}" {{ old('pack') == $key ? 'selected' : '' }}>
+                {{ $value }}
+            </option>
+        @endforeach
+    </select>
+</div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
                     <input type="number" name="quantity" id="quantity"
                         class="form-input w-full border rounded-lg p-2">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pack</label>
-                    <input type="text" name="pack" id="pack" class="form-input w-full border rounded-lg p-2">
-                </div>
             </div>
-
             <div>
                 <label class="inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="is_show_mobile" name="is_show_mobile" value="1" class="sr-only peer">
@@ -89,7 +100,6 @@
                     <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Is show mobile</span>
                 </label>
             </div>
-
             <!-- Buttons -->
             <div class="flex justify-end gap-3 pt-4">
                 <button type="button" id="cancelSubscriptionModal"

@@ -10,7 +10,7 @@ class SubscriptionController extends Controller
 {
     public function view(Request $request)
     {
-        $subscriptions = Subscription::orderBy('created_at', 'desc')->paginate(10);
+        $subscriptions = Subscription::with('get_user')->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.subscription.view', compact('subscriptions'));
     }
 
@@ -27,14 +27,11 @@ class SubscriptionController extends Controller
             'plan_name' => 'required|string',
             'delivery_days' => 'nullable|string',
         ]);
-
       try {
         $sub = $request->id ? Subscription::find($request->id) : new Subscription();
-
         if ($request->id && !$sub) {
             return response()->json(['success' => false, 'message' => 'Subscription not found'], 404);
         }
- 
         $sub->plan_amount = $request->plan_amount;
         $sub->plan_pack = $request->plan_type !== 'Customize' ? (int)$request->plan_pack : 0;
         $sub->plan_name = $request->plan_name;
@@ -46,7 +43,6 @@ class SubscriptionController extends Controller
         $sub->delivery_days = $request->plan_type === 'Customize' ? $request->delivery_days : null;
         $sub->is_show_mobile = $request->is_show_mobile ?? 0;
         $sub->save();
-
         $message = $request->id ? 'Subscription updated successfully' : 'Subscription created successfully';
         return response()->json(['success' => true, 'message' => $message]);
     } catch (\Exception $e) {
