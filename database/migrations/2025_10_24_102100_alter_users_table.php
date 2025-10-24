@@ -15,7 +15,6 @@ return new class extends Migration
             $table->string('image', 255)->nullable();
             $table->string('mobile_number', 255)->nullable();
             $table->longText('likedProducts')->nullable();
-            $table->rememberToken()->change();
             $table->string('city', 255)->nullable();
             $table->string('latitude', 255)->nullable();
             $table->string('longitude', 255)->nullable();

@@ -9,7 +9,7 @@
     <div class="wrapper">
         <div class="flex">
 
-            <aside class="bg-gradient-to-b from-[#ab5f00] to-white fixed top-0 left-0 h-full w-64 shadow-lg">
+            <aside class="fixed top-0 left-0 h-full w-64 shadow-lg">
                 <x-partials.sidebar />
             </aside>
 
