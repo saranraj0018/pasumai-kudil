@@ -56,7 +56,16 @@ Route::prefix('admin')->group(function () {
         // hub
         Route::prefix('hub')->controller(HubController::class)->group(function () {
             Route::get('/list', 'view')->name('list.hub');
+            Route::post('/city/save', 'citySave')->name('update.hub.status');
+            Route::delete('/delete', 'destroy')->name('delete.hub');
         });
+
+        Route::prefix('map')->controller(HubController::class)->group(function () {
+            Route::get('/view', 'showMap')->name('show.map');
+            Route::get('/get-city-coordinates', 'getCityCoordinates')->name('area.Coordinates');
+            Route::post('/save-area', 'store')->name('area.store');
+        });
+
 
         //coupons
         Route::prefix('coupon')->controller(CouponController::class)->group(function () {

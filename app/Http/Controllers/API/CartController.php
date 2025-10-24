@@ -97,7 +97,6 @@ public function removeFromCart(Request $request)
 
     public function getCart(Request $request)
     {
-
         $userId = auth()->id() ?? session()->getId();
         $cartKey = "cart_{$userId}";
 
@@ -198,7 +197,9 @@ public function removeFromCart(Request $request)
             $coupon_discount = self::getCouponDetails($coupon,$subtotal);
 
         }
-        $address_id = Address::where('created_by', Auth::id())->where('is_default',1)->first()->id;
+        $address = Address::where('created_by', Auth::id())->where('is_default',1)->first();
+
+        $address_id = $address->id ?? 0;
         $finalDeliveryCharge = 0;
         if (!empty($address_id)) {
             $finalDeliveryCharge = self::calculateShipping($address_id);
@@ -210,12 +211,12 @@ public function removeFromCart(Request $request)
             "totalItems" => $totalItems,
             "itemsAmount" => number_format($subtotal,1) ,
             "discount" => number_format($coupon_discount,1),
-            "deliveryCharge" => $finalDeliveryCharge,
+            "deliveryCharge" => number_format($finalDeliveryCharge,1),
             "SGST" => !empty($total_tax) ? number_format($total_tax/2 ,2) : '0.0',
             "IGST" => !empty($total_tax) ? number_format($total_tax/2 ,2) : '0.0',
             "totalAmount" => number_format($totalAmount, 1),
         ];
-        $address = Address::where("created_by",auth()->id())->where('is_default',1)->get();
+        $address = Address::where("created_by",auth()->id())->where('is_default',1)->first();
         return response()->json([
             'status' => 200,
             "productData" => $productData,
@@ -444,7 +445,7 @@ public function removeFromCart(Request $request)
         }
 
         // Get vendor details (assuming one vendor for now)
-        $vendor = Shipping::first();
+        $vendor = Shipping::where('status',1)->first();
         if (empty($vendor)) {
             return 0;
         }

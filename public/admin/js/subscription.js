@@ -154,8 +154,8 @@ $(document).ready(function () {
         $("#quantity").val(btn.data("quantity"));
         $("#pack").val(btn.data("pack_details"));
         $("#plan_name").val(btn.data("plan_name"));
-        var isShowMobile = btn.data("is_show_mobile");
-        $("#is_show_mobile").prop('checked', isShowMobile == 1);
+        const isShowMobile = btn.data("is_show_mobile");
+        $("#is_show_mobile").prop('checked', isShowMobile === 1);
         // Delivery days fix for Customize
         deliveryDayList = [];
         $("#delivery_days_list").empty();
@@ -237,7 +237,6 @@ $(document).ready(function () {
     });
 
     $(document).on("click", "#cancelDeleteBtn", function () {
-        deleteId = null;
         $("#deleteSubscriptionModal").hide();
     });
 

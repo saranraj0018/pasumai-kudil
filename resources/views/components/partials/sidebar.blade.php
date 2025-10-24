@@ -1,4 +1,4 @@
-<aside class="bg-gradient-to-b from-[#ab5f00] to-white fixed top-0 left-0 h-full w-64 overflow-y-auto">
+<aside class="bg-gradient-to-b from-[#ab5f00] to-[#ab5f00] fixed top-0 left-0 h-full w-64 overflow-y-auto">
     <!-- Brand Logo -->
     <x-app-logo />
 
@@ -17,9 +17,10 @@
                 <x-menu.item route="view.coupons" name="Coupons" icon="fa-ticket-alt" />
                 <x-menu.item route="view.orders" name="Orders" icon="fa-shopping-bag" />
                 <x-menu.item route="view.users" name="Users" icon="fa-users" />
+                <x-menu.item route="show.map" name="Map" icon="fa-map-location-dot" />
             </x-slot:menus>
         </x-menu.list>
-        <x-menu.item route="list.hub" name="Hub List" icon="fa-brands fa-hubspot" />
+
         <x-menu.list>
             <x-slot:trigger>
                 <x-menu.item trigger name="Milk" icon="fa-glass-whiskey" />
@@ -35,6 +36,7 @@
             </x-slot:trigger>
             <x-slot:menus>
                 <x-menu.item name="Shipping" route="lists.shipping" icon="fa-solid fa-truck" />
+                <x-menu.item route="list.hub" name="Hub List" icon="fa-brands fa-hubspot" />
             </x-slot:menus>
         </x-menu.list>
     </ul>
