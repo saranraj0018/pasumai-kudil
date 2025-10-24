@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('image', 255)->nullable()->change();
-            $table->string('mobile_number', 255)->nullable(false)->change();
+            $table->string('image', 255)->nullable();
+            $table->string('mobile_number', 255)->nullable();
             $table->longText('likedProducts')->nullable();
             $table->rememberToken()->change();
             $table->string('city', 255)->nullable();
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-      
+
     }
 };

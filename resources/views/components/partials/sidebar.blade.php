@@ -27,7 +27,7 @@
             <x-slot:menus>
                 <x-menu.item route="lists.users" name="User List" icon="fas fa-user"/>
                 <x-menu.item route="view.milk.subscription" name="Subscription" icon="fa-calendar-check" />
-            </x-slot:menus>
+             </x-slot:menus>
         </x-menu.list>
         <x-menu.list>
             <x-slot:trigger>
@@ -35,6 +35,7 @@
             </x-slot:trigger>
             <x-slot:menus>
                 <x-menu.item name="Shipping" route="lists.shipping" icon="fa-solid fa-truck" />
+                 <x-menu.item name="Delivery Partner" route="lists.delivery_partner" icon="fa-solid fa-truck" />
             </x-slot:menus>
         </x-menu.list>
     </ul>

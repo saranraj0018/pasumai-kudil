@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\UserlistController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\DeliveryPartnerController;
 use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ShippingController;
@@ -27,44 +28,36 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::middleware('admin')->group(function () {
-
         Route::get('/dashboard', [Dashboard::class, 'index'])->name('admin.dashboard');
-
         //categories
         Route::prefix('category')->controller(CategoryController::class)->group(function () {
             Route::get('/list', 'view')->name('view.category');
             Route::post('/save', 'save')->name('save.category');
             Route::post('/delete', 'destroy')->name('delete.category');
         });
-
         //banners
         Route::prefix('banner')->controller(BannerController::class)->group(function () {
             Route::get('/list', 'view')->name('view.banner');
             Route::post('/save', 'save')->name('save.banner');
             Route::post('/delete', 'destroy')->name('delete.banner');
         });
-
         //user list
         Route::get('/users', [UserlistController::class, 'index'])->name('view.users');
-
         //orders
         Route::prefix('orders')->controller(OrderController::class)->group(function () {
             Route::get('/list', 'view')->name('view.orders');
             Route::post('/update-status', 'updateStatus')->name('update.order.status');
         });
-
         // hub
         Route::prefix('hub')->controller(HubController::class)->group(function () {
             Route::get('/list', 'view')->name('list.hub');
         });
-
         //coupons
         Route::prefix('coupon')->controller(CouponController::class)->group(function () {
             Route::get('/list', 'view')->name('view.coupons');
             Route::post('/save', 'save')->name('save.coupon');
             Route::post('/delete', 'destroy')->name('delete.coupon');
         });
-
         Route::prefix('products')->controller(ProductsController::class)->group(function () {
             Route::get('/lists', 'productLists')->name('lists.products');
             Route::post('/save_product', 'saveProduct')->name('save_product.products');
@@ -72,7 +65,6 @@ Route::prefix('admin')->group(function () {
             Route::get('/search_product', 'searchProduct')->name('search_product.products');
             Route::get('/edit_product', 'editProduct')->name('edit_product.products');
         });
-
         Route::prefix('users')->controller(UserlistController::class)->group(function () {
             Route::get('/lists', 'userLists')->name('lists.users');
             Route::get('/user-profile-view', 'userProfileView')->name('user_view.users');
@@ -91,13 +83,18 @@ Route::prefix('admin')->group(function () {
             Route::post('/delete-shipping', 'deleteShipping')->name('delete_shipping.shipping');
         });
 
+        Route::prefix('delivery_partner')->controller(DeliveryPartnerController::class)->group(function () {
+            Route::get('/delivery-partner', 'index')->name('lists.delivery_partner');
+            Route::post('/save-delivery-partner', 'saveDeliveryPartner')->name('save_delivery_partner');
+            Route::post('/delete-delivery-partner', 'deleteDeliveryPartner')->name('delete_delivery_partner');
+        });
+
+        Route::prefix('milk')->controller(App\Http\Controllers\Admin\SubscriptionController::class)->group(function () {
+            Route::get('/subscription', 'view')->name('view.milk.subscription');
+            Route::post('/save', 'save')->name('save.milk.subscription');
+            Route::post('/delete', 'destroy')->name('delete.milk.subscription');
+        });
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
         Route::post('/user_logout', [Authenticate::class, 'user_logout'])->name('admin.user_logout');
-    });
-
-    Route::prefix('milk')->controller(App\Http\Controllers\Admin\SubscriptionController::class)->group(function () {
-        Route::get('/subscription', 'view')->name('view.milk.subscription');
-        Route::post('/save', 'save')->name('save.milk.subscription');
-        Route::post('/delete', 'destroy')->name('delete.milk.subscription');
     });
 });

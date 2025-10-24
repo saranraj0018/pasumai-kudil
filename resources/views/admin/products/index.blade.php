@@ -66,7 +66,7 @@
                                 data-image="{{ $product->image ? asset('storage/'.$product->image) : '' }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
- 
+
                             <!-- Delete -->
                             @if ($product->order_details->isEmpty())
                             <button class="text-red-600 hover:text-red-800 deleteProduct" data-id="{{ $product->id }}">
@@ -78,7 +78,7 @@
                     @endforeach
                     @else
                         <tr>
-                            <td colspan="5" class="text-center">No Products found</td>
+                            <td colspan="5" class="text-center p-5">No Products found</td>
                         </tr>
                     @endif
                 </tbody>
