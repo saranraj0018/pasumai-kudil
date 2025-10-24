@@ -25,7 +25,7 @@
                 <tbody id="couponTableBody" class="divide-y divide-gray-200">
                     @foreach ($coupons as $coupon)
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-4 py-3 font-medium text-gray-900">{{ $coupon->id }}</td>
+                            <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3">{{ $coupon->coupon_code }}</td>
                             <td class="px-4 py-3">
                                 @if ($coupon->discount_type == 1)
@@ -70,10 +70,12 @@
                                 </button>
 
                                 <!-- Delete -->
-                                <button class="text-red-600 hover:text-red-800 transition btnDeleteCoupon"
-                                    data-id="{{ $coupon->id }}">
-                                    <i class="fa-solid fa-delete-left"></i>
-                                </button>
+                                @if ($coupon->get_order->isEmpty())
+                                    <button class="text-red-600 hover:text-red-800 transition btnDeleteCoupon"
+                                        data-id="{{ $coupon->id }}">
+                                        <i class="fa-solid fa-delete-left"></i>
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                     @endforeach

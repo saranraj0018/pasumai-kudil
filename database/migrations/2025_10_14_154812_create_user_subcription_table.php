@@ -11,15 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('user_subscriptions', function (Blueprint $table) {
+        Schema::create('user_subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('subscription_id')->constrained('subscriptions')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('no action');
+            $table->foreignId('subscription_id')->constrained('subscriptions')->onDelete('no action');
             $table->date('start_date');
             $table->date('end_date');
             $table->date('valid_date')->nullable();
             $table->integer('pack')->nullable();
             $table->integer('quantity')->default(1);
+            $table->integer('status')->default(1);
+            $table->string('description')->nullable();
+            $table->json('cancelled_date')->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_subcription');
+
     }
 };

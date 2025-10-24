@@ -1,14 +1,14 @@
 <x-layouts.app>
     <div class="p-4" x-data="{ open: false }">
-        <input 
+        <input
         type="text" id="searchInput"
-        placeholder="Search products..." 
+        placeholder="Search products..."
         class="border p-2 rounded w-40 mb-4 shadow-md">
 
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Products</h2>
             <button @click="document.querySelector('#productCreateModal').__x.$data.open = true"
-                class="bg-[#ab5f00] text-white px-4 py-2 rounded">
+                class="bg-[#ab5f00] text-white px-4 py-2 rounded add_product">
                 Create Product
             </button>
         </div>
@@ -37,7 +37,7 @@
                                      class="h-10 w-10 object-cover rounded-lg shadow-sm border" />
                             @else
                                 <span class="text-gray-400 italic">No Image</span>
-                            @endif  
+                            @endif
                             </td>
                             <td class="px-4 py-3">
                                 {{ $product->description ?? ''}}
@@ -68,20 +68,22 @@
                             </button>
 
                             <!-- Delete -->
+                            @if ($product->order_details->isEmpty())
                             <button class="text-red-600 hover:text-red-800 deleteProduct" data-id="{{ $product->id }}">
                                 <i class="fa-solid fa-delete-left"></i>
                             </button>
+                            @endif
                         </td>
                         </tr>
                     @endforeach
                     @else
                         <tr>
-                            <td colspan="5" class="text-center">No Products found</td>
+                            <td colspan="5" class="text-center p-5">No Products found</td>
                         </tr>
                     @endif
                 </tbody>
             </table>
-            
+
             <div class="p-4">
                 {{ $products->appends(['search' => $search])->links() }}
             </div>

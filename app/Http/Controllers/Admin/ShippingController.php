@@ -23,14 +23,14 @@ class ShippingController extends Controller
         ];
         $request->validate($rules);
         try {
-
-        if (!empty($request['shipping_id'])) {
-            $message = 'Shipping Updated successfully';
-            $shipping = Shipping::find($request['shipping_id']);
-        } else{
-            $shipping = new Shipping();
-            $message = 'Shipping saved successfully';
-        }
+           
+            if (!empty($request['shipping_id'])) {
+                $message = 'Shipping Updated successfully';
+                $shipping = Shipping::find($request['shipping_id']);
+            } else {
+                $shipping = new Shipping();
+                $message = 'Shipping saved successfully';
+            }
 
             $shipping->city  = $request['city'];
             $shipping->latitude = $request['latitude'] ?? '';
@@ -38,6 +38,8 @@ class ShippingController extends Controller
             $shipping->free_shipping = $request['free_shipping'] ?? 0;
             $shipping->extra_km = $request['extra_km'] ?? 0;
             $shipping->address  = $request['address'] ?? '';
+            $shipping->status = $request['status']  ?? 0;
+
             $shipping->save();
 
             return response()->json([
@@ -53,6 +55,4 @@ class ShippingController extends Controller
             ], 500);
         }
     }
-
-
 }

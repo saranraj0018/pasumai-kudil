@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('banners', function (Blueprint $table) {
+        Schema::create('delivery_partners', function (Blueprint $table) {
             $table->id();
-            $table->string('image_url');
-            $table->enum('type', ['GroceryMain', 'GrocerySub', 'MilkMain', 'MilkSub']);
-            $table->integer('priority')->default(0);
+            $table->foreignId('hub_id')->constrained('hubs')->onDelete('no action');
+            $table->string('name', 255)->nullable();
+            $table->string('mobile_number', 255)->nullable();
             $table->timestamps();
         });
     }
@@ -23,8 +23,5 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-       
-    }
+    public function down(): void {}
 };

@@ -9,4 +9,10 @@ class Subscription extends Model
      protected $casts = [
         'delivery_days' => 'array',
     ];
+
+    public function get_user()
+    {
+        return $this->belongsTo(UserSubscription::class, 'id', 'subscription_id');
+    }
+
 }
