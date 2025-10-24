@@ -26,7 +26,7 @@ if (!function_exists('getCartQuantities')) {
     }
 
 if (!function_exists('showDate')) {
-    function showDate($date, $format = 'd/m/Y')
+    function showDate($date, $format = 'd/m/Y h:i:s A')
     {
         return \Carbon\Carbon::parse($date)->format($format);
     }

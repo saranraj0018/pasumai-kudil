@@ -19,12 +19,12 @@
                     <th class="px-3 py-2 text-center">Actions</th>
                 </tr>
                 </thead>
-                <tbody id="categoryTableBody" class="divide-y divide-gray-200">
+                <tbody id="hubTableBody" class="divide-y divide-gray-200">
                 @foreach($hub_list as $list)
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $list->id }}</td>
                         <td class="px-4 py-3">{{ $list->name }}</td>
-                        <td class="px-4 py-3">{{ $list->email }}</td>
+                        <td class="px-4 py-3">{{ $list->user?->email ?? '-' }}</td>
                         <td class="px-4 py-3">
                             <span class="px-3 py-1 text-xs font-semibold rounded-full
                                 {{ $list->status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
@@ -38,7 +38,9 @@
                                 class="text-blue-600 hover:text-blue-800 transition editHubBtn"
                                 data-id="{{ $list->id }}"
                                 data-name="{{ $list->name }}"
-                                data-email="{{ $list->email }}"
+                                data-latitude="{{ $list->latitude }}"
+                                data-longitude="{{ $list->longitude }}"
+                                data-type="{{ $list->type }}"
                                 data-status="{{ $list->status }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>

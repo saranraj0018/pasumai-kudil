@@ -77,7 +77,11 @@
         </form>
     </div>
 </x-layouts.app>
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&callback=initGoogleMaps" async defer></script>
+<script
+    src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&callback=initGoogleMaps&language=en&region=US"
+    async defer>
+</script>
+
 
 <script>
     let googleMapsLoaded = false;
@@ -134,8 +138,11 @@
 
                         // Setup city autocomplete
                         const autocomplete = new google.maps.places.Autocomplete(this.$refs.cityInput, {
-                            types: ['(cities)']
+                            types: ['(cities)'],
+                            componentRestrictions: { country: 'in' },
+                            fields: ['address_components', 'geometry', 'name'],
                         });
+
 
                         autocomplete.addListener('place_changed', () => {
                             const place = autocomplete.getPlace();

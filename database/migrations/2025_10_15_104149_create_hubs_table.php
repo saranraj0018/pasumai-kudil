@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('hubs', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('user_id');
-            $table->string('code',10);
+            $table->text('address')->nullable();
             $table->string('name',100);
             $table->string('latitude',100);
             $table->string('longitude',100);
-            $table->tinyInteger('status')->nullable()->comment('1-activate, 2-deactivate');
+            $table->tinyInteger('type')->nullable()->comment('1-Grocery, 2-Milk');
+            $table->tinyInteger('status')->nullable()->comment('1-activate, 0-deactivate');
             $table->timestamps();
         });
     }

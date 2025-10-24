@@ -7,5 +7,5 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/2.3.0/alpine.js"></script>
-@vite(['resources/css/app.css'])
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 <meta name="csrf-token" content="{{ csrf_token() }}">
