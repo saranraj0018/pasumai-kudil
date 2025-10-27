@@ -4,7 +4,7 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&family=Nunito:wght@400;700&display=swap"
         rel="stylesheet">
 
-    <div class="mx-auto bg-white rounded-2xl shadow-lg p-8 mt-3 max-w-3xl">
+    <div class="mx-auto bg-white rounded-2xl shadow-lg p-8 mt-3">
         <h2 class="text-xl font-semibold mb-5 text-center">Add Shipping Location</h2>
 
         <form id="shippingAddForm" enctype="multipart/form-data" novalidate x-data="shippingForm(@js($get_shipping ?? null))" x-init="initMapAndAutocomplete()"

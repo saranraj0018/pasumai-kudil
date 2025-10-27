@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('valid_date')->nullable();
             $table->integer('pack')->nullable();
             $table->integer('quantity')->default(1);
-            $table->integer('status')->default(1);
+            $table->integer('status')->default(1)->comment('1-active, 2-inactive');
             $table->string('description')->nullable();
             $table->json('cancelled_date')->nullable();
             $table->timestamps();

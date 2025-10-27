@@ -113,71 +113,76 @@ class UserlistController extends Controller
         }
     }
 
- public function saveUser(Request $request)
-{
-    //  $request->validate([
-    //     'name'           => 'required|string|max:255',
-    //     'mobile_number'  => ['required', 'regex:/^[0-9]{10}$/'], // 10-digit validation
-    //     'email'          => 'nullable|email',
-    //     'plan_id'        => 'required|integer|exists:subscriptions,id',
-    //     'custom_days'    => 'nullable|integer|min:1',
-    //     'image'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-    // ]);
+    public function saveUser(Request $request)
+    {
+        //  $request->validate([
+        //     'name'           => 'required|string|max:255',
+        //     'mobile_number'  => ['required', 'regex:/^[0-9]{10}$/'], // 10-digit validation
+        //     'email'          => 'nullable|email',
+        //     'plan_id'        => 'required|integer|exists:subscriptions,id',
+        //     'custom_days'    => 'nullable|integer|min:1',
+        //     'image'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        // ]);
 
-    DB::beginTransaction();
-    try {
-        $subscription = Subscription::findOrFail($request['plan_id']);
+        DB::beginTransaction();
+        try {
+            $subscription = Subscription::findOrFail($request['plan_id']);
 
-         if ($request->filled('custom_days')) {
-            $daycount = (int) $request['custom_days'];
-            $daymonth = false;
-        } else {
-            $daycount = (int) $subscription->plan_pack;
-            $daymonth = true;
-        }
+            if ($request->filled('custom_days')) {
+                $daycount = (int) $request['custom_days'];
+                $daymonth = false;
+            } else {
+                $daycount = (int) $subscription->plan_pack;
+                $daymonth = true;
+            }
 
-         $start_date = Carbon::now()->addDay();
+            $start_date = Carbon::now()->addDay();
 
-         if ($daymonth) {
-            $end_date = $start_date->copy()->addMonthsNoOverflow($daycount);
-        } else {
-            $end_date = $start_date->copy()->addDays($daycount);
-        }
+            if ($daymonth) {
+                $end_date = $start_date->copy()->addMonthsNoOverflow($daycount);
+            } else {
+                $end_date = $start_date->copy()->addDays($daycount);
+            }
 
-        $validdaycount = (int) ($subscription->plan_duration ?? 0);
-        $valid_date = $end_date->copy()->addDays($validdaycount);
+            $validdaycount = (int) ($subscription->plan_duration ?? 0);
+            $valid_date = $end_date->copy()->addDays($validdaycount);
 
-        $start_date_formatted = $start_date->format('Y-m-d');
-        $end_date_formatted   = $end_date->format('Y-m-d');
-        $valid_date_formatted = $valid_date->format('Y-m-d');
+            $start_date_formatted = $start_date->format('Y-m-d');
+            $end_date_formatted   = $end_date->format('Y-m-d');
+            $valid_date_formatted = $valid_date->format('Y-m-d');
 
-         $image = null;
-        if ($request->hasFile('image')) {
-            $img_name = time() . '_' . $request->file('image')->getClientOriginalName();
-            $request->image->storeAs('users/', $img_name, 'public');
-            $image = 'users/' . $img_name;
-        }
+            $image = null;
+            if ($request->hasFile('image')) {
+                $img_name = time() . '_' . $request->file('image')->getClientOriginalName();
+                $request->image->storeAs('users/', $img_name, 'public');
+                $image = 'users/' . $img_name;
+            }
 
-         $user = User::where('email', $request['email'])->first();
+            $user = User::where('email', $request['email'])->first();
 
-        if (!$user) {
-            $user = new User();
-            $user->name          = $request['name'];
-            $user->mobile_number = $request['mobile_number'];
-            $user->email         = $request['email'] ?? null;
-            $user->image         = $image;
-            $user->city          = $request['city'];
-            $user->latitude      = $request['latitude'] ?? '';
-            $user->longitude     = $request['longitude'] ?? '';
-            $user->address       = $request['address'] ?? '';
-            $user->save();
-        }
+            if (!$user) {
+                $user = new User();
+                $user->name          = $request['name'];
+                $user->mobile_number = $request['mobile_number'];
+                $user->email         = $request['email'] ?? null;
+                $user->image         = $image;
+                $user->city          = $request['city'];
+                $user->latitude      = $request['latitude'] ?? '';
+                $user->longitude     = $request['longitude'] ?? '';
+                $user->address       = $request['address'] ?? '';
+                $user->save();
+            }
 
-        $exist_user_subscription = UserSubscription::where('user_id',$user->id)->first();
+            $existing_subscription = UserSubscription::where('user_id', $user->id)->first();
 
-        if(!empty($exist_user_subscription)){
-             $user_subscription = $exist_user_subscription;
-        }else{
+            if ($existing_subscription && $existing_subscription->status == 1) {
+                // Active subscription exists → do NOT create new
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User already has an active subscription. Please deactivate it before adding a new one.'
+                ], 400);
+            }
+
             $user_subscription = new UserSubscription();
             $user_subscription->user_id         = $user->id;
             $user_subscription->subscription_id = $subscription->id;
@@ -187,61 +192,60 @@ class UserlistController extends Controller
             $user_subscription->pack            = $subscription->plan_pack ?? 0;
             $user_subscription->quantity        = $subscription->quantity ?? 0;
             $user_subscription->save();
+
+            $update = User::where('id', $user->id)->update([
+                'subscription_id' => $user_subscription->id
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User added successfully!',
+                'user'    => $user->load('subscriptions'),
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save user',
+                'error'   => $e->getMessage(),
+            ], 500);
         }
-
-        $update = User::where('id',$user->id)->update([
-            'subscription_id' => $user_subscription->id
-        ]);
-
-        DB::commit();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'User added successfully!',
-            'user'    => $user->load('subscriptions'),
-        ]);
-    } catch (Exception $e) {
-        DB::rollBack();
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to save user',
-            'error'   => $e->getMessage(),
-        ], 500);
     }
-}
 
 
     public function getCustomSubscription(Request $request)
     {
-      if($request->ajax()){
-        if($request->get_custom_subscription){
-            $getsubs = Subscription::where('id',$request->subs_id)->first();
+        if ($request->ajax()) {
+            if ($request->get_custom_subscription) {
+                $getsubs = Subscription::where('id', $request->subs_id)->first();
 
-            return response()->json([
-                'success' => true,
-                'subs' => $getsubs
-             ], 200);
+                return response()->json([
+                    'success' => true,
+                    'subs' => $getsubs
+                ], 200);
             }
         }
     }
 
-      public function addUserAccount(Request $request)
+    public function addUserAccount(Request $request)
     {
-         $request->validate([
-               'account_number' => 'required',
-               'confirm_account_number'  => 'required',
-               'bank_name' => 'nullable|string',
-               'ifsc_code' => 'required',
-               'account_holder_name' => 'required|string'
-         ]);
+        $request->validate([
+            'account_number' => 'required',
+            'confirm_account_number'  => 'required',
+            'bank_name' => 'nullable|string',
+            'ifsc_code' => 'required',
+            'account_holder_name' => 'required|string'
+        ]);
 
         try {
-                $update = User::where('id', $request['user_id'])->update([
-                    'account_number' => $request['account_number'],
-                    'bank_name' => $request['bank_name'],
-                    'ifsc_code' => $request['ifsc_code'],
-                    'account_holder_name' => $request['account_holder_name']
-                ]);
+            $update = User::where('id', $request['user_id'])->update([
+                'account_number' => $request['account_number'],
+                'bank_name' => $request['bank_name'],
+                'ifsc_code' => $request['ifsc_code'],
+                'account_holder_name' => $request['account_holder_name']
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -259,7 +263,7 @@ class UserlistController extends Controller
 
     public function cancelSubscription(Request $request)
     {
-         try {
+        try {
 
             $exist_check = UserSubscription::where('user_id', $request['user_id'])->first();
             if (!$exist_check) {
@@ -276,7 +280,7 @@ class UserlistController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Subscription cancelled successfully!',
-             ]);
+            ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -298,9 +302,9 @@ class UserlistController extends Controller
             }
             $update_status = UserSubscription::where('user_id', $request['user_id'])->update([
                 'cancelled_date'  => json_encode([
-                 'start_date' => $request->start_date,
-                 'end_date' => $request->end_date
-                    ]),
+                    'start_date' => $request->start_date,
+                    'end_date' => $request->end_date
+                ]),
                 'description' => $request['description']
             ]);
 
@@ -316,5 +320,4 @@ class UserlistController extends Controller
             ], 500);
         }
     }
-
 }
