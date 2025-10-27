@@ -81,7 +81,7 @@
                                     @endforeach
                                 </x-select>
                             </div>
-
+                           <div id="custom_plan_days"></div>
                             <!-- Profile Image -->
                             <div class="col-span-2">
                                 <x-label>Profile Image</x-label>

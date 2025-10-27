@@ -13,7 +13,7 @@ class DeliveryPartnerController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('query');
-        $this->data['delivery_partner'] = DeliveryPartner::query()
+        $this->data['delivery_partner'] = DeliveryPartner::with('get_hub')
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                       ->where('mobile_number', 'like', "%{$search}%");
