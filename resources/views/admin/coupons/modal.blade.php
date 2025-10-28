@@ -50,13 +50,14 @@
                     </select>
                 </div>
                 <div>
-                    <label>Max Price</label>
-                    <input type="number" name="max_price" id="max_price" class="form-input w-full border rounded-lg p-2">
-                </div>
-                <div>
                     <label>Min Price</label>
                     <input type="number" name="min_price" id="min_price" class="form-input w-full border rounded-lg p-2">
                 </div>
+                <div>
+                    <label>Max Price</label>
+                    <input type="number" name="max_price" id="max_price" class="form-input w-full border rounded-lg p-2">
+                </div>
+
                 <div>
                     <label>Order Count</label>
                     <input type="number" name="order_count" id="order_count" class="form-input w-full border rounded-lg p-2">

@@ -381,7 +381,7 @@ public function removeFromCart(Request $request)
         $order = \App\Models\Order::create([
             'order_id' => $request['orderId'],
             'user_id' => auth()->id(),
-            'address_id' => 53,
+            'address_id' => Cache::get('address_id_'.Auth::id()),
             'phone' => auth()->user()->mobile_number,
             'email' => auth()->user()->email,
             'status' => 1,

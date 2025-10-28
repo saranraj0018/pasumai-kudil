@@ -46,6 +46,8 @@ $(function () {
         e.preventDefault();
 
         let applyFor = $("#apply_for").val();
+        let min_price = $("#min_price").val();
+        let max_price = $("#max_price").val();
 
         // validation fields
         let fields = [
@@ -58,13 +60,30 @@ $(function () {
             { id: "#status", condition: (val) => val === "", message: "Please select status" },
         ];
 
-        if (applyFor == 2) {
+        if (applyFor === 2) {
         fields.push({
             id: "#order_count",
             condition: (val) => val === "" || val <= 0,
             message: "Order count is required for this coupon type"
         });
     }
+
+        if (min_price > 0 && max_price > 0) {
+        fields.push(
+            {
+                id: "#min_price",
+                condition: () =>
+                    !isNaN(min_price) && !isNaN(max_price) && min_price > max_price,
+                message: "Min price cannot be greater than max price",
+            },
+            {
+                id: "#max_price",
+                condition: () =>
+                    !isNaN(min_price) && !isNaN(max_price) && max_price < min_price,
+                message: "Max price cannot be less than min price",
+            }
+        );
+        }
 
         let isValid = true;
         for (const field of fields) {
