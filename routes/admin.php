@@ -7,13 +7,14 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\UserlistController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\DeliveryListController;
 use App\Http\Controllers\Admin\DeliveryPartnerController;
 use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ShippingController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\HubController;
-
+use App\Http\Controllers\Admin\TodayDeliveryController;
 
 Route::prefix('admin')->group(function () {
 
@@ -96,11 +97,22 @@ Route::prefix('admin')->group(function () {
             Route::post('/save-delivery-partner', 'saveDeliveryPartner')->name('save_delivery_partner');
             Route::post('/delete-delivery-partner', 'deleteDeliveryPartner')->name('delete_delivery_partner');
         });
+
+        Route::prefix('delivery_list')->controller(DeliveryListController::class)->group(function () {
+            Route::get('/delivery-list', 'index')->name('lists.delivery_list');
+            Route::post('/status-save', 'statusSave')->name('save.delivery_status_save');
+        });
+
+        Route::prefix('today_delivery')->controller(TodayDeliveryController::class)->group(function () {
+            Route::get('/today-delivery-list', 'index')->name('lists.today_delivery_list');
+        });
+
         Route::prefix('milk')->controller(App\Http\Controllers\Admin\SubscriptionController::class)->group(function () {
             Route::get('/subscription', 'view')->name('view.milk.subscription');
             Route::post('/save', 'save')->name('save.milk.subscription');
             Route::post('/delete', 'destroy')->name('delete.milk.subscription');
         });
+
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
         Route::post('/user_logout', [Authenticate::class, 'user_logout'])->name('admin.user_logout');
     });

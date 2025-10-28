@@ -13,7 +13,7 @@
             </button>
         </div>
 
-        <div class="overflow-x-auto bg-white rounded-xl shadow-md" id="deleveryTableWrapper">
+        <div class="overflow-x-auto bg-white rounded-xl shadow-md" id="deliveryTableWrapper">
             <table id="products" class="w-full text-sm text-left text-gray-700 border-collapse">
                 <thead>
                     <tr class="bg-[#ab5f00] text-white text-sm uppercase tracking-wider">
@@ -31,7 +31,7 @@
                             <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3">{{ $partner->name ?? ''}}</td>
                             <td class="px-4 py-3">{{ $partner->mobile_number ?? '' }}</td>
-                            <td class="px-4 py-3">{{ $partner->hub_id ?? ''}}</td>
+                            <td class="px-4 py-3">{{ $partner->get_hub->name ?? ''}}</td>
                            <td class="px-4 py-3 flex justify-center gap-4">
                             <!-- Edit -->
                             <button
