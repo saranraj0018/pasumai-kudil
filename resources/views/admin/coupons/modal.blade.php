@@ -41,7 +41,7 @@
             </div>
 
             <!-- Apply For + Prices + Orders -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 <div>
                     <label>Apply For</label>
                     <select name="apply_for" id="apply_for" class="form-input w-full border rounded-lg p-2">
@@ -50,17 +50,30 @@
                     </select>
                 </div>
                 <div>
-                    <label>Max Price</label>
-                    <input type="number" name="max_price" id="max_price" class="form-input w-full border rounded-lg p-2">
-                </div>
-                <div>
                     <label>Min Price</label>
                     <input type="number" name="min_price" id="min_price" class="form-input w-full border rounded-lg p-2">
                 </div>
                 <div>
-                    <label>Order Count</label>
-                    <input type="number" name="order_count" id="order_count" class="form-input w-full border rounded-lg p-2">
+                    <label>Max Price</label>
+                    <input type="number" name="max_price" id="max_price" class="form-input w-full border rounded-lg p-2">
                 </div>
+
+            </div>
+            <div id="order_count_tab" class="hidden">
+            <div class="grid grid-cols-2 md:grid-cols-2 gap-2">
+                <div>
+                    <label>Order</label>
+                    <select name="order_type" id="order_type" class="form-input w-full border rounded-lg p-2">
+                        <option value="1">Daily</option>
+                        <option value="2">Order Success Count</option>
+                    </select>
+                </div>
+            <div>
+                <label>Order Count</label>
+                <input type="number" name="order_count" id="order_count" class="form-input w-full border rounded-lg p-2">
+            </div>
+
+            </div>
             </div>
 
             <!-- Expiry + Status -->
