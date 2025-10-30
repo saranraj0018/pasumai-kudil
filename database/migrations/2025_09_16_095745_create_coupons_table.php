@@ -22,6 +22,8 @@ return new class extends Migration
                 $table->double('max_price')->nullable()->default(0);
                 $table->double('min_price')->default(0);
                 $table->integer('order_count')->nullable();
+                $table->integer('order_type')->nullable();
+                $table->tinyInteger('order_type')->nullable()->comment('1-Daily, 2-Order-count');
                 $table->boolean('status')->default(1);
                 $table->date('expires_at')->nullable();
                 $table->timestamps();
@@ -34,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        
+
     }
 };

@@ -254,8 +254,39 @@ public function removeFromCart(Request $request)
             }
         }
 
-        if ($coupon->apply_for == 2 && in_array($coupon->discount_type, [1, 2])) {
-            $used_coupons = Order::where('coupon_id',$coupon->id)->where('status',4)->count() ?? 0;
+
+        if ($coupon->apply_for == 2 && $coupon->order_type == 2) {
+            if (!empty($min_price) && $total_amount < $min_price || !empty($max_price) && $total_amount > $max_price) {
+                return $discount;
+            }
+
+           $total = Order::where('status',4)->count();
+            if ($coupon->order_count == $total + 1) {
+                return ($coupon->discount_type == 1)
+                    ? ($total_amount * $discount_value / 100)
+                    : (int)$discount_value;
+            }
+
+        }
+
+        if ($coupon->apply_for == 2 && in_array($coupon->discount_type, [1, 2]) && $coupon->order_type == 1) {
+            $today = now()->format('Y-m-d');
+            $used_coupons = Order::where('coupon_id',$coupon->id)->where('status',4)->whereDate('created_at', $today)->count() ?? 0;
+
+            $user_used_today = Order::where('coupon_id', $coupon->id)
+                ->where('user_id', Auth::id())
+                ->whereDate('created_at', $today)
+                ->where('status', 4)
+                ->exists();
+
+            if ($user_used_today) {
+                return $discount;
+            }
+
+            if (!empty($min_price) && $total_amount < $min_price || !empty($max_price) && $total_amount > $max_price) {
+                return $discount;
+            }
+
 
             $applied_count = Setting::where('data_value',$coupon->id)
                 ->where('expires_at', '>=', now())

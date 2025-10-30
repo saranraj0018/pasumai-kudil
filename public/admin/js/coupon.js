@@ -41,6 +41,19 @@ $(function () {
         alpine.open = true;
     });
 
+    function toggleOrderCount() {
+        let applyFor = $("#apply_for").val();
+        if (applyFor === "2") {
+            $("#order_count_tab").show();
+        } else {
+            $("#order_count_tab").hide();
+            $("#order_count").val(""); // clear value when hidden
+        }
+    }
+    $("#apply_for").on("change", function () {
+        toggleOrderCount();
+    });
+
     // ===== COUPON FORM SUBMIT =====
     $(document).on("submit", "#couponForm", function (e) {
         e.preventDefault();
@@ -59,8 +72,7 @@ $(function () {
             { id: "#expires_at", condition: (val) => val === "", message: "Expiry date is required" },
             { id: "#status", condition: (val) => val === "", message: "Please select status" },
         ];
-
-        if (applyFor === 2) {
+        if (applyFor === '2') {
         fields.push({
             id: "#order_count",
             condition: (val) => val === "" || val <= 0,
