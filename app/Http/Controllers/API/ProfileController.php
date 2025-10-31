@@ -175,4 +175,22 @@ class ProfileController extends Controller
             ], $th->getCode() ?: 500);
         }
     }
+
+
+    public function checkLocation(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'lat' => 'required',
+            'lng' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 409,
+                'message' => $validator->errors()->first(),
+            ], 409);
+        }
+
+
+    }
 }

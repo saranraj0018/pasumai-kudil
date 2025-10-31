@@ -22,6 +22,7 @@ Route::group(['prefix' => 'user'], function () {
 
         //home
         Route::get('/home', [HomeController::class, 'index']);
+        Route::post('/check-location', [ProfileController::class, 'checkLocation']);
 
         //category
         Route::get('/category-list', [CategoryController::class, 'index']);
