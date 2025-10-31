@@ -8,6 +8,7 @@ class Subscription extends Model
 {
      protected $casts = [
         'delivery_days' => 'array',
+        'plan_details' => 'array',
     ];
 
     public function get_user()

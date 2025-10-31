@@ -38,16 +38,17 @@
                                         {{ $isDelivered ? 'Delivered' : 'Pending' }}
                                     </span>
                                 </td>
-
-                                <td class="px-4 py-3 flex justify-center gap-4">
-                                    <!-- Edit -->
-                                    <button class="text-blue-600 hover:text-blue-800 transition editDeliveryList"
-                                        data-id="{{ $list->id }}" data-user_id="{{ $list->user_id ?? '' }}"
-                                        data-status="{{ $list->delivery_status ?? '' }}"
-                                        data-image="{{ $list->image ? asset('storage/' . $list->image) : '' }}">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                </td>
+                                @if ($list->delivery_status == 'pending')
+                                    <td class="px-4 py-3 flex justify-center gap-4">
+                                        <!-- Edit -->
+                                        <button class="text-blue-600 hover:text-blue-800 transition editDeliveryList"
+                                            data-id="{{ $list->id }}" data-user_id="{{ $list->user_id ?? '' }}"
+                                            data-status="{{ $list->delivery_status ?? '' }}"
+                                            data-image="{{ $list->image ? asset('storage/' . $list->image) : '' }}">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     @else

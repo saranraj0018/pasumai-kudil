@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('bank_name', 255)->nullable();
             $table->string('ifsc_code', 255)->nullable();
             $table->string('account_holder_name', 255)->nullable();
+            $table->string('branch', 255)->nullable();
         });
     }
 

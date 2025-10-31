@@ -35,7 +35,7 @@
                                 <button class="text-blue-600 hover:text-blue-800 transition editSubscriptionBtn"
                                     data-id="{{ $sub->id }}" data-amount="{{ $sub->plan_amount }}"
                                     data-pack="{{ $sub->plan_pack }}" data-type="{{ $sub->plan_type }}"
-                                    data-duration="{{ $sub->plan_duration }}" data-details="{{ $sub->plan_details }}"
+                                    data-duration="{{ $sub->plan_duration }}" data-details="{{ implode(', ', $sub->plan_details) }}"
                                     data-quantity="{{ $sub->quantity }}" data-pack_details="{{ $sub->pack }}"
                                     data-delivery_days="{{ $sub->delivery_days }}"
                                     data-plan_name="{{ $sub->plan_name }}"

@@ -20,6 +20,8 @@ return new class extends Migration
             $table->date('delivery_date');
             $table->string('delivery_status')->default('pending');
             $table->string('image', 255)->nullable();
+            $table->integer('quantity')->nullable();
+            $table->string('pack')->nullable();
             $table->timestamps();
         });
     }

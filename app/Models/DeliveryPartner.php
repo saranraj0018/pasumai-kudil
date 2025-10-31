@@ -15,4 +15,9 @@ class DeliveryPartner extends Model
     {
         return $this->belongsTo(City::class, 'hub_id', 'hub_id');
     }
+
+  public function get_daily_deliveries()
+    {
+        return $this->hasMany(DailyDelivery::class, 'delivery_id', 'id');
+    }
 }

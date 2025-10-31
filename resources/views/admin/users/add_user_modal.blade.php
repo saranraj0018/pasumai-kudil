@@ -11,7 +11,7 @@
         latitude: null,
         longitude: null,
         stepNumber: 0,
-        errors: {}, // ✅ Added missing reactive object
+        errors: {}, // Added missing reactive object
         form: {
             name: '',
             email: '',
@@ -46,7 +46,7 @@
             <!-- Modal Box -->
             <div class="bg-white p-4 rounded-2xl shadow-2xl w-full max-w-[90%] relative z-50">
                 <h2 class="text-2xl font-bold mb-6 text-gray-800" id="product_label">Add User</h2>
-                <form id="userAddForm" enctype="multipart/form-data" novalidate
+                <form autocomplete="off"  id="userAddForm" enctype="multipart/form-data" novalidate
                     class="flex flex-col justify-start items-start w-full  h-[65vh] overflow-y-scroll">
                     @csrf
                     <input type="hidden" name="latitude" x-model="latitude">
@@ -60,17 +60,17 @@
                             <div>
                                 <x-label>Name</x-label>
                                 <x-input type="text" x-model="form.name" name="name" id="name"
-                                    placeholder="Enter Your Name" required />
+                                    placeholder="Enter Your Name"  autocomplete="off" required />
                             </div>
                             <div>
                                 <x-label>Email</x-label>
                                 <x-input type="text" x-model="form.email" name="email" id="email"
-                                    placeholder="Enter Your Email" />
+                                    placeholder="Enter Your Email"  autocomplete="off"/>
                             </div>
                             <div>
                                 <x-label>Mobile Number</x-label>
                                 <x-input type="text" x-model="form.mobile_number" name="mobile_number"
-                                    id="mobile_number" placeholder="Enter Your Mobile Number" required />
+                                    id="mobile_number" placeholder="Enter Your Mobile Number"  autocomplete="off" required />
                             </div>
                             <div>
                                 <x-label>Plan Name</x-label>

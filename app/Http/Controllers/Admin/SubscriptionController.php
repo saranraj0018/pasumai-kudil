@@ -32,12 +32,13 @@ class SubscriptionController extends Controller
         if ($request->id && !$sub) {
             return response()->json(['success' => false, 'message' => 'Subscription not found'], 404);
         }
+        $planDetailArray = array_map('trim', explode(',', $request->plan_details));
         $sub->plan_amount = $request->plan_amount;
         $sub->plan_pack = $request->plan_type !== 'Customize' ? (int)$request->plan_pack : 0;
         $sub->plan_name = $request->plan_name;
         $sub->plan_type = $request->plan_type;
         $sub->plan_duration = $request->plan_duration;
-        $sub->plan_details = json_decode($request->plan_details) ?? null;
+        $sub->plan_details = $planDetailArray ?? null;
         $sub->quantity = $request->quantity ?? null;
         $sub->pack = $request->pack ?? null;
         $sub->delivery_days = $request->plan_type === 'Customize' ? $request->delivery_days : null;
