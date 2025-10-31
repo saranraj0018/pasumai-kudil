@@ -6,6 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class DailyDelivery extends Model
 {
+
+    protected $table = 'daily_deliveries';
+    public $timestamps = true;
+
+    protected $fillable = [
+        'user_id',
+        'delivery_id',
+        'subscription_id',
+        'delivery_date',
+        'pack',
+        'quantity',
+        'delivery_status',
+        'amount'
+    ];
+
     public function get_user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');

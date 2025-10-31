@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateDailyDeliveries;
 use App\Models\Subscription;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -11,6 +12,7 @@ use App\Models\UserSubscription;
 use App\Models\Wallet;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 
 class UserlistController extends Controller
@@ -51,7 +53,7 @@ class UserlistController extends Controller
     public function userProfileView(Request $request)
     {
         $this->data['user'] = User::with('get_wallet')->where('id', $request->id)->first();
-        $this->data['getuserSubscription'] = UserSubscription::where('user_id', $request->id)->first();
+        $this->data['getuserSubscription'] = UserSubscription::where(['user_id' => $request->id, 'status' => 1])->first();
         return view('admin.users.users_view')->with($this->data);
     }
 
@@ -68,33 +70,34 @@ class UserlistController extends Controller
             'type'   => 'required',
             'amount'    => 'required',
         ];
+
         $request->validate($rules);
 
         DB::beginTransaction();
-
         try {
-            $exist_wallet = Wallet::where('user_id', $request['user_id'])->first();
+            $exist_wallet = Wallet::where('user_id', $request['id'])->first();
             if (!empty($exist_wallet)) {
                 if ($request['type'] == 'credit') {
                     $amount = $exist_wallet->balance + $request['amount'];
                 } else {
                     $amount = $exist_wallet->balance - $request['amount'];
                 }
-                $update = Wallet::where('user_id', $request['user_id'])->update([
+                $update = Wallet::where('user_id', $request['id'])->update([
                     'balance' => $amount
                 ]);
             } else {
                 $wallet = new Wallet();
-                $wallet->user_id   = $request['user_id'];
+                $wallet->user_id   = $request['id'];
                 $wallet->balance   = $request['amount'];
                 $wallet->save();
             }
 
             $transaction = new Transaction();
-            $transaction->user_id  = $request['user_id'];
+            $transaction->user_id  = $request['id'];
             $transaction->type = $request['type'];
             $transaction->amount  = $request['amount'] ?? 0;
             $transaction->description = $request['description'] ?? '';
+            $transaction->date = date('Y-m-d');
             $transaction->save();
 
             DB::commit();
@@ -176,7 +179,6 @@ class UserlistController extends Controller
             $existing_subscription = UserSubscription::where('user_id', $user->id)->first();
 
             if ($existing_subscription && $existing_subscription->status == 1) {
-                // Active subscription exists → do NOT create new
                 return response()->json([
                     'success' => false,
                     'message' => 'User already has an active subscription. Please deactivate it before adding a new one.'
@@ -189,8 +191,9 @@ class UserlistController extends Controller
             $user_subscription->start_date      = $start_date_formatted;
             $user_subscription->end_date        = $end_date_formatted;
             $user_subscription->valid_date      = $valid_date_formatted;
-            $user_subscription->pack            = $subscription->plan_pack ?? 0;
+            $user_subscription->pack            = $subscription->pack ?? 0;
             $user_subscription->quantity        = $subscription->quantity ?? 0;
+            $user_subscription->status        = 1;
             $user_subscription->save();
 
             $update = User::where('id', $user->id)->update([
@@ -198,6 +201,27 @@ class UserlistController extends Controller
             ]);
 
             DB::commit();
+            $start = Carbon::parse($user_subscription->start_date);
+            $end   = Carbon::parse($user_subscription->end_date);
+            $dates = collect();
+
+            while ($start->lte($end)) {
+                $dates->push($start->toDateString());
+                $start->addDay();
+            }
+
+            /** 🔹 Chunk and batch the jobs */
+            $batch = Bus::batch([])->name("DailyDeliveries for User {$user->id}")->dispatch();
+
+            foreach ($dates->chunk(50) as $chunk) {
+                $jobs = $chunk->map(
+                    fn($date) =>
+                    new GenerateDailyDeliveries($user_subscription, [$date])
+                )->all();
+
+                $batch->add($jobs);
+            }
+
 
             return response()->json([
                 'success' => true,
@@ -213,7 +237,6 @@ class UserlistController extends Controller
             ], 500);
         }
     }
-
 
     public function getCustomSubscription(Request $request)
     {
@@ -264,7 +287,6 @@ class UserlistController extends Controller
     public function cancelSubscription(Request $request)
     {
         try {
-
             $exist_check = UserSubscription::where('user_id', $request['user_id'])->first();
             if (!$exist_check) {
                 return response()->json([
@@ -293,21 +315,45 @@ class UserlistController extends Controller
     public function modifySubscription(Request $request)
     {
         try {
-            $exist_check = UserSubscription::where('user_id', $request['user_id'])->first();
-            if (!$exist_check) {
+            $userId = $request->user_id;
+            $subscription = UserSubscription::where(['user_id' => $userId, 'status' => 1])->first();
+            if (!$subscription) {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'No active subscription found for this user.'
-                ], 404);
+                    'status' => 404,
+                    'message' => 'Subscription not found.'
+                ]);
             }
-            $update_status = UserSubscription::where('user_id', $request['user_id'])->update([
-                'cancelled_date'  => json_encode([
-                    'start_date' => $request->start_date,
-                    'end_date' => $request->end_date
-                ]),
-                'description' => $request['description']
-            ]);
-
+            // Convert to Carbon instances
+            $endDate = Carbon::parse($subscription->end_date);
+            $validDate = Carbon::parse($subscription->valid_date);
+            $cancelStart = Carbon::parse($request->start_date);
+            $cancelEnd = Carbon::parse($request->end_date);
+            $cancelDays = $cancelStart->diffInDays($cancelEnd) + 1;
+            $newEndDate = $endDate->copy()->addDays($cancelDays);
+            $greaterthan = false;
+            if ($newEndDate->greaterThan($validDate)) {
+                $greaterthan = true;
+                $newEndDate = $validDate;
+            }
+            $existingCancelled = $subscription->cancelled_date
+                ? json_decode($subscription->cancelled_date, true)
+                : [];
+            if (!is_array($existingCancelled)) {
+                $existingCancelled = [];
+            }
+            $existingCancelled[] = [
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+            ];
+            // Update record
+            if (!$greaterthan) {
+                $update_status = UserSubscription::where('user_id', $userId)->update([
+                    'cancelled_date' => json_encode($existingCancelled),
+                    'description' => $request->description,
+                    'end_date' => $newEndDate->format('Y-m-d'),
+                    'updated_at' => now(),
+                ]);
+            }
             return response()->json([
                 'success' => true,
                 'message' => 'Subscription date has been successfully updated!',
