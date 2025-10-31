@@ -13,14 +13,13 @@ class DeliveryPartnerController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('query');
-        $this->data['delivery_partner'] = DeliveryPartner::with('get_hub')
+        $this->data['delivery_partner'] = DeliveryPartner::with('get_hub', 'get_daily_deliveries')
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                       ->where('mobile_number', 'like', "%{$search}%");
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-
         $this->data['hub'] = Hub::get();
         $this->data['search'] = $search;
         return view('admin.delivery_partner.index')->with($this->data);

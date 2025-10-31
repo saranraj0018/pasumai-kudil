@@ -26,7 +26,7 @@
 
                 <form id="walletAddForm" enctype="multipart/form-data" novalidate class="flex flex-col space-y-5">
                     @csrf
-                    <x-input name="user_id" value="{{ request()->id }}" type="hidden" />
+                    <x-input name="id" value="{{ request()->id }}" type="hidden" />
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -104,7 +104,7 @@
 
                 <form id="accountAddForm" enctype="multipart/form-data" novalidate class="flex flex-col space-y-5">
                     @csrf
-                    <x-input name="user_id" value="{{ request()->id }}" type="hidden" />
+                    <x-input name="id" value="{{ request()->id }}" type="hidden" />
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <x-label>Account Holder Name</x-label>
@@ -221,7 +221,12 @@
 
 <!-- Load once in your layout head (only once) -->
 
-<div id="modifySubscriptionModal" x-data="modifySubscription('{{ $userSubscription->start_date ?? '' }}', '{{ $userSubscription->valid_date ?? '' }}')" x-init="init()" x-cloak
+<div id="modifySubscriptionModal" x-data="modifySubscription(
+    '{{ $userSubscription->start_date ?? '' }}',
+    '{{ $userSubscription->valid_date ?? '' }}',
+    {{ Js::from($userSubscription->cancelled_date ?? []) }}
+
+)" x-init="init()" x-cloak
     @keydown.escape.window="closeModal()">
 
     <div x-show="open" x-transition.opacity class="fixed inset-0 flex items-center justify-center z-50"
@@ -274,24 +279,30 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-    window.modifySubscription = function(startDate, validateDate) {
+    window.modifySubscription = function(startDate, validDate, cancelledDates = []) {
         return {
             open: false,
             fp: null,
             minDate: startDate,
-            maxDate: validateDate,
+            maxDate: validDate,
+            cancelledDates: Array.isArray(cancelledDates) ? cancelledDates : JSON.parse(cancelledDates || '[]'),
             form: {
                 start_date: '',
                 end_date: '',
                 description: '',
             },
             init() {
+                // Disable field if last end_date equals valid_date
+                const lastEnd = this.cancelledDates[this.cancelledDates.length - 1]?.end_date;
+                if (lastEnd === this.maxDate) {
+                    this.$nextTick(() => {
+                        this.$refs.dateInput.disabled = true;
+                        this.$refs.dateInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                    });
+                }
                 this.$watch('open', (isOpen) => {
-                    if (isOpen) {
-                        this.$nextTick(() => this.initDatePicker());
-                    } else {
-                        this.destroyPicker();
-                    }
+                    if (isOpen) this.$nextTick(() => this.initDatePicker());
+                    else this.destroyPicker();
                 });
             },
             openModal() {
@@ -302,23 +313,68 @@
             },
             initDatePicker() {
                 if (typeof flatpickr === 'undefined') {
-                    console.error('Flatpickr still not available.');
+                    console.error('Flatpickr not available.');
                     return;
                 }
                 const input = this.$refs.dateInput;
                 const container = this.$refs.calendarContainer;
                 if (!input || !container) return;
-                this.destroyPicker(); // reset before initializing
+
+                this.destroyPicker();
+if (!Array.isArray(this.cancelledDates)) {
+    try {
+        console.log('testing1');
+        this.cancelledDates = JSON.parse(this.cancelledDates);
+        if (!Array.isArray(this.cancelledDates)) this.cancelledDates = [];
+    } catch {
+         console.log('testing0');
+        this.cancelledDates = [];
+    }
+}
+
+if(this.cancelledDates.length > 0){
+   cancelDate = this.cancelledDates;
+}else{
+    cancelDate = [];
+}
+
+
+                const highlightRanges = this.cancelledDates.map(range => ({
+                    from: range.start_date,
+                    to: range.end_date
+                }));
+
                 this.fp = flatpickr(input, {
                     mode: 'range',
                     dateFormat: 'Y-m-d',
                     altInput: true,
                     altFormat: 'Y-m-d',
-                    animate: false,
                     static: true,
                     appendTo: container,
-                    minDate: this.minDate, // <-- limit from backend
-                    maxDate: this.maxDate, // <-- limit from backend
+                    minDate: this.minDate,
+                    maxDate: this.maxDate,
+                    disable: highlightRanges, // prevent re-selecting cancelled days
+                    onDayCreate: (dObj, dStr, fp, dayElem) => {
+                        const normalize = (dateStr) => {
+                            // Split manually so JS never applies timezone conversion
+                            const [y, m, d] = dateStr.split('-').map(Number);
+                            return new Date(y, m - 1, d); // local date
+                        };
+                        const current = new Date(dayElem.dateObj.getFullYear(), dayElem.dateObj
+                            .getMonth(), dayElem.dateObj.getDate());
+                        const inRange = this.cancelledDates.some(range => {
+                            const start = normalize(range.start_date);
+                            const end = normalize(range.end_date);
+                            return current >= start && current <= end;
+                        });
+                        if (inRange) {
+                            dayElem.style.backgroundColor = '#ef4444';
+                            dayElem.style.color = 'white';
+                            dayElem.style.borderRadius = '4px';
+                            dayElem.title = 'Cancelled';
+                        }
+                    },
+
                     onChange: (dates) => {
                         if (dates.length === 2) {
                             this.form.start_date = this.formatYMD(dates[0]);
@@ -328,21 +384,20 @@
                             this.form.end_date = '';
                         }
                     },
-
                 });
             },
+
             destroyPicker() {
-                if (this.fp && typeof this.fp.destroy === 'function') {
-                    this.fp.destroy();
-                }
+                if (this.fp && typeof this.fp.destroy === 'function') this.fp.destroy();
                 this.fp = null;
             },
+
             formatYMD(dt) {
-                const year = dt.getFullYear();
-                const month = String(dt.getMonth() + 1).padStart(2, '0');
-                const day = String(dt.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
+                const y = dt.getFullYear();
+                const m = String(dt.getMonth() + 1).padStart(2, '0');
+                const d = String(dt.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
             }
-        }
+        };
     }
 </script>

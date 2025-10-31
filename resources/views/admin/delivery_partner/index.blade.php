@@ -44,12 +44,11 @@
                             </button>
 
                             <!-- Delete -->
-                            {{-- @if (isset($sub->get_user) && !empty($sub->get_user))
-                            @else --}}
+                            @if ($partner->get_daily_deliveries->isEmpty())
                             <button class="text-red-600 hover:text-red-800 deleteDeliveryPartner" data-id="{{ $partner->id }}">
                                 <i class="fa-solid fa-delete-left"></i>
                             </button>
-                            {{-- @endif --}}
+                            @endif
                         </td>
                         </tr>
                     @endforeach

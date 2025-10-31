@@ -8,6 +8,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Models\DeliveryPartner;
 use App\Models\DailyDelivery;
+use App\Models\Wallet;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -62,6 +63,18 @@ class GenerateDailyDeliveries extends Command
 
             // Calculate per-day amount
             $amount = $this->calculatePerDayAmount($plan, $sub);
+            $wallet_check = Wallet::where('user_id', $user->id)->first();
+
+            if (!$wallet_check) {
+                $this->warn("Skipped: No wallet found for user {$user->id}");
+                continue;
+            }
+
+            if ($wallet_check->balance < $amount) {
+                $this->warn("Skipped: insufficient balance for User ID {$user->id}.");
+                continue;
+            }
+
             $this->info("Calculated per-day amount: {$amount}");
 
             // Find mapped delivery partner based on polygon match
@@ -121,13 +134,19 @@ class GenerateDailyDeliveries extends Command
      */
     private function getMappedDeliveryPartner($user)
     {
-        $partners = DeliveryPartner::with('get_map_address')->get();
+        $partners = DeliveryPartner::with('get_map_address', 'get_hub')->get();
         $this->info("Checking delivery partners for user {$user->id}");
 
         foreach ($partners as $partner) {
-            if (!$partner->get_map_address) {
-                $this->warn("Partner {$partner->id} has no mapped address");
+
+            if ($partner->get_hub->type == 1) {
+                $this->warn("Polygon not created for Partner ID {$partner->id} in this Hub.");
                 continue;
+            }
+
+            if (!$partner->get_map_address) {
+                    $this->warn("Partner {$partner->id} has no mapped address");
+                    continue;
             }
 
             // Decode the coordinates (some DBs store escaped JSON)
