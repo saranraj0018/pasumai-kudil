@@ -16,6 +16,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class GenerateDailyDeliveries implements ShouldQueue
 {
@@ -35,9 +36,10 @@ class GenerateDailyDeliveries implements ShouldQueue
         $sub = $this->subscription;
         $user = User::find($sub->user_id);
         $plan = Subscription::find($sub->subscription_id);
-        if (!$user || !$plan || $sub->status != 1) {
+        if (!$user || !$plan || $sub->status != 'Active') {
             return;
         }
+
         // $wallet = Wallet::where('user_id', $user->id)->first();
         // if (!$wallet) return;
         $amount = $this->calculatePerDayAmount($plan, $sub);

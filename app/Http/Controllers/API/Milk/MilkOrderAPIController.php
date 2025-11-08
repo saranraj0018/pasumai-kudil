@@ -235,7 +235,6 @@ class MilkOrderAPIController extends Controller
             $validated = $request->validate([
                 'order_id' => 'required|integer|exists:daily_deliveries,id',
                 'plan_id' => 'required|integer|exists:user_subscriptions,subscription_id',
-                'pack' => 'required|string',
                 'quantity' => 'required|integer|min:1',
                 'status' => 'required|string|in:cancel,live',
             ]);
@@ -263,7 +262,6 @@ class MilkOrderAPIController extends Controller
             $delivery_status = $validated['status'] === 'cancel' ? 'cancelled' : 'pending';
             $order->update([
                 'delivery_status' => $delivery_status,
-                'pack' => $validated['pack'],
                 'quantity' => $validated['quantity'],
             ]);
 
@@ -361,7 +359,6 @@ class MilkOrderAPIController extends Controller
                     ->where('user_id', $userId)
                     ->whereDate('delivery_date', '>', $cutoffDate)
                     ->delete();
-                Log::info("Deleted {$deleted} daily deliveries after {$cutoffDate}");
             }
 
             // ADD new daily deliveries if extended
@@ -374,7 +371,6 @@ class MilkOrderAPIController extends Controller
                         'delivery_date' => $start->format('Y-m-d'),
                         'delivery_status' => 'pending',
                         'quantity' => $subscribedQuantity,
-                        'pack' => $subscribedPack,
                         'amount' => $order->amount,
                     ]);
                     $start->addDay();
@@ -393,7 +389,6 @@ class MilkOrderAPIController extends Controller
                 if ($nextDelivery) {
                     $newQty = max($subscribedQuantity - $remainingQty, 1);
                     $nextDelivery->update(['quantity' => $newQty]);
-                    Log::info("Next delivery {$nextDelivery->id} quantity adjusted to {$newQty}");
                 }
             }
 

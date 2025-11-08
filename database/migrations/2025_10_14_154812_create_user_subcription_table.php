@@ -20,10 +20,11 @@ return new class extends Migration
             $table->date('valid_date')->nullable();
             $table->string('pack')->nullable();
             $table->integer('quantity')->default(1);
-            $table->integer('status')->default(1)->comment('1-active, 2-inactive');
+            $table->tinyInteger('status')->default(1)->comment('1-active, 2-inactive');
             $table->string('description')->nullable();
             $table->json('cancelled_date')->nullable();
             $table->date('in_active_date')->nullable();
+            $table->string('days',155)->nullable();
             $table->timestamps();
         });
     }

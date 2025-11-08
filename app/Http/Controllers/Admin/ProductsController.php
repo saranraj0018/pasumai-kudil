@@ -114,7 +114,6 @@ class ProductsController extends Controller
                 $product_details->is_featured_product  = $request['is_featured'] ?? 0;
                 $product_details->save();
                 $variantIdsInRequest[] = $product_details->id;
-                    Log::info("Created variant ID {$product_details->id}");
                 }
             }
         }

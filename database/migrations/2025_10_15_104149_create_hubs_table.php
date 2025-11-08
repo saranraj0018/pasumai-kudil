@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('user_id');
             $table->text('address')->nullable();
-            $table->string('name',100);
+            $table->text('name');
             $table->string('latitude',100);
             $table->string('longitude',100);
             $table->tinyInteger('type')->nullable()->comment('1-Grocery, 2-Milk');
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        
+
     }
 };

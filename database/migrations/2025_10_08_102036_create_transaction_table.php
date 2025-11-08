@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('no action');
             $table->enum('type', ['credit', 'debit']);
             $table->decimal('amount', 12, 2);
+            $table->decimal('balance_amount', 12, 2);
             $table->date('date')->nullable();
             $table->string('description')->nullable();
             $table->timestamps();

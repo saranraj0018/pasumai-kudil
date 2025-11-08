@@ -8,6 +8,7 @@ use App\Models\Hub;
 use App\Models\HubArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class HubController extends Controller
 {
@@ -17,13 +18,31 @@ class HubController extends Controller
    }
 
    public function citySave(Request $request) {
-       $request->validate([
-           'hub_name' => 'required|string|max:144',
+
+       $validator = Validator::make($request->all(), [
+           'hub_name' => 'required|string',
            'latitude' => 'required|numeric',
            'longitude' => 'required|numeric',
            'status' => 'required|in:0,1',
-           'type' => 'required|in:1,2',
+           'type' => [
+               'required',
+               'in:1,2',
+               function ($attribute, $value, $fail) {
+                   if ($value == 1 && \App\Models\Hub::where('type', 1)->exists()) {
+                       $fail('Only one record with type = 1 is allowed.');
+                   }
+               },
+           ],
        ]);
+
+       if ($validator->fails()) {
+           return response()->json([
+               'status' => 409,
+               'message' => $validator->errors()->first(),
+           ], 409);
+       }
+
+
        $city = !empty($request['hub_id']) ? Hub::find($request['hub_id']) : new Hub();
        $city->address = $request['hub_name'];
        $city->type = $request['type'];
