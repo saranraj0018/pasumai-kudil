@@ -20,10 +20,16 @@ class MilkAPIController extends Controller
             $wallet = Wallet::where('user_id', $user->id)->first();
             if (!$wallet) {
                 return response()->json([
-                    'status' => 404,
+                    'status' => 200,
                     'message' => 'Wallet not found for this user.',
-                    'response' => null,
-                ], 404);
+                    'response' =>   [
+                        'wallet_balance' =>0.0,
+                        'validity' =>  null,
+                        'subscription' => false,
+                        'recent_activity' => [],
+                        'createdAt' =>null,
+                    ],
+                ], 200);
             }
             // Check active subscription
             $subscription = UserSubscription::where('user_id', $user->id)
@@ -133,12 +139,14 @@ class MilkAPIController extends Controller
             }
             // Convert month name to number
             $monthNumber = Carbon::parse("1 $monthName")->month;
+
             $year = Carbon::now()->year;
             // Get active subscription
             $subscription = UserSubscription::with('get_subscription')->where('user_id', $userId)
                 ->where('status', 1)
                 ->latest()
                 ->first();
+
             $quantity = $subscription->get_subscription->quantity ?? 0;
             $pack = $subscription->get_subscription->pack ?? '';
             if (!$subscription) {
@@ -167,24 +175,25 @@ class MilkAPIController extends Controller
                 ->toArray();
 
             // Extract cancelled dates (from subscription JSON)
-            $cancelledDates = [];
             $cancelledData = json_decode($subscription->cancelled_date, true);
-            if (!empty($cancelledData['start_date']) && !empty($cancelledData['end_date'])) {
-                $start = Carbon::parse($cancelledData['start_date']);
-                $end = Carbon::parse($cancelledData['end_date']);
+            $cancelledDates = [];
 
-                $cancelledDates = collect($start->daysUntil($end))
-                    ->filter(fn($d) => $d->month == $monthNumber && $d->year == $year)
-                    ->map(fn($d) => $d->format('d M Y'))
-                    ->toArray();
+            if (!empty($cancelledData) && is_array($cancelledData)) {
+                foreach ($cancelledData as $cancelled) {
+                    if (!empty($cancelled['start_date']) && !empty($cancelled['end_date'])) {
+                        $start = Carbon::parse($cancelled['start_date']);
+                        $end   = Carbon::parse($cancelled['end_date']);
+
+                        $dates = collect($start->daysUntil($end))
+                            ->filter(fn($d) => $d->month == $monthNumber && $d->year == $year)
+                            ->map(fn($d) => $d->format('d M Y'))
+                            ->toArray();
+
+                        $cancelledDates = array_merge($cancelledDates, $dates);
+                    }
+                }
             }
-            // Summary counts
-            $deliveriesCount = [
-                'scheduled' => count($scheduleDates),
-                'cancelled' => count($cancelledDates),
-                'completed' => count($completedDates),
-            ];
-            // ---- Dynamic Usage Summary ----
+
 
             // Convert pack (e.g., "500ml", "1ltr", "2ltr", "1/2ltr") to liters
             $packValue = 0;

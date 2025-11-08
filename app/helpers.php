@@ -72,7 +72,6 @@ if (!function_exists('milkPackTypes')) {
             '500ml' => '500 ml',
             '1ltr'  => '1 Ltr',
             '2ltr'  => '2 Ltr',
-            '1/2ltr' => '½ Ltr',
         ];
     }
 }

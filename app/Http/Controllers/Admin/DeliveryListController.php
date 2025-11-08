@@ -48,10 +48,11 @@ class DeliveryListController extends Controller
                                     ->exists();
             if(!$exist_transaction){
                 $transaction = new Transaction();
-                $transaction->user_id  = $get_user->user_id;;
+                $transaction->user_id  = $get_user->user_id;
                 $transaction->type = 'debit';
-                $transaction->amount  = $amount ?? 0;
-                $transaction->description = 'daily milk amount is' .$amount .'deducted sussussfully!'  ?? '';
+                $transaction->amount  = $get_user->amount ?? 0;
+                $transaction->balance_amount  = $amount ?? 0;
+                $transaction->description = 'daily milk amount is' .$amount .'deducted successfully!'  ?? '';
                 $transaction->date = $get_user->delivery_date;
                 $transaction->save();
 

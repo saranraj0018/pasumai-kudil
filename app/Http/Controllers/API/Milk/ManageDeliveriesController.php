@@ -13,46 +13,46 @@ use Illuminate\Support\Facades\Log;
 
 class ManageDeliveriesController extends Controller
 {
-    public function manageDeliveries(Request $request)
-    {
-        $userId = auth()->id();
-        $deliveries = DailyDelivery::where('user_id', $userId)->get();
-        if ($deliveries->isEmpty()) {
-            return response()->json([
-                'status' => 404,
-                'message' => 'No deliveries found for this user.'
-            ], 404);
-        }
-        $completed = $deliveries->where('delivery_status', 'delivered');
-        $pending = $deliveries->where('delivery_status', 'pending');
-        $cancelled = $deliveries->where('delivery_status', 'cancelled');
-        $completedDays = $completed->pluck('delivery_date')->map(function ($date) {
-            return \Carbon\Carbon::parse($date)->format('d M Y');
-        })->values();
-        $remainingDays = $pending->pluck('delivery_date')->map(function ($date) {
-            return \Carbon\Carbon::parse($date)->format('d M Y');
-        })->values();
-        $cancelledDays = $cancelled->pluck('delivery_date')->map(function ($date) {
-            return \Carbon\Carbon::parse($date)->format('d M Y');
-        })->values();
-        $first = $deliveries->first();
-        $response = [
-            'id' => $first->subscription_id,
-            'remaining' => $remainingDays->count(),
-            'completed' => $completedDays->count(),
-            'cancelled' => $cancelledDays->count(),
-            'pack_of_milk' => $first->pack ?? '',
-            'quantity' => $first->quantity ?? 0,
-            'completed_days' => $completedDays,
-            'remaining_days' => $remainingDays,
-            'cancelled_days' => $cancelledDays,
-        ];
-        return response()->json([
-            'status' => 200,
-            'message' => 'fetch successfully manage deliveries.',
-            'response' => $response,
-        ]);
-    }
+//    public function manageDeliveries(Request $request)
+//    {
+//        $userId = auth()->id();
+//        $deliveries = DailyDelivery::where('user_id', $userId)->get();
+//        if ($deliveries->isEmpty()) {
+//            return response()->json([
+//                'status' => 404,
+//                'message' => 'No deliveries found for this user.'
+//            ], 404);
+//        }
+//        $completed = $deliveries->where('delivery_status', 'delivered');
+//        $pending = $deliveries->where('delivery_status', 'pending');
+//        $cancelled = $deliveries->where('delivery_status', 'cancelled');
+//        $completedDays = $completed->pluck('delivery_date')->map(function ($date) {
+//            return \Carbon\Carbon::parse($date)->format('d M Y');
+//        })->values();
+//        $remainingDays = $pending->pluck('delivery_date')->map(function ($date) {
+//            return \Carbon\Carbon::parse($date)->format('d M Y');
+//        })->values();
+//        $cancelledDays = $cancelled->pluck('delivery_date')->map(function ($date) {
+//            return \Carbon\Carbon::parse($date)->format('d M Y');
+//        })->values();
+//        $first = $deliveries->first();
+//        $response = [
+//            'id' => $first->subscription_id,
+//            'remaining' => $remainingDays->count(),
+//            'completed' => $completedDays->count(),
+//            'cancelled' => $cancelledDays->count(),
+//            'pack_of_milk' => $first->pack ?? '',
+//            'quantity' => $first->quantity ?? 0,
+//            'completed_days' => $completedDays,
+//            'remaining_days' => $remainingDays,
+//            'cancelled_days' => $cancelledDays,
+//        ];
+//        return response()->json([
+//            'status' => 200,
+//            'message' => 'fetch successfully manage deliveries.',
+//            'response' => $response,
+//        ]);
+//    }
 
    public function updateManageDeliveries(Request $request)
 {
@@ -333,7 +333,6 @@ class ManageDeliveriesController extends Controller
                 ->whereDate('delivery_date', $d)
                 ->update([
                     'quantity' => $changeQty,
-                    'pack' => $subscription->get_subscription->pack,
                 ]);
         }
 

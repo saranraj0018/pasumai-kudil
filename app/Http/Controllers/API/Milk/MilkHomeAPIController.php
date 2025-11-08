@@ -3,15 +3,22 @@
 namespace App\Http\Controllers\API\Milk;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\DailyDeliveries;
+use App\Jobs\GenerateDailyDeliveries;
 use App\Models\Banner;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Models\UserSubscription;
 use App\Models\Wallet;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class MilkHomeAPIController extends Controller
 {
@@ -19,9 +26,7 @@ class MilkHomeAPIController extends Controller
     {
         try {
 
-            $userId = auth()->id() ?? session()->getId();
             $user = $request->user();
-
             if (!$user) {
                 return response()->json([
                     'status' => 401,
@@ -38,7 +43,13 @@ class MilkHomeAPIController extends Controller
             ->where('status', 1)
             ->latest()
             ->first();
-            $banner = Banner::whereIn('type',['MilkMain', 'MilkSub'])->pluck('image_url')->toArray();
+
+            $banner = Banner::where('type', 'MilkMain')
+                ->get()
+                ->map(function ($item) {
+                    return url('/storage/' . ltrim($item->image_url, '/'));
+                })
+                ->toArray();
             if (!$subscription) {
                 return response()->json([
                     'status' => 200,
@@ -60,22 +71,22 @@ class MilkHomeAPIController extends Controller
 
             // Build response
             $response = [
-                'user_image' => $user->image ?? 'https://example.com/default_user.jpg',
+                'user_image' => $user->image ? url('storage/'.$user->image) : 'https://example.com/default_user.jpg',
                 'user_name' => $user->name,
                 'plan_status' => $subscription->status,
                 'wallet_balance' => (string) $walletBalance,
                 'banner' => $banner,
                 'plan_details' => [
-                    'plan_id' => $subscription->plan_id,
-                    'plan_amount' => $subscription->amount,
-                    'delivery_type' => $subscription->delivery_type,
+                    'plan_id' => $subscription->subscription_id,
+                    'plan_amount' => $subscription->get_subscription?->plan_amount ?? 0,
+                    'delivery_type' => $subscription->delivery_type ?? 'Daily',
                     'pack' => $subscription->pack,
                     'quantity' => $subscription->quantity,
-                    'total_subscription_days' => (int) $subscription->total_days,
+                    'total_subscription_days' => (int) $subscription->days ?? 0,
                     'remaining_subscription_day' => $remainingDays,
                     'plan_start_date' => $startDate->format('d/m/Y'),
                     'plan_end_date' => $endDate->format('d/m/Y'),
-                    'subscription_type' => $subscription->subscription_type,
+                    'subscription_type' => $subscription->get_subscription?->plan_type ?? null,
                 ],
             ];
 
@@ -85,10 +96,138 @@ class MilkHomeAPIController extends Controller
                 'response' => $response,
             ], 200);
         } catch (\Exception $e) {
-            print_r($e->getMessage()); exit;
             return response()->json([
                 'status' => 500,
                 'message' => 'Something went wrong: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function createSubscription(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            "order_amount" => 'required|numeric',
+//            "paymentMode" => 'required|string', need to change
+//            "addressId" => 'required|string',
+        ]);
+
+        #check if successful
+        if ($validator->fails())
+            return response()->json([
+                'status' => 500,
+                'message' => $validator->errors()->first(),
+            ], 500);
+        $razorPayOrder = razorPay()->createOrder($request['order_amount']);
+        return response()->json([
+            'status' => 200,
+            'message' => 'Subscription created successfully!',
+            'order_id' => $razorPayOrder->id,
+        ], 200);
+
+    }
+
+    public function subscriptionPlan(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'subscription_id'           => 'required|integer',
+//            "transactionId" => "required", store db
+            "order_id" => "required"
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 409,
+                'message' => $validator->errors()->first(),
+            ], 409);
+        }
+
+
+        DB::beginTransaction();
+        try {
+            $subscription = Subscription::findOrFail($request['subscription_id']);
+
+            if ($request->filled('custom_days')) {
+                $daycount = (int) $request['custom_days'];
+                $daymonth = false;
+            } else {
+                $daycount = (int) $subscription->plan_pack;
+                $daymonth = true;
+            }
+
+            $start_date = Carbon::now()->addDay();
+
+            if ($daymonth) {
+                $end_date = $start_date->copy()->addMonthsNoOverflow($daycount);
+            } else {
+                $end_date = $start_date->copy()->addDays($daycount);
+            }
+
+            $validdaycount = (int) ($subscription->plan_duration ?? 0);
+            $valid_date = $end_date->copy()->addDays($validdaycount);
+
+            $start_date_formatted = $start_date->format('Y-m-d');
+            $end_date_formatted   = $end_date->format('Y-m-d');
+            $valid_date_formatted = $valid_date->format('Y-m-d');
+
+            $startDate = Carbon::parse($start_date_formatted);
+            $endDate = Carbon::parse($end_date_formatted);
+
+            $user = $request->user();
+            $user = $user ? User::where('mobile_number', $user['mobile_number'])->first() : null;
+
+            if (!$user) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'User Not found.',
+                ]);
+            }
+
+            $existing_subscription = UserSubscription::where('user_id', $user->id)->where('status',1)->first();
+
+            if (!empty($existing_subscription)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User already has an active subscription. Please deactivate it before adding a new one.'
+                ], 400);
+            }
+
+            $user_subscription = new UserSubscription();
+            $user_subscription->user_id         = $user->id;
+            $user_subscription->subscription_id = $subscription->id;
+            $user_subscription->start_date      = $start_date_formatted;
+            $user_subscription->end_date        = $end_date_formatted;
+            $user_subscription->valid_date      = $valid_date_formatted;
+            $user_subscription->pack            = $subscription->pack ?? 0;
+            $user_subscription->quantity        = !empty($request['quantity']) ? $request['quantity'] : $subscription->quantity;
+            $user_subscription->status        = 1;
+            $user_subscription->days            = $startDate->diffInDays($endDate) ?? 0;
+            $user_subscription->save();
+
+            User::where('id', $user->id)->update(['subscription_id' => $user_subscription->id]);
+
+            DB::commit();
+            $start = Carbon::parse($user_subscription->start_date);
+            $end   = Carbon::parse($user_subscription->end_date);
+            $dates = collect();
+
+
+            while ($start->lte($end)) {
+                $dates->push($start->toDateString());
+                $start->addDay();
+            }
+            foreach ($dates->chunk(50) as $chunk) {
+                GenerateDailyDeliveries::dispatch($user_subscription, $chunk->toArray());
+            }
+            return response()->json([
+                'success' => true,
+                'message' => 'Subscription added successfully!',
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save user',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
@@ -97,27 +236,19 @@ class MilkHomeAPIController extends Controller
 
         $validated = $request->validate([
             'plan_id' => 'required',
-            'remaining_subscription_days' => 'required|integer|min:0',
+            'user_id' => 'required|integer',
             'reason' => 'required|string|max:255',
             'account_details.account_holder_name' => 'required|string|max:100',
             'account_details.bank_name' => 'required|string|max:100',
-            'account_details.account_number' => 'required|numeric',
+            'account_details.account_number' => 'required|string',
             'account_details.ifsc_code' => 'required|string|max:20',
             'account_details.branch' => 'required|string|max:100',
         ]);
-
         try {
             DB::beginTransaction();
-            $user = Auth::user();
-            if (!$user) {
-                return response()->json([
-                    'status' => 401,
-                    'message' => 'Unauthorized user.'
-                ], 401);
-            }
-            // 🔹 Step 1: Find the active subscription
-            $subscription = UserSubscription::where('user_id', $user->id)
-            ->where('id', $validated['plan_id'])
+
+            $subscription = UserSubscription::where('user_id', $request['user_id'])
+            ->where('subscription_id', $validated['plan_id'])
             ->where('status', 1)
             ->first();
             if (!$subscription) {
@@ -126,15 +257,15 @@ class MilkHomeAPIController extends Controller
                     'message' => 'Active subscription not found for this plan.'
                 ], 404);
             }
-            // 🔹 Step 2: Update subscription as cancelled
+
             $subscription->update([
                 'status' => 2,
                 'description' => $validated['reason'],
                 'cancelled_at' => now(),
                 'in_active_date' => Carbon::today()->toDateString(),
             ]);
-            // 🔹 Step 3: Update user's bank details
-            $update = User::where('id',$user->id)->update([
+
+            User::where('id',$request['user_id'])->update([
                 'account_holder_name' => $validated['account_details']['account_holder_name'],
                 'bank_name'           => $validated['account_details']['bank_name'],
                 'account_number'      => $validated['account_details']['account_number'],
@@ -145,26 +276,12 @@ class MilkHomeAPIController extends Controller
             return response()->json([
                 'status' => 200,
                 'message' => 'Subscription cancelled successfully and account details updated.',
-                'response' => [
-                    'plan_id' => $subscription->id,
-                    'remaining_subscription_days' =>  $validated['remaining_subscription_days'],
-                    'cancel_reason' => $subscription->description,
-                    'account_details' => [
-                        'account_holder_name' => $user->account_holder_name,
-                        'bank_name' => $user->bank_name,
-                        'account_number' => $user->account_number,
-                        'ifsc_code' => $user->ifsc_code,
-                        'branch' => $user->branch,
-                    ],
-                ],
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-
             return response()->json([
                 'status' => 500,
-                'message' => 'An error occurred while cancelling the subscription.',
-                'error' => $e->getMessage(),
+                'message' =>  $e->getMessage(),
             ], 500);
         }
     }

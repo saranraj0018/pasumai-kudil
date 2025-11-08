@@ -81,7 +81,9 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('/get-user-plandetails', [MilkAPIController::class, 'getUserPlanDetails']);
         Route::post('/update-order', [MilkOrderAPIController::class, 'updateOrder']);
         Route::post('/cancel-subscription', [MilkHomeAPIController::class, 'cancelSubscription']);
-        Route::get('/manage-deliveries', [ManageDeliveriesController::class, 'manageDeliveries']);
+        Route::post('/create-subscription', [MilkHomeAPIController::class, 'createSubscription']);
+        Route::post('/subscription-plan', [MilkHomeAPIController::class, 'subscriptionPlan']);
+//        Route::get('/manage-deliveries', [ManageDeliveriesController::class, 'manageDeliveries']);
         Route::post('/update-manage-deliveries', [ManageDeliveriesController::class, 'updateManageDeliveries']);
     });
 });

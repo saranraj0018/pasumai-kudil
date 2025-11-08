@@ -67,6 +67,9 @@ Route::prefix('admin')->group(function () {
             Route::post('/save', 'save')->name('save.coupon');
             Route::post('/delete', 'destroy')->name('delete.coupon');
         });
+
+
+        // Products
         Route::prefix('products')->controller(ProductsController::class)->group(function () {
             Route::get('/lists', 'productLists')->name('lists.products');
             Route::post('/save_product', 'saveProduct')->name('save_product.products');
@@ -74,6 +77,8 @@ Route::prefix('admin')->group(function () {
             Route::get('/search_product', 'searchProduct')->name('search_product.products');
             Route::get('/edit_product', 'editProduct')->name('edit_product.products');
         });
+
+        //users
         Route::prefix('users')->controller(UserlistController::class)->group(function () {
             Route::get('/lists', 'userLists')->name('lists.users');
             Route::get('/user-profile-view', 'userProfileView')->name('user_view.users');
@@ -86,6 +91,7 @@ Route::prefix('admin')->group(function () {
             Route::post('/modify_subscription', 'modifySubscription')->name('modify_subscription.users');
         });
 
+        // Shipping
         Route::prefix('shipping')->controller(ShippingController::class)->group(function () {
             Route::get('/shipping', 'index')->name('lists.shipping');
             Route::post('/save-shipping', 'saveShipping')->name('save_shipping.shipping');

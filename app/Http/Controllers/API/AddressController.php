@@ -116,12 +116,7 @@ public function update(Request $request)
             'message' => 'Address updated successfully'
         ]);
     } catch (\Throwable $th) {
-        Log::info('API Request:', [
-            'error' => $th->getMessage(),
-            'file'  => $th->getFile(),
-            'line'  => $th->getLine(),
-            'trace' => $th->getTraceAsString(),
-        ]);
+
         return response()->json([
             'status' => $th->getCode() ?: 500,
             'message' => $th->getMessage(),

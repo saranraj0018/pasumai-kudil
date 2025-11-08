@@ -21,4 +21,12 @@ class UserSubscription extends Model
     {
         return $this->belongsTo(Subscription::class, 'subscription_id', 'id');
     }
+
+    public function getStatusAttribute($status)
+    {
+        return $status == 1
+            ? 'Active'
+            : ($status == 2 ? 'In Active' : 'Unknown');
+    }
+
 }

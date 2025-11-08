@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class UserlistController extends Controller
 {
@@ -118,14 +119,21 @@ class UserlistController extends Controller
 
     public function saveUser(Request $request)
     {
-        //  $request->validate([
-        //     'name'           => 'required|string|max:255',
-        //     'mobile_number'  => ['required', 'regex:/^[0-9]{10}$/'], // 10-digit validation
-        //     'email'          => 'nullable|email',
-        //     'plan_id'        => 'required|integer|exists:subscriptions,id',
-        //     'custom_days'    => 'nullable|integer|min:1',
-        //     'image'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        // ]);
+        $validator = Validator::make($request->all(), [
+             'name'           => 'required|string|max:255',
+             'mobile_number'  => 'required|regex:/^[0-9]{10}$/|unique:users,mobile_number', // 10-digit validation
+             'email'          => 'nullable|email',
+             'plan_id'        => 'required|integer|exists:subscriptions,id',
+             'custom_days'    => 'nullable|integer|min:1',
+             'image'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 409,
+                'message' => $validator->errors()->first(),
+            ], 409);
+        }
 
         DB::beginTransaction();
         try {
@@ -154,6 +162,9 @@ class UserlistController extends Controller
             $end_date_formatted   = $end_date->format('Y-m-d');
             $valid_date_formatted = $valid_date->format('Y-m-d');
 
+            $startDate = Carbon::parse($start_date_formatted);
+            $endDate = Carbon::parse($end_date_formatted);
+
             $image = null;
             if ($request->hasFile('image')) {
                 $img_name = time() . '_' . $request->file('image')->getClientOriginalName();
@@ -161,7 +172,7 @@ class UserlistController extends Controller
                 $image = 'users/' . $img_name;
             }
 
-            $user = User::where('email', $request['email'])->first();
+            $user = User::where('mobile_number', $request['mobile_number'])->first();
 
             if (!$user) {
                 $user = new User();
@@ -194,11 +205,10 @@ class UserlistController extends Controller
             $user_subscription->pack            = $subscription->pack ?? 0;
             $user_subscription->quantity        = $subscription->quantity ?? 0;
             $user_subscription->status        = 1;
+            $user_subscription->days            = $startDate->diffInDays($endDate) ?? 0;
             $user_subscription->save();
 
-            $update = User::where('id', $user->id)->update([
-                'subscription_id' => $user_subscription->id
-            ]);
+            User::where('id', $user->id)->update(['subscription_id' => $user_subscription->id]);
 
             DB::commit();
             $start = Carbon::parse($user_subscription->start_date);
