@@ -102,32 +102,11 @@ class ManageDeliveriesController extends Controller
             'subscription_id' => $subscription->id
         ])->first();
 
-        // helper: convert pack to liters
-        $convertToLiters = function ($pack) {
-            $p = strtolower(trim((string)$pack));
-            if (strpos($p, 'ml') !== false) {
-                preg_match('/([\d\.]+)/', $p, $m);
-                return isset($m[1]) ? floatval($m[1]) / 1000 : 0;
-            }
-            if (strpos($p, 'ltr') !== false || strpos($p, 'liter') !== false || preg_match('/(^|\s)l(\s|$)/', $p)) {
-                preg_match('/([\d\.]+)/', $p, $m);
-                return isset($m[1]) ? floatval($m[1]) : 1;
-            }
-            if (is_numeric($p)) {
-                $num = floatval($p);
-                return ($num >= 100) ? $num / 1000 : $num;
-            }
-            return 1;
-        };
+
 
         $subscribedQuantity = (int) $subscription->get_subscription->quantity;
         $subscribedPack = $subscription->get_subscription->pack;
-        $subscribedLitersPerDay = $subscribedQuantity * $convertToLiters($subscribedPack);
 
-        if ($subscribedLitersPerDay <= 0) {
-            DB::rollBack();
-            return response()->json(['status' => 400, 'message' => 'Invalid subscription configuration (pack/quantity).'], 400);
-        }
 
         $subscribedEndDate = Carbon::parse($subscription->end_date);
         $validDate = Carbon::parse($subscription->valid_date);
@@ -141,7 +120,6 @@ class ManageDeliveriesController extends Controller
                 return response()->json(['status' => 400, 'message' => 'Please provide change_days for cancellation.'], 400);
             }
 
-            // decode existing cancelled_date (if any)
             $existingCancelled = [];
             if (!empty($subscription->cancelled_date)) {
                 $decoded = json_decode($subscription->cancelled_date, true);
@@ -236,9 +214,6 @@ class ManageDeliveriesController extends Controller
             ]);
         }
 
-        // ---------------------------
-        // UPDATE FLOW (change quantity)
-        // ---------------------------
         $changeQty = $validated['change_qty'] ?? null;
         if ($changeQty === null || empty($changeDays)) {
             DB::rollBack();
@@ -247,9 +222,6 @@ class ManageDeliveriesController extends Controller
                 'message' => 'Please provide both change_qty and change_days for updates.'
             ], 400);
         }
-
-        $perPackLiters = $convertToLiters($subscribedPack);
-        $totalExtraLiters = 0.0;
 
         foreach ($changeDays as $d) {
             $delivery = DailyDelivery::where('subscription_id', $subscription->id)
@@ -261,67 +233,10 @@ class ManageDeliveriesController extends Controller
                 DB::rollBack();
                 return response()->json(['status' => 400, 'message' => "No delivery found for {$d}."], 400);
             }
-
-            $deltaQty = $changeQty - $subscribedQuantity;
-            $totalExtraLiters += ($deltaQty) * $perPackLiters;
         }
 
         $actionMsg = 'no change';
         $newEndDate = $subscribedEndDate->copy();
-
-        if ($totalExtraLiters > 0) {
-            $daysToReduce = (int) ceil($totalExtraLiters / $subscribedLitersPerDay);
-            $latestChange = Carbon::parse(max($changeDays));
-
-            $availableFuture = DailyDelivery::where('subscription_id', $subscription->id)
-                ->where('user_id', $userId)
-                ->whereDate('delivery_date', '>', $latestChange)
-                ->where('delivery_status', 'pending')
-                ->count();
-
-            if ($daysToReduce > $availableFuture) {
-                DB::rollBack();
-                return response()->json([
-                    'status' => 400,
-                    'message' => "Invalid request: needs {$daysToReduce} more future days but only {$availableFuture} available."
-                ], 400);
-            }
-
-            $newEndDate->subDays($daysToReduce);
-            $actionMsg = "reduced by {$daysToReduce} day(s)";
-
-            DailyDelivery::where('subscription_id', $subscription->id)
-                ->where('user_id', $userId)
-                ->whereDate('delivery_date', '>', $newEndDate)
-                ->delete();
-        } elseif ($totalExtraLiters < 0) {
-            $savedLiters = abs($totalExtraLiters);
-            $daysToExtend = (int) ceil($savedLiters / $subscribedLitersPerDay);
-            $newEndDate->addDays($daysToExtend);
-            if ($newEndDate->gt($validDate)) $newEndDate = $validDate->copy();
-            $actionMsg = "extended by {$daysToExtend} day(s)";
-
-            $start = $subscribedEndDate->copy()->addDay();
-            while ($start->lte($newEndDate)) {
-                $exists = DailyDelivery::where('subscription_id', $subscription->id)
-                    ->where('user_id', $userId)
-                    ->whereDate('delivery_date', $start->format('Y-m-d'))
-                    ->exists();
-                if (!$exists) {
-                    DailyDelivery::create([
-                        'user_id' => $userId,
-                        'subscription_id' => $subscription->id,
-                        'delivery_id' => $order->delivery_id ?? '',
-                        'delivery_date' => $start->format('Y-m-d'),
-                        'delivery_status' => 'pending',
-                        'quantity' => $subscribedQuantity,
-                        'pack' => $subscribedPack,
-                        'amount' => $order->amount ?? null,
-                    ]);
-                }
-                $start->addDay();
-            }
-        }
 
         if ($newEndDate->gt($validDate)) $newEndDate = $validDate->copy();
 
@@ -343,7 +258,6 @@ class ManageDeliveriesController extends Controller
             'message' => "Subscription {$actionMsg}. New end date: {$newEndDate->format('Y-m-d')}",
             'response' => [
                 'subscription' => $subscription->fresh(),
-                'total_extra_liters' => $totalExtraLiters,
             ],
         ]);
     } catch (\Exception $e) {
