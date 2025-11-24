@@ -26,7 +26,7 @@
 
                 <form id="walletAddForm" enctype="multipart/form-data" novalidate class="flex flex-col space-y-5">
                     @csrf
-                    <x-input name="id" value="{{ request()->id }}" type="hidden" />
+                    <x-input name="user_id" value="{{ request()->id }}" type="hidden" />
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -104,7 +104,7 @@
 
                 <form id="accountAddForm" enctype="multipart/form-data" novalidate class="flex flex-col space-y-5">
                     @csrf
-                    <x-input name="id" value="{{ request()->id }}" type="hidden" />
+                    <x-input name="user_id" value="{{ request()->id }}" type="hidden" />
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <x-label>Account Holder Name</x-label>
