@@ -36,18 +36,21 @@ class GenerateDailyDeliveries implements ShouldQueue
         $sub = $this->subscription;
         $user = User::find($sub->user_id);
         $plan = Subscription::find($sub->subscription_id);
+
         if (!$user || !$plan || $sub->status != 'Active') {
             return;
         }
 
-        // $wallet = Wallet::where('user_id', $user->id)->first();
-        // if (!$wallet) return;
+//         $wallet = Wallet::where('user_id', $user->id)->first();
+//         if (!$wallet) return;
+
         $amount = $this->calculatePerDayAmount($plan, $sub);
         $partner = $this->getMappedDeliveryPartner($user);
         if (!$partner) return;
         DB::transaction(function () use ($user, $sub, $amount, $partner) {
             foreach ($this->dates as $date) {
                 $exists = DailyDelivery::where('user_id', $user->id)
+                    ->where('subscription_id', $sub->id)
                     ->whereDate('delivery_date', $date)
                     ->exists();
                 if (!$exists) {
@@ -91,7 +94,6 @@ class GenerateDailyDeliveries implements ShouldQueue
         foreach ($partners as $partner) {
             if ($partner->get_hub->type == 1) continue;
             if (!$partner->get_map_address) continue;
-
             $coords = json_decode($partner->get_map_address->coordinates, true);
             if (!is_array($coords)) continue;
 
@@ -108,11 +110,47 @@ class GenerateDailyDeliveries implements ShouldQueue
         $numPoints = count($polygon);
         $j = $numPoints - 1;
 
+        // Convert to float once
         for ($i = 0; $i < $numPoints; $i++) {
-            $lat_i = (float)$polygon[$i]['lat'];
-            $lng_i = (float)$polygon[$i]['lng'];
-            $lat_j = (float)$polygon[$j]['lat'];
-            $lng_j = (float)$polygon[$j]['lng'];
+            $polygon[$i]['lat'] = (float)$polygon[$i]['lat'];
+            $polygon[$i]['lng'] = (float)$polygon[$i]['lng'];
+        }
+
+        // 1️⃣ Check if point is exactly on a vertex
+        foreach ($polygon as $point) {
+            if (abs($lat - $point['lat']) < 1e-9 && abs($lng - $point['lng']) < 1e-9) {
+                return true;
+            }
+        }
+
+        // 2️⃣Check if point is on any polygon edge
+        for ($i = 0; $i < $numPoints; $i++) {
+            $iLat = $polygon[$i]['lat'];
+            $iLng = $polygon[$i]['lng'];
+            $jLat = $polygon[$j]['lat'];
+            $jLng = $polygon[$j]['lng'];
+
+            // Check collinearity & within segment bounds
+            $cross = ($lng - $iLng) * ($jLat - $iLat) - ($lat - $iLat) * ($jLng - $iLng);
+            if (abs($cross) < 1e-9) {
+                if (
+                    $lat >= min($iLat, $jLat) && $lat <= max($iLat, $jLat) &&
+                    $lng >= min($iLng, $jLng) && $lng <= max($iLng, $jLng)
+                ) {
+                    return true;
+                }
+            }
+
+            $j = $i;
+        }
+
+        // 3️⃣ Normal ray-casting
+        $j = $numPoints - 1;
+        for ($i = 0; $i < $numPoints; $i++) {
+            $lat_i = $polygon[$i]['lat'];
+            $lng_i = $polygon[$i]['lng'];
+            $lat_j = $polygon[$j]['lat'];
+            $lng_j = $polygon[$j]['lng'];
 
             $intersect = (($lng_i > $lng) != ($lng_j > $lng)) &&
                 ($lat < ($lat_j - $lat_i) * ($lng - $lng_i) / (($lng_j - $lng_i) ?: 1e-9) + $lat_i);
@@ -120,9 +158,11 @@ class GenerateDailyDeliveries implements ShouldQueue
             if ($intersect) {
                 $inside = !$inside;
             }
+
             $j = $i;
         }
 
         return $inside;
     }
+
 }

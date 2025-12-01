@@ -12,7 +12,6 @@ class BannerController extends Controller
         $banners = Banner::paginate(10);
         return view('admin.banner.view', compact('banners'));
     }
-
     public function save(Request $request){
         $rules = [
            'type' => 'required|in:GroceryMain,GrocerySub,MilkMain,MilkSub',

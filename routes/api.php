@@ -14,6 +14,7 @@ use App\Http\Controllers\API\Milk\ManageDeliveriesController;
 use App\Http\Controllers\API\Milk\MilkAPIController;
 use App\Http\Controllers\API\Milk\MilkHomeAPIController;
 use App\Http\Controllers\API\Milk\MilkOrderAPIController;
+use App\Http\Controllers\API\Milk\UserAddressController;
 
 Route::group(['prefix' => 'user'], function () {
     Route::post('/register', [AuthController::class, 'userRegister']);
@@ -85,5 +86,11 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/subscription-plan', [MilkHomeAPIController::class, 'subscriptionPlan']);
 //        Route::get('/manage-deliveries', [ManageDeliveriesController::class, 'manageDeliveries']);
         Route::post('/update-manage-deliveries', [ManageDeliveriesController::class, 'updateManageDeliveries']);
+
+        //user address save
+
+        Route::post('/user-address-save', [UserAddressController::class, 'userAddressSave']);
+        Route::get('/user-address-details', [UserAddressController::class, 'userAddressDetails']);
+
     });
 });

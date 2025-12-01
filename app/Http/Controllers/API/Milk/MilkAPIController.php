@@ -17,12 +17,28 @@ class MilkAPIController extends Controller
     {
         try {
             $user = auth()->user();
-            $wallet = Wallet::where('user_id', $user->id)->first();
+            $subscription = UserSubscription::where('user_id', $user->id)
+                ->where('status', 1)
+                ->latest()
+                ->first();
+            if(!empty($subscription)){
+                $wallet = Wallet::where(['user_id' => $user->id,'subscription_id' => $subscription->id])->first();
+            }else{
+                $wallet = null;
+            }
+            $latestinactivesubscription = UserSubscription::with('get_subscription')->where('user_id', $user->id)
+                ->where('status', 2)
+                ->pluck('id');
+            $previouswalletamount = Wallet::where('user_id' , $user->id)
+                ->whereIn('subscription_id' ,$latestinactivesubscription)
+                ->pluck('balance')
+                ->sum();
             if (!$wallet) {
                 return response()->json([
                     'status' => 200,
                     'message' => 'Wallet not found for this user.',
                     'response' =>   [
+                        'previous_wallet_balance' => $previouswalletamount,
                         'wallet_balance' =>0.0,
                         'validity' =>  null,
                         'subscription' => false,
@@ -32,10 +48,7 @@ class MilkAPIController extends Controller
                 ], 200);
             }
             // Check active subscription
-            $subscription = UserSubscription::where('user_id', $user->id)
-                ->where('status', 1)
-                ->latest()
-                ->first();
+
 
             $subscriptionActive = $subscription ? true : false;
             $validity = $subscription ? $subscription->end_date : null;
@@ -55,6 +68,7 @@ class MilkAPIController extends Controller
                 });
             // Prepare response data
             $response = [
+                'previous_wallet_balance' => $previouswalletamount,
                 'wallet_balance' => (float) $wallet->balance,
                 'validity' => $validity ? Carbon::parse($validity)->format('d/m/Y') : null,
                 'subscription' => $subscriptionActive,
@@ -137,125 +151,89 @@ class MilkAPIController extends Controller
                     'message' => 'Month field is required.'
                 ]);
             }
-            // Convert month name to number
             $monthNumber = Carbon::parse("1 $monthName")->month;
-
-            $year = Carbon::now()->year;
-            // Get active subscription
-            $subscription = UserSubscription::with('get_subscription')->where('user_id', $userId)
+            // Fetch active subscription
+            $subscription = UserSubscription::with('get_subscription')
+                ->where('user_id', $userId)
                 ->where('status', 1)
                 ->latest()
                 ->first();
-
-            $quantity = $subscription->get_subscription->quantity ?? 0;
-            $pack = $subscription->get_subscription->pack ?? '';
             if (!$subscription) {
                 return response()->json([
-                    'status' => 404,
-                    'message' => 'No active subscription found for this user.'
+                    'status' => 200,
+                    'message' => 'No active subscription found for this user.',
+                    'response' => []
                 ]);
             }
-            // Generate full schedule dates within the subscription period
-            $scheduleDates = collect(
-                Carbon::parse($subscription->start_date)
-                    ->daysUntil(Carbon::parse($subscription->end_date))
-            )
-                ->filter(fn($d) => $d->month == $monthNumber && $d->year == $year)
-                ->map(fn($d) => $d->format('d M Y'))
+            $quantity = $subscription->quantity ?? 0;
+            $pack = $subscription->pack ?? '';
+            $deliveries = DailyDelivery::where('user_id', $userId)
+                ->where('subscription_id', $subscription->id)
+                ->whereMonth('delivery_date', $monthNumber)
+                ->orderBy('delivery_date', 'asc')
+                ->get();
+            $scheduleDates = $deliveries
+                ->reject(fn($d) => in_array($d->delivery_status, ['cancelled', 'delivered']))
+                ->map(fn($d) => [
+                    'id' => $d->id,
+                    'date' => Carbon::parse($d->delivery_date)->format('d M Y'),
+                    'modify' => $d->modify,
+                ])
                 ->values()
                 ->toArray();
-            // Get completed deliveries from DailyDelivery table
-            $deliveries = DailyDelivery::where('user_id', $userId)
-                ->whereMonth('delivery_date', $monthNumber)
-                ->whereYear('delivery_date', $year)
-                ->get();
             $completedDates = $deliveries->where('delivery_status', 'delivered')
                 ->pluck('delivery_date')
                 ->map(fn($d) => Carbon::parse($d)->format('d M Y'))
                 ->toArray();
-
-            // Extract cancelled dates (from subscription JSON)
-            $cancelledData = json_decode($subscription->cancelled_date, true);
-            $cancelledDates = [];
-
-            if (!empty($cancelledData) && is_array($cancelledData)) {
-                foreach ($cancelledData as $cancelled) {
-                    if (!empty($cancelled['start_date']) && !empty($cancelled['end_date'])) {
-                        $start = Carbon::parse($cancelled['start_date']);
-                        $end   = Carbon::parse($cancelled['end_date']);
-
-                        $dates = collect($start->daysUntil($end))
-                            ->filter(fn($d) => $d->month == $monthNumber && $d->year == $year)
-                            ->map(fn($d) => $d->format('d M Y'))
-                            ->toArray();
-
-                        $cancelledDates = array_merge($cancelledDates, $dates);
-                    }
-                }
-            }
-
-
-            // Convert pack (e.g., "500ml", "1ltr", "2ltr", "1/2ltr") to liters
+            $cancelledDates = $deliveries->where('delivery_status', 'cancelled')
+                ->pluck('delivery_date')
+                ->map(fn($d) => Carbon::parse($d)->format('d M Y'))
+                ->toArray();
             $packValue = 0;
-
             if (preg_match('/(\d+)\s*(ml)/i', $pack, $matches)) {
-                // e.g. 500ml → 0.5 liter
                 $packValue = ((float) $matches[1]) / 1000;
             } elseif (preg_match('/(\d+(?:\/\d+)?)\s*(ltr|tr|lt)/i', $pack, $matches)) {
-                // e.g. 1ltr → 1, 2ltr → 2, 1/2ltr → 0.5
                 $packValue = eval('return ' . str_replace('ltr', '', $matches[1]) . ';');
             }
-            // Completed deliveries count
+            $status = ['cancelled', 'delivered'];
             $completedCount = count($completedDates);
-            // Each delivery quantity × pack size
             $usedLiters = $completedCount * ($quantity * $packValue);
-            // Total plan capacity (for all scheduled deliveries)
+            $schedule_quantity = DailyDelivery::where('user_id', $userId)
+                ->where('subscription_id', $subscription->id)
+                ->whereNotIn('delivery_status', $status)
+                ->whereMonth('delivery_date', $monthNumber)
+                ->orderBy('delivery_date', 'asc')
+                ->pluck('quantity')
+                ->sum();
             $planCapacity = ($quantity * $packValue) * count($scheduleDates);
-            // Remaining liters overall
-            $remainingLiters = max(0, $planCapacity - $usedLiters);
-            // usage_history: only completed deliveries
-            $usageHistory = collect($completedDates)
-                ->sortBy(function ($date) {
-                    return Carbon::createFromFormat('d M Y', $date);
-                })
-                ->values()
-                ->map(function ($date) use ($quantity, $packValue) {
+            $remainingLiters = round($schedule_quantity * $packValue, 2);
+            $usageHistory = $deliveries->where('delivery_status', 'delivered')
+                ->map(function ($delivery) use ($quantity, $packValue) {
                     return [
-                        'date' => $date,
-                        'consuming_liters' => round($quantity * $packValue, 2),
+                        'date' => Carbon::parse($delivery->delivery_date)->format('d M Y'),
+                        'consuming_liters' => (double)round($quantity * $packValue, 2),
                         'status' => 'completed',
                     ];
-                });
-            //remaining_history: all scheduled (excluding cancelled), showing remaining liters daily
+                })
+                ->values();
             $cumulativeUsed = 0;
-            $mergedDate = array_merge($cancelledDates, $completedDates);
-            $remainingHistory = collect($scheduleDates)
-                ->reject(function ($date) use ($mergedDate) {
-                    // Skip cancelled dates
-                    return in_array($date, $mergedDate);
-                })
-                ->sortBy(function ($date) {
-                    return Carbon::createFromFormat('d M Y', $date);
-                })
-                ->values()
-                ->map(function ($date) use ($usageHistory, $planCapacity, &$cumulativeUsed) {
-                    // If this date was completed, add to cumulative usage
-                    $usedToday = 0;
-                    $completed = $usageHistory->firstWhere('date', $date);
-                    if ($completed) {
-                        $usedToday = $completed['consuming_liters'];
-                    }
+            $remainingHistory = $deliveries
+                ->whereNotIn('delivery_status', $status)
+                ->map(function ($delivery) use ($quantity, $packValue, &$cumulativeUsed) {
+                    $usedToday = $delivery->delivery_status === 'delivered'
+                        ? ($quantity * $packValue)
+                        : 0;
                     $cumulativeUsed += $usedToday;
                     return [
-                        'date' => $date,
-                        'remaining_liters' => round(max(0, $planCapacity - $cumulativeUsed), 2),
-                        'status' => $completed ? 'completed' : 'pending',
+                        'date' => Carbon::parse($delivery->delivery_date)->format('d M Y'),
+                        'remaining_liters' => (double) round($quantity * $packValue, 2),
+                        'status' => $delivery->delivery_status,
                     ];
-                });
-            // Final response
+                })
+                ->values(); // <-- Removes numeric keys
             return response()->json([
                 'status' => 200,
-                'message' => 'Fetch calendar details successfully.',
+                'message' => 'Fetched calendar details successfully.',
                 'response' => [
                     'month' => $monthName,
                     'subscription_dates' => [
@@ -270,10 +248,10 @@ class MilkAPIController extends Controller
                     ],
                     'usage_summary' => [
                         'variable_size' => $pack,
-                        'used_liters' => round($usedLiters, 2),
-                        'remaining_liters' => round($remainingLiters, 2),
+                        'used_liters' => (double) round($usedLiters, 2),
+                        'remaining_liters' => (double) round($remainingLiters, 2),
                         'usage_history' => $usageHistory,
-                        'remaining_history' => $remainingHistory,
+                        'remaining_history' =>(object) $remainingHistory,
                     ],
                     'createdAt' => Carbon::now()->format('d/m/Y'),
                 ]
@@ -286,6 +264,7 @@ class MilkAPIController extends Controller
             ]);
         }
     }
+
 
     public function getUserPlanDetails(Request $request)
     {

@@ -28,6 +28,7 @@ $(function () {
             formData,
             "POST",
             function (res) {
+                console.log(res.success);
                 if (res.success) {
                     showToast("Wallet added successfully!", "success", 2000);
                     setTimeout(() => {
@@ -38,14 +39,16 @@ $(function () {
                         }
                         // Reset form
                         document.getElementById("walletAddForm").reset();
-                         window.location.reload();
+                        window.location.reload();
                     }, 500);
-                } else {
+                } else if (res.success == 'fasle') {
                     showToast("Something went wrong!", "error", 2000);
+                } else {
+                    showToast(res.message, "error", 2000);
                 }
             },
             function (err) {
-                 if (err.errors) {
+                if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
                         msg += v[0] + "<br>";
@@ -112,7 +115,7 @@ $(function () {
                         }
                         // Reset form
                         document.getElementById("accountAddForm").reset();
-                         window.location.reload();
+                        window.location.reload();
                     }, 500);
                 } else {
                     showToast("Something went wrong!", "error", 2000);
@@ -140,6 +143,7 @@ $(function () {
             account_number: $(this).data("account_number"),
             ifsc_code: $(this).data("ifsc_code"),
             bank_name: $(this).data("bank_name"),
+            upi: $(this).data("upi"),
         };
         // Show modal
         $("#addAccountModal").css("display", "flex");
@@ -154,6 +158,7 @@ $(function () {
         alpine.form.confirm_account_number = account.account_number || "";
         alpine.form.ifsc_code = account.ifsc_code || "";
         alpine.form.bank_name = account.bank_name || "";
+        alpine.form.upi = account.upi || "";
     });
 
     $(document).on("click", ".add_account", function (e) {
@@ -227,6 +232,49 @@ $(function () {
         );
     });
 
+    $(document).on("submit", "#revokeForm", function (e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+        sendRequest(
+            "/admin/users/revoke",
+            formData,
+            "POST",
+            function (res) {
+                if (res.success) {
+                    showToast("Subscription cancelled successfully!", "success", 2000);
+                    setTimeout(() => {
+                        let modalScope = document.querySelector(
+                            "#addSubscriptionModal"
+                        ).__x.$data;
+                        if (modalScope.hasOwnProperty("open")) {
+                            modalScope.open = false; // close modal
+                        }
+                        // Reset form
+                        document.getElementById("subscriptionCancelForm").reset();
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    showToast("Something went wrong!", "error", 2000);
+                }
+            },
+            function (err) {
+                console.log(err.errors);
+                if (err.errors) {
+                    let msg = "";
+                    $.each(err.errors, function (k, v) {
+                        msg += v[0] + "<br>";
+                    });
+                    showToast(msg, "error", 2000);
+                    window.location.reload();
+                } else {
+                    showToast(err.message || "Unexpected error", "error", 2000);
+                }
+            }
+        );
+    });
+
+
     $(document).on("submit", "#modifySubscriptionForm", function (e) {
         e.preventDefault();
         let isValid = true;
@@ -276,7 +324,20 @@ $(function () {
                         window.location.reload();
                     }, 500);
                 } else {
-                    showToast("Something went wrong!", "error", 2000);
+                    showToast(res.message, "error", 2000);
+                    setTimeout(() => {
+                        let modalScope = document.querySelector(
+                            "#modifySubscriptionModal"
+                        ).__x.$data;
+                        if (modalScope.hasOwnProperty("open")) {
+                            modalScope.open = false; // close modal
+                        }
+                        // Reset form
+                        document
+                            .getElementById("modifySubscriptionForm")
+                            .reset();
+                        window.location.reload();
+                    }, 500);
                 }
             },
             function (err) {
@@ -296,22 +357,89 @@ $(function () {
     });
 
     document.addEventListener("alpine:init", () => {
-            Alpine.data("dateRangePicker", () => ({
-                init() {
-                    flatpickr("#date_range", {
-                        mode: "range",
-                        dateFormat: "Y-m-d",
-                        altInput: true,
-                        altFormat: "F j, Y",
-                        allowInput: true,
-                        onChange: function (selectedDates, dateStr) {
-                            // Optional: console log selected range
-                            console.log("Selected Range:", dateStr);
-                        },
-                    });
-                },
-            }));
+        Alpine.data("dateRangePicker", () => ({
+            init() {
+                flatpickr("#date_range", {
+                    mode: "range",
+                    dateFormat: "Y-m-d",
+                    altInput: true,
+                    altFormat: "F j, Y",
+                    allowInput: true,
+                    onChange: function (selectedDates, dateStr) {
+                        // Optional: console log selected range
+                        console.log("Selected Range:", dateStr);
+                    },
+                });
+            },
+        }));
     });
 
+    $("#removeWalletBtn").click(function () {
+        var id = new URLSearchParams(window.location.search).get("id");
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Are you sure you want to remove your previous wallet amount?',
+            type: 'orange',
+
+            boxWidth: '500px',     // 👈 CUSTOM POPUP WIDTH
+            useBootstrap: false,   // 👈 IMPORTANT otherwise width won't work
+
+            buttons: {
+                yes: {
+                    text: 'Yes, Remove',
+                    btnClass: 'btn-red',
+                    action: function () {
+                        $.ajax({
+                            url: "/admin/users/remove-previous-wallet",
+                            type: "POST",
+                            data: { id:id },
+                            success: function (res) {
+                                if (res.success) {
+                                    $.alert({
+                                        title: 'Success!',
+                                        type: 'green',
+                                        content: 'Previous wallet amount removed successfully!',
+                                        boxWidth: '450px',
+                                        useBootstrap: false,
+                                        buttons: {
+                                            ok: {
+                                                text: 'OK',
+                                                action: function () {
+                                                    location.reload(); // 🔥 Reload page on OK
+                                                }
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    $.alert({
+                                        title: 'Error!',
+                                        type: 'red',
+                                        content: res.message,
+                                        boxWidth: '450px',
+                                        useBootstrap: false
+                                    });
+                                }
+                            },
+                            error: function () {
+                                $.alert({
+                                    title: 'Error!',
+                                    type: 'red',
+                                    content: 'Something went wrong. Try again.',
+                                    boxWidth: '350px',
+                                    useBootstrap: false
+                                });
+                            }
+                        });
+
+                    }
+                },
+                no: {
+                    text: 'No',
+                    action: function () {}
+                }
+            }
+        });
+
+    });
 
 });

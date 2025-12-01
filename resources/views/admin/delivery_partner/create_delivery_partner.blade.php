@@ -32,17 +32,17 @@
                         {{-- Step 1: Product Information --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <x-label>Name</x-label>
+                                <x-label>Name<span class="text-red-500">*</span></x-label>
                                 <x-input type="text" x-model="form.name" name="name" id="name"
                                     placeholder="Enter Your Name" required />
                             </div>
                             <div>
-                                <x-label>Mobile Number</x-label>
+                                <x-label>Mobile Number<span class="text-red-500">*</span></x-label>
                                 <x-input type="number" name="mobile_number" id="mobile_number"
                                     x-model="form.mobile_number" />
                             </div>
                             <div>
-                                <x-label>Hub</x-label>
+                                <x-label>Hub<span class="text-red-500">*</span></x-label>
                                 <x-select x-model="form.hub_id" name="hub_id" id="hub_id" required>
                                     <option value="" selected disabled>Please Select Hub</option>
                                     @foreach ($hub as $h)

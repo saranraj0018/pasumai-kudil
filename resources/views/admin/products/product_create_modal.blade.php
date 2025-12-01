@@ -61,7 +61,7 @@
                         <div x-show="stepNumber === 0" class="space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <x-label>Product Name</x-label>
+                                    <x-label>Product Name<span class="text-red-500">*</span></x-label>
                                     <x-input type="text" x-model="form.name" name="product_name" id="product_name"
                                         placeholder="eg .., Flower" required />
                                 </div>
@@ -123,12 +123,12 @@
                                         name="variants[0][sale_price]" />
                                 </div>
                                 <div>
-                                    <x-label>Regular Price</x-label>
+                                    <x-label>Regular Price<span class="text-red-500">*</span></x-label>
                                     <x-input type="number" step="0.01" class="regularPriceInput" id="regular_price" x-model="form.regular_price"
                                         name="variants[0][regular_price]" required/>
                                 </div>
                                 <div>
-                                    <x-label>Purchase Price</x-label>
+                                    <x-label>Purchase Price<span class="text-red-500">*</span></x-label>
                                     <x-input type="number" step="0.01" class="purchasePriceInput" id="purchase_price" x-model="form.purchase_price"
                                         name="variants[0][purchase_price]" required/>
                                 </div>
@@ -160,7 +160,7 @@
                                         name="variants[0][tax_percentage]"/>
                                 </div>
                                 <div>
-                                    <x-label>Stock</x-label>
+                                    <x-label>Stock<span class="text-red-500">*</span></x-label>
                                     <x-input type="number" step="1" class="stock" x-model="form.stock"
                                         name="variants[0][stock]" required/>
                                 </div>
@@ -251,7 +251,7 @@
                                         <p class="text-gray-700"
                                             x-text="form.tax_percentage ? form.tax_percentage+'%' : '-'"></p>
                                     </div>
-                                   
+
                                 </div>
 
                                 <div class="mt-6">

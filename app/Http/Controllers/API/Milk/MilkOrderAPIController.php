@@ -39,44 +39,31 @@ class MilkOrderAPIController extends Controller
                     'message' => 'No active subscription found for this user.'
                 ]);
             }
-            $quantity = $subscription->get_subscription->quantity ?? 1;
-            $pack = $subscription->get_subscription->pack ?? '500ml';
+            $quantity = $subscription->quantity ?? 1;
+            $pack = $subscription->pack ?? '500ml';
 
-            // Generate all scheduled dates between start_date and end_date
-            $scheduleDates = collect(
-                Carbon::parse($subscription->start_date)
-                    ->daysUntil(Carbon::parse($subscription->end_date))
-            )
-                ->filter(fn($d) => $d->month == $monthNumber && $d->year == $year)
-                ->map(fn($d) => $d->format('d M Y'))
+            $deliveries = DailyDelivery::where('user_id', $userId)
+                ->where('subscription_id', $subscription->id)
+                ->whereMonth('delivery_date', $monthNumber)
+//                ->whereYear('delivery_date', $year)
+                ->orderBy('delivery_date', 'asc')
+                ->get();
+
+            $scheduleDates = $deliveries
+                ->reject(fn($d) => in_array($d->delivery_status, ['cancelled', 'delivered']))
+                ->map(fn($d) => Carbon::parse($d->delivery_date)->format('d M Y'))
                 ->values()
                 ->toArray();
 
-            // Completed deliveries from daily_deliveries
-            $deliveries = DailyDelivery::where('user_id', $userId)
-                ->whereMonth('delivery_date', $monthNumber)
-                ->whereYear('delivery_date', $year)
-                ->where('subscription_id', $subscription->id)
-                ->get();
-
-
-            $completedDates = $deliveries
-                ->where('delivery_status', 'delivered')
+            $completedDates = $deliveries->where('delivery_status', 'delivered')
                 ->pluck('delivery_date')
                 ->map(fn($d) => Carbon::parse($d)->format('d M Y'))
                 ->toArray();
 
-            // Cancelled dates from subscription JSON
-            $cancelledDates = [];
-            $cancelledData = json_decode($subscription->cancelled_date, true);
-            if (!empty($cancelledData['start_date']) && !empty($cancelledData['end_date'])) {
-                $start = Carbon::parse($cancelledData['start_date']);
-                $end = Carbon::parse($cancelledData['end_date']);
-                $cancelledDates = collect($start->daysUntil($end))
-                    ->filter(fn($d) => $d->month == $monthNumber && $d->year == $year)
-                    ->map(fn($d) => $d->format('d M Y'))
-                    ->toArray();
-            }
+            $cancelledDates = $deliveries->where('delivery_status', 'cancelled')
+                ->pluck('delivery_date')
+                ->map(fn($d) => Carbon::parse($d)->format('d M Y'))
+                ->toArray();
 
             // Summary counts
             $scheduledCount = count($scheduleDates);
@@ -96,6 +83,7 @@ class MilkOrderAPIController extends Controller
                         'pack' => $d->pack,
                         'quantity' => (string)$d->quantity,
                         'order_status' => $d->delivery_status,
+                        'modify_status' => $d->modify,
                     ];
                 })
                 ->values();
@@ -111,8 +99,9 @@ class MilkOrderAPIController extends Controller
                         // 'order_time' => "07:30 AM",
                         'plan_name' => $subscription->get_subscription->plan_name ?? '',
                         'pack' => $pack,
-                        'quantity' => $quantity,
+                        'quantity' => (string) $quantity,
                         'order_status' => $deliveryStatus  ?? 'scheduled',
+                        'modify_status' => $d->modify,
                     ];
                 })
                 ->values();
@@ -165,8 +154,8 @@ class MilkOrderAPIController extends Controller
             }
 
             // Step 2: Basic details
-            $quantity = $subscription->get_subscription->quantity ?? 1;
-            $pack = $subscription->get_subscription->pack ?? '500ml';
+            $quantity = str($subscription->quantity);
+            $pack = $subscription->pack ?? '500ml';
 
             // Step 3: Generate all scheduled dates between start_date and end_date
             $allScheduledDates = collect(
@@ -175,7 +164,7 @@ class MilkOrderAPIController extends Controller
             )->map(fn($d) => $d->format('d M Y'))->values()->toArray();
 
             // Step 4: Fetch all deliveries for this subscription
-            $deliveries = DailyDelivery::where('user_id', $subscription->user_id)->get();
+            $deliveries = DailyDelivery::where(['user_id' => $subscription->user_id , 'subscription_id' => $subscription->id])->get();
 
             // Step 5: Identify completed, cancelled, and scheduled dates
             $completedDates = collect($deliveries) // ensure it's a collection
@@ -190,23 +179,10 @@ class MilkOrderAPIController extends Controller
                 ->values()
                 ->toArray();
 
-
-            $cancelledDates = [];
-
-            // Step 6: Handle multiple cancelled date ranges from JSON (array format)
-            $cancelledData = json_decode($subscription->cancelled_date, true);
-            if (is_array($cancelledData)) {
-                foreach ($cancelledData as $cancelRange) {
-                    if (!empty($cancelRange['start_date']) && !empty($cancelRange['end_date'])) {
-                        $start = Carbon::parse($cancelRange['start_date']);
-                        $end = Carbon::parse($cancelRange['end_date']);
-                        $rangeDates = collect($start->daysUntil($end))
-                            ->map(fn($d) => $d->format('d M Y'))
-                            ->toArray();
-                        $cancelledDates = array_merge($cancelledDates, $rangeDates);
-                    }
-                }
-            }
+            $cancelledDates = $deliveries->where('delivery_status', 'cancelled')
+                ->pluck('delivery_date')
+                ->map(fn($d) => Carbon::parse($d)->format('d M Y'))
+                ->toArray();
 
             // Step 7: Calculate remaining days (scheduled but not completed or cancelled)
             $remainingDates = collect($deliveries) // ensure it's a collection
@@ -247,18 +223,30 @@ class MilkOrderAPIController extends Controller
         }
     }
 
+
     public function updateOrder(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'order_id' => 'required',
-                'plan_id' => 'required|integer|exists:user_subscriptions,subscription_id',
-                'extra_quantity' => 'required|integer|min:1',
-                'status' => 'required|string|in:cancel,live',
-            ]);
 
+            // --------------------------
+            // VALIDATION
+            // --------------------------
+            $rules = [
+                'order_id' => 'required|integer',
+                'plan_id' => 'required|integer|exists:user_subscriptions,subscription_id',
+                'status'  => 'required|string|in:cancel,live',
+            ];
+
+            if ($request->status === 'live') {
+                $rules['extra_quantity'] = 'required|integer|min:1';
+            }
+
+            $validated = $request->validate($rules);
             $userId = auth()->id();
 
+            // ---------------------------------
+            // LOAD SUBSCRIPTION + ORDER
+            // ---------------------------------
             $subscription = UserSubscription::with('get_subscription')
                 ->where('user_id', $userId)
                 ->where('status', 1)
@@ -270,130 +258,250 @@ class MilkOrderAPIController extends Controller
             }
 
             $order = DailyDelivery::find($validated['order_id']);
+            $lastOrder = DailyDelivery::where(['user_id' => $userId , 'subscription_id' => $subscription->id])->latest()->first();
             if (!$order) {
                 return response()->json(['status' => 404, 'message' => 'Order not found']);
             }
 
             DB::beginTransaction();
 
-            // --- Update Order Basic Info ---
-            $delivery_status = $validated['status'] === 'cancel' ? 'cancelled' : 'pending';
-            $order->update([
-                'delivery_status' => $delivery_status,
-            ]);
+            // COMMON VALUES
+            $subscribedQty      = (int)($subscription->quantity ?? 0);
+            $unitPrice          = $subscription->price / $subscribedQty;
+            $subscribedPack     = $subscription->pack;
+            $subscribedEndDate  = Carbon::parse($lastOrder->delivery_date);
+            $validDate          = Carbon::parse($subscription->valid_date);
+            $today              = Carbon::today();
 
-            // Subscription details
-            $subscribedQuantity = (int) $subscription->get_subscription->quantity;
-            $subscribedPack = $subscription->get_subscription->pack;
-            $subscribedEndDate = Carbon::parse($subscription->end_date);
-            $validDate = Carbon::parse($subscription->valid_date);
-            $requestedQty = (int) $validated['extra_quantity'];
-
-            $subscribedLitersPerDay = $subscribedQuantity;
-
-            if ($subscribedLitersPerDay <= 0) {
-                DB::rollBack();
-                return response()->json(['status' => 400, 'message' => 'Invalid subscription data']);
+            if ($subscribedQty <= 0) {
+                return response()->json(['status' => 400, 'message' => 'Invalid subscription quantity']);
             }
 
-            // --- Cancel case ---
+            // ======================================================
+            // CANCEL LOGIC WITH LAST-DAY CHECK
+            // ======================================================
             if ($validated['status'] === 'cancel') {
+
                 $cancelDate = Carbon::parse($order->delivery_date);
+
+                // ❗ CONDITION: cancellation on last day not allowed
+                if ($cancelDate->equalTo($validDate)) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Cannot cancel on last subscription day',
+                    ]);
+                }
+
+                // ❗ CONDITION: cancellation not allowed after valid_date
+                if ($cancelDate->greaterThan($validDate)) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Cannot cancel, subscription validity expired',
+                    ]);
+                }
+
+                // ❗ EXISTING CANCEL LOGIC (your logic is good)
+                $order->update([
+                    'delivery_status' => 'cancelled',
+                    'modify' => 2,
+                ]);
+
+                // Remaining qty
+                $remainingQty = (int)$order->quantity;
+
+                if ($remainingQty <= 0) {
+                    return response()->json(['status' => 400, 'message' => 'Order quantity invalid for cancellation']);
+                }
+
+                // Calculate new extra days
+                $daysNeeded = intdiv($remainingQty, $subscribedQty)
+                    + (($remainingQty % $subscribedQty) ? 1 : 0);
+                $newEndDate = $subscribedEndDate->copy()->addDays($daysNeeded);
+                if ($newEndDate->greaterThan($validDate)) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Cannot cancel, new end date exceeds valid date',
+                    ]);
+                }
+
+                // ---------------------------
+                // SAVE CANCELLED DATE ARRAY
+                // ---------------------------
                 $existingCancelled = $subscription->cancelled_date
                     ? json_decode($subscription->cancelled_date, true)
                     : [];
+
                 if (!is_array($existingCancelled)) $existingCancelled = [];
 
                 $existingCancelled[] = [
                     'start_date' => $cancelDate->format('Y-m-d'),
-                    'end_date' => $cancelDate->format('Y-m-d'),
+                    'end_date'   => $cancelDate->format('Y-m-d'),
+                    'order_id'   => $order->id,
                 ];
 
-                $newEndDate = $subscribedEndDate->copy()->addDay();
-                if ($newEndDate->greaterThan($validDate)) $newEndDate = $validDate;
+                // ---------------------------
+                // CREATE NEW REPLACEMENT DAYS
+                // ---------------------------
+                $qtyToAllocate = $remainingQty;
+                $createdDeliveries = [];
 
+                for ($i = 1; $i <= $daysNeeded; $i++) {
+
+                    $dayQty = min($subscribedQty, $qtyToAllocate);
+                    $qtyToAllocate -= $dayQty;
+
+                    $deliveryDate = $subscribedEndDate->copy()->addDays($i)->format('Y-m-d');
+                    $amountForRow = round($unitPrice * $dayQty, 2);
+
+                    $exists = DailyDelivery::where('user_id', $userId)
+                        ->where('subscription_id', $subscription->id)
+                        ->whereDate('delivery_date', $deliveryDate)
+                        ->exists();
+                    if (!$exists) {
+                        $newDelivery = DailyDelivery::create([
+                            'user_id' => $userId,
+                            'subscription_id' => $subscription->id,
+                            'delivery_id' => $order->delivery_id,
+                            'delivery_date' => $deliveryDate,
+                            'delivery_status' => 'pending',
+                            'quantity' => $dayQty,
+                            'pack' => $subscribedPack,
+                            'amount' => $amountForRow,
+                        ]);
+                        $createdDeliveries[] = $newDelivery;
+                    }
+                }
+                $lastOrder = DailyDelivery::where(['user_id' => $userId , 'subscription_id' => $subscription->id])->latest()->first();
+                // UPDATE SUBSCRIPTION
                 $subscription->update([
                     'cancelled_date' => json_encode($existingCancelled),
-                    'end_date' => $newEndDate->format('Y-m-d'),
-                ]);
-
-                DailyDelivery::create([
-                    'user_id' => $userId,
-                    'subscription_id' => $subscription->id,
-                    'delivery_id' => $order->delivery_id,
-                    'delivery_date' => $newEndDate->format('Y-m-d'),
-                    'delivery_status' => 'pending',
-                    'quantity' => $subscribedQuantity,
-                    'pack' => $subscribedPack,
-                    'amount' => $order->amount,
+                    'end_date'       => $lastOrder->delivery_date,
                 ]);
 
                 DB::commit();
+
                 return response()->json([
                     'status' => 200,
-                    'message' => 'Order cancelled, subscription extended by 1 day.',
-                    'response' => ['order' => $order, 'subscription' => $subscription]
+                    'message' => 'Order cancelled successfully',
                 ]);
-            } else {
-
-                $extra_quantity = $requestedQty;
-                $daily_quantity = $subscribedQuantity;
-                $schedule = [];
-
-                $last_date = Carbon::parse($subscription->end_date);
-
-                while ($extra_quantity > 0) {
-                    $quantity_today = min($daily_quantity, $extra_quantity);
-                    $schedule[$last_date->format('d-m-Y')] = $quantity_today;
-                    $extra_quantity -= $quantity_today;
-                    $last_date->subDay();
-                }
-
-                $schedule_date = $schedule;
-
-                foreach ($schedule_date as $date => $quantity) {
-                     $formattedDate = Carbon::createFromFormat('d-m-Y', $date)->toDateString();
-
-                  $delivery = DailyDelivery::where('user_id', $userId)
-                        ->whereDate('delivery_date', $formattedDate);
-                    // If quantity == 0 → remove row
-                    if ($subscribedQuantity == $quantity) {
-                        $delivery->delete();
-                        continue;
-                    } else {
-                        $final_date = Carbon::parse($date)->format('Y-m-d');
-                        $delivery->update(['quantity' => $quantity]);
-                    }
-
-                    DailyDelivery::where('id',$request['order_id'])->update(['quantity' => $order->quantity + $requestedQty,'modify' => 2]);
-
-                    $subscription = UserSubscription::where('id', $order->subscription_id )->update(['end_date' => $final_date]);
-                }
-
             }
 
+            // ======================================================
+            // LIVE UPDATE LOGIC — STRONG VALIDATION ADDED
+            // ======================================================
+            if ($validated['status'] === 'live') {
+
+                $extraQty = (int)$validated['extra_quantity'];
+
+                // -----------------------------
+                // RULE A: LAST DAY NO UPDATE
+                // -----------------------------
+                if (Carbon::parse($order->delivery_date)->equalTo($subscribedEndDate)) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Cannot update order on last subscription day',
+                    ]);
+                }
+
+                // -----------------------------
+                // RULE B: Requested quantity > all future pending quantities
+                // -----------------------------
+                $futureDeliveries = DailyDelivery::where('user_id', $userId)
+                    ->where('subscription_id', $subscription->id)
+                    ->where('delivery_status', 'pending')
+                    ->whereDate('delivery_date', '>', $order->delivery_date)
+                    ->get();
+
+                $totalRemainingQty = $futureDeliveries->sum('quantity');
+
+                if ($extraQty > $totalRemainingQty) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Requested extra quantity exceeds remaining pending deliveries',
+                    ]);
+                }
+
+                // -----------------------------
+                // RULE C: extraQuantity > (subscribedQty * remainingDays)
+                // -----------------------------
+                $remainingDays = $futureDeliveries->count();
+                $maxAllowableQty = $remainingDays * $subscribedQty;
+
+                if ($extraQty > $maxAllowableQty) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Extra quantity is too large for the remaining subscription days',
+                    ]);
+                }
+
+                // ---------------------------------------
+                // APPLY YOUR EXISTING LIVE LOGIC
+                // ---------------------------------------
+
+                $qtyRemainingToRemove = $extraQty;
+                $removedDeliveries = [];
+                $updatedDelivery = null;
+
+                foreach ($futureDeliveries->sortByDesc('delivery_date') as $delivery) {
+                    if ($qtyRemainingToRemove <= 0) break;
+
+                    if ($delivery->quantity <= $qtyRemainingToRemove) {
+
+                        $qtyRemainingToRemove -= $delivery->quantity;
+                        $removedDeliveries[] = $delivery->delivery_date;
+                        $delivery->delete();
+
+                    } else {
+
+                        $newQty = $delivery->quantity - $qtyRemainingToRemove;
+                        $newAmount = round($newQty * $unitPrice, 2);
+
+                        $delivery->update([
+                            'quantity' => $newQty,
+                            'amount'   => $newAmount,
+                        ]);
+
+                        $updatedDelivery = $delivery;
+                        $qtyRemainingToRemove = 0;
+                    }
+                }
+
+                // Update order
+                $extraAmount = round($extraQty * $unitPrice, 2);
+
+                $order->update([
+                    'quantity' => $order->quantity + $extraQty,
+                    'amount'   => $order->amount + $extraAmount,
+                    'modify'   => 2,
+                ]);
+
+                // Update subscription end date
+                $lastOrder = DailyDelivery::where(['user_id' => $userId , 'subscription_id' => $subscription->id])->latest()->first();
+                if ($lastOrder) {
+                    $subscription->update(['end_date' => $lastOrder->delivery_date]);
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Extra quantity added successfully',
+                ]);
+            }
 
             DB::commit();
 
-            return response()->json([
-                'status' => 200,
-                'message' => "Subscription",
-                'response' => [
-                    'order' => $order,
-                    'subscription' => $subscription,
-                    'subscribed_liters_per_day' => $subscribedLitersPerDay,
-                ],
-            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Update Order Error: ' . $e->getMessage());
             return response()->json([
                 'status' => 500,
-                'message' => 'Something went wrong.',
-                'error' => $e->getMessage(),
+                'message' => 'Internal error',
+                'error'   => $e->getMessage(),
             ]);
         }
     }
+
+
 }
 
 

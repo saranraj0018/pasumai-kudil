@@ -13,7 +13,6 @@ class SubscriptionController extends Controller
         $subscriptions = Subscription::with('get_user')->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.subscription.view', compact('subscriptions'));
     }
-
     public function save(Request $request)
     {
         $request->validate([

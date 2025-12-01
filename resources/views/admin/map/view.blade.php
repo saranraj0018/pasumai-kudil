@@ -2,20 +2,21 @@
     <div class="max-w-8xl mx-auto px-4 mt-6">
         <!-- Page Title -->
         <h2 class="text-3xl font-semibold mb-6 text-gray-800 flex items-center gap-2">
-            🏙️ Draw Cities
+            Draw Cities
         </h2>
 
         <!-- City Selection Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             <!-- Choose City -->
             <div>
-                <label for="city" class="block text-sm font-medium text-gray-700 mb-2">Choose a City</label>
+                <label for="city" class="block text-sm font-medium text-gray-700 mb-2">Choose a City<span class="text-red-500">*</span></label>
                 <select name="city" id="city"
                         class="block w-full rounded-lg border border-gray-300 bg-white p-3 text-gray-800 focus:border-[#ab5f00] focus:ring-2 focus:ring-[#ab5f00]/30 outline-none">
                     <option selected disabled>Select City</option>
                     @if (!empty($hub_list))
+
                         @foreach ($hub_list as $id => $list)
-                            <option value="{{ $list['id'] }}">{{ $list['type'] == 1 ? $list['name'] . '- Grocery' : '- Milk' }}</option>
+                            <option value="{{ $list['id'] }}"> {{ $list['type'] == 1 ? $list['name'] . '- Grocery' : $list['name'] . '- Milk' }}</option>
                         @endforeach
                     @endif
                 </select>

@@ -63,7 +63,7 @@
             <!-- Status Update -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Order Status</label>
+                    <label class="block font-medium text-gray-700 mb-1">Order Status<span class="text-red-500">*</span></label>
                     <select id="status" class="w-full border p-2 sm:p-3 rounded-lg text-gray-900">
                         <option value="1">Pending</option>
                         <option value="3">Shipped</option>
@@ -73,7 +73,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Date</label>
+                    <label class="block font-medium text-gray-700 mb-1">Date<span class="text-red-500">*</span></label>
                     <input type="date" id="statusDate" class="w-full border p-2 sm:p-3 rounded-lg text-gray-900"/>
                 </div>
             </div>

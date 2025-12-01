@@ -16,7 +16,6 @@ class OrderController extends Controller
             ->paginate(10);
         return view('admin.orders.view', compact('orders'));
     }
-
     public function updateStatus(Request $request)
     {
         try {

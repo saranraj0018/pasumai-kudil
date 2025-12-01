@@ -15,14 +15,14 @@
             <!-- Name + Status -->
             <div class="flex items-center gap-3">
                 <div class="w-full">
-                    <label class="block text-gray-700 font-medium mb-2">Category Name</label>
+                    <label class="block text-gray-700 font-medium mb-2">Category Name<span class="text-red-500">*</span></label>
                     <input type="text" name="category_name" id="category_name"
                            x-model="form.name"
                            placeholder="Enter category name"
                            class="form-input w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#ab5f00]">
                 </div>
                 <div class="w-full">
-                    <label class="block text-gray-700 font-medium mb-2">Status</label>
+                    <label class="block text-gray-700 font-medium mb-2">Status<span class="text-red-500">*</span></label>
                     <select name="category_status" x-model="form.status"  id="category_status"
                             class="form-input w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#ab5f00]">
                         <option value="1">Active</option>
@@ -33,7 +33,7 @@
 
             <!-- Image -->
                 <div>
-                    <label class="block text-gray-700 font-medium mb-2">Category Image</label>
+                    <label class="block text-gray-700 font-medium mb-2">Category Image<span class="text-red-500">*</span></label>
                     <input type="file" name="category_image" id="category_image" accept=".png, .jpg, .jpeg"
                            x-ref="fileInput"
                            @change="

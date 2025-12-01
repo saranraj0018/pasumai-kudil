@@ -10,13 +10,13 @@
             <input type="hidden" name="id" id="subscription_id">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Plan Name</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Plan Name<span class="text-red-500">*</span></label>
                     <input type="text" name="plan_name" id="plan_name"
                         class="form-input w-full border rounded-lg p-2">
                 </div>
                 <!-- Plan Type -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Plan Type</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Plan Type<span class="text-red-500">*</span></label>
                     <select name="plan_type" id="plan_type"
                         class="block w-full rounded-lg border border-gray-300 bg-white p-3 text-gray-700 focus:border-[#ab5f00] focus:ring focus:ring-[#ab5f00]/30">
                         <option value="">Select Plan Type</option>
@@ -27,7 +27,7 @@
                 </div>
                 <!-- Plan Pack -->
                 <div id="plan_pack_container">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Plan Pack</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Plan Pack<span class="text-red-500">*</span></label>
                     <div class="flex items-center border rounded-lg overflow-hidden">
                         <input type="number" name="plan_pack" id="plan_pack" class="w-full p-2 outline-none border-0"
                             placeholder="Enter number">
@@ -36,7 +36,7 @@
                 </div>
                 <!-- Delivery Days -->
                 <div id="delivery_days_container" class="hidden">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Days</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Days<span class="text-red-500">*</span></label>
                     <div class="flex items-center border rounded-lg overflow-hidden">
                         <input type="number" id="delivery_days_input" placeholder="Enter number of days"
                             class="w-full p-2 outline-none border-0">
@@ -49,14 +49,14 @@
                 </div>
                 <!-- Plan Amount -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1" id="amount">Plan Amount</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" id="amount">Plan Amount<span class="text-red-500">*</span></label>
                     <input type="number" name="plan_amount" id="plan_amount"
                         class="form-input w-full border rounded-lg p-2">
                     <div id="customize_amount_list" class="mt-2"></div>
                 </div>
                 <!-- Duration -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Valid Days</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Valid Days<span class="text-red-500">*</span></label>
                     <div class="flex items-center border rounded-lg overflow-hidden">
                         <input type="number" name="plan_duration" id="plan_duration"
                             class="w-full p-2 outline-none border-0" placeholder="Enter duration">

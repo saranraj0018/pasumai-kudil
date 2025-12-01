@@ -31,8 +31,9 @@ class CouponController extends Controller
         'expires_at'    => 'required|date',
         'status'        => 'required|boolean',
     ];
-    $request->validate($rules);
 
+    $request->validate($rules);
+try{
     if (!empty($request->coupon_id)) {
         $coupon = Coupon::find($request->coupon_id);
         if (!$coupon) {
@@ -58,7 +59,6 @@ class CouponController extends Controller
     $coupon->order_type    = $request->order_type ?? 1;
     $coupon->expires_at    = $request->expires_at;
     $coupon->status        = $request->status;
-
     $coupon->save();
 
     return response()->json([
@@ -66,9 +66,15 @@ class CouponController extends Controller
         'message' => $message,
         'coupon'  => $coupon
     ]);
+}catch (\Exception $e) {
+    return response()->json([
+        'success' => false,
+        'message' => $e->getMessage(),
+        'error' => $e->getMessage(),
+    ]);
 }
 
-
+}
 
   public function destroy(Request $request)
     {
