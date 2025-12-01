@@ -227,9 +227,6 @@ public function removeFromCart(Request $request)
         ]);
     }
 
-
-
-
     public static function getCouponDetails($coupon, $total_amount) {
 
         if (empty($coupon)) {
@@ -337,7 +334,6 @@ public function removeFromCart(Request $request)
             ], 200);
 
     }
-
 
     public function saveOrder(Request $request) {
 
@@ -527,6 +523,5 @@ public function removeFromCart(Request $request)
 
         return 0; // fallback if API fails
     }
-
 
 }

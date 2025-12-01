@@ -30,7 +30,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <x-label>Type</x-label>
+                            <x-label>Type<span class="text-red-500">*</span></x-label>
                             <x-select x-model="form.type" name="type" id="type" required>
                                 <option value="" selected disabled>Please Select Type</option>
                                 <option value="credit">Credit</option>
@@ -39,7 +39,7 @@
                         </div>
 
                         <div>
-                            <x-label>Amount</x-label>
+                            <x-label>Amount<span class="text-red-500">*</span></x-label>
                             <x-input name="amount" id="amount" placeholder="eg .., 500.00" type="number"
                                 step="0.01" x-model="form.amount" required />
                         </div>
@@ -76,6 +76,7 @@
         account_number: '',
         confirm_account_number: '',
         ifsc_code: '',
+        upi: ''
     },
     closeModal() {
         this.open = false;
@@ -85,6 +86,7 @@
             account_number: '',
             confirm_account_number: '',
             ifsc_code: '',
+            upi: ''
         };
     },
     get accountMismatch() {
@@ -93,6 +95,7 @@
             this.form.account_number !== this.form.confirm_account_number;
     },
 }" x-cloak>
+
     <template x-if="open">
         <div x-show="open" class="fixed inset-0 flex items-center justify-center z-50">
             <!-- Backdrop -->
@@ -107,25 +110,25 @@
                     <x-input name="id" value="{{ request()->id }}" type="hidden" />
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <x-label>Account Holder Name</x-label>
+                            <x-label>Account Holder Name<span class="text-red-500">*</span></x-label>
                             <x-input name="account_holder_name" id="account_holder_name" placeholder="Enter Holder Name"
                                 type="text" x-model="form.account_holder_name" required />
                         </div>
 
                         <div>
-                            <x-label>Bank Name</x-label>
+                            <x-label>Bank Name<span class="text-red-500">*</span></x-label>
                             <x-input name="bank_name" id="bank_name" placeholder="Enter Your Bank Name" type="text"
                                 x-model="form.bank_name" required />
                         </div>
 
                         <div>
-                            <x-label>Account Number</x-label>
+                            <x-label>Account Number<span class="text-red-500">*</span></x-label>
                             <x-input name="account_number" id="account_number" placeholder="Enter Your Account Number"
                                 type="text" x-model="form.account_number" required />
                         </div>
 
                         <div>
-                            <x-label>Confirm Account Number</x-label>
+                            <x-label>Confirm Account Number<span class="text-red-500">*</span></x-label>
                             <x-input name="confirm_account_number" id="confirm_account_number"
                                 placeholder="Re-enter Account Number" type="text"
                                 x-model="form.confirm_account_number" required />
@@ -134,10 +137,16 @@
                             </p>
                         </div>
 
-                        <div class="md:col-span-2">
-                            <x-label>IFSC Code</x-label>
+                        <div>
+                            <x-label>IFSC Code<span class="text-red-500">*</span></x-label>
                             <x-input name="ifsc_code" id="ifsc_code" placeholder="Enter Your IFSC Code" type="text"
                                 x-model="form.ifsc_code" required />
+                        </div>
+
+                        <div>
+                            <x-label>UPI Number</x-label>
+                            <x-input name="upi" id="upi" placeholder="Enter Your UPI Number"
+                                     type="text" x-model="form.upi" />
                         </div>
                     </div>
 
@@ -219,13 +228,14 @@
     </template>
 </div>
 
+
+
 <!-- Load once in your layout head (only once) -->
 
 <div id="modifySubscriptionModal" x-data="modifySubscription(
     '{{ $userSubscription->start_date ?? '' }}',
-    '{{ $userSubscription->valid_date ?? '' }}',
-    {{ Js::from($userSubscription->cancelled_date ?? []) }}
-
+    '{{ $userSubscription->end_date ?? '' }}',
+      @js($cancelled_date)
 )" x-init="init()" x-cloak
     @keydown.escape.window="closeModal()">
 
@@ -285,63 +295,44 @@
             fp: null,
             minDate: startDate,
             maxDate: validDate,
-            cancelledDates: Array.isArray(cancelledDates) ? cancelledDates : JSON.parse(cancelledDates || '[]'),
+            cancelledDates: Array.isArray(cancelledDates) ? cancelledDates : [],
             form: {
                 start_date: '',
                 end_date: '',
                 description: '',
             },
+
             init() {
-                // Disable field if last end_date equals valid_date
-                const lastEnd = this.cancelledDates[this.cancelledDates.length - 1]?.end_date;
-                if (lastEnd === this.maxDate) {
-                    this.$nextTick(() => {
-                        this.$refs.dateInput.disabled = true;
-                        this.$refs.dateInput.classList.add('bg-gray-100', 'cursor-not-allowed');
-                    });
-                }
                 this.$watch('open', (isOpen) => {
                     if (isOpen) this.$nextTick(() => this.initDatePicker());
                     else this.destroyPicker();
                 });
             },
+
             openModal() {
                 this.open = true;
+
+                // Preselect only if there is exactly ONE cancelled range
+                if (this.cancelledDates.length === 1) {
+                    this.form.start_date = this.cancelledDates[0].start_date;
+                    this.form.end_date = this.cancelledDates[0].end_date;
+                }
             },
+
             closeModal() {
                 this.open = false;
             },
+
             initDatePicker() {
-                if (typeof flatpickr === 'undefined') {
-                    console.error('Flatpickr not available.');
-                    return;
-                }
                 const input = this.$refs.dateInput;
                 const container = this.$refs.calendarContainer;
                 if (!input || !container) return;
 
                 this.destroyPicker();
-if (!Array.isArray(this.cancelledDates)) {
-    try {
-        console.log('testing1');
-        this.cancelledDates = JSON.parse(this.cancelledDates);
-        if (!Array.isArray(this.cancelledDates)) this.cancelledDates = [];
-    } catch {
-         console.log('testing0');
-        this.cancelledDates = [];
-    }
-}
 
-if(this.cancelledDates.length > 0){
-   cancelDate = this.cancelledDates;
-}else{
-    cancelDate = [];
-}
-
-
-                const highlightRanges = this.cancelledDates.map(range => ({
-                    from: range.start_date,
-                    to: range.end_date
+                const highlightRanges = this.cancelledDates.map(r => ({
+                    from: r.start_date,
+                    to: r.end_date
                 }));
 
                 this.fp = flatpickr(input, {
@@ -353,24 +344,20 @@ if(this.cancelledDates.length > 0){
                     appendTo: container,
                     minDate: this.minDate,
                     maxDate: this.maxDate,
-                    disable: highlightRanges, // prevent re-selecting cancelled days
+                    disable: highlightRanges,
+
+                    defaultDate: this.cancelledDates.length === 1
+                        ? [this.cancelledDates[0].start_date, this.cancelledDates[0].end_date]
+                        : null,
+
                     onDayCreate: (dObj, dStr, fp, dayElem) => {
-                        const normalize = (dateStr) => {
-                            // Split manually so JS never applies timezone conversion
-                            const [y, m, d] = dateStr.split('-').map(Number);
-                            return new Date(y, m - 1, d); // local date
-                        };
-                        const current = new Date(dayElem.dateObj.getFullYear(), dayElem.dateObj
-                            .getMonth(), dayElem.dateObj.getDate());
-                        const inRange = this.cancelledDates.some(range => {
-                            const start = normalize(range.start_date);
-                            const end = normalize(range.end_date);
-                            return current >= start && current <= end;
-                        });
-                        if (inRange) {
-                            dayElem.style.backgroundColor = '#ef4444';
+                        const d = dayElem.dateObj;
+                        const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+                        if (highlightRanges.some(r => ymd >= r.from && ymd <= r.to)) {
+                            dayElem.style.background = '#ef4444';
                             dayElem.style.color = 'white';
-                            dayElem.style.borderRadius = '4px';
+                            dayElem.style.borderRadius = '6px';
                             dayElem.title = 'Cancelled';
                         }
                     },
@@ -379,16 +366,13 @@ if(this.cancelledDates.length > 0){
                         if (dates.length === 2) {
                             this.form.start_date = this.formatYMD(dates[0]);
                             this.form.end_date = this.formatYMD(dates[1]);
-                        } else {
-                            this.form.start_date = '';
-                            this.form.end_date = '';
                         }
-                    },
+                    }
                 });
             },
 
             destroyPicker() {
-                if (this.fp && typeof this.fp.destroy === 'function') this.fp.destroy();
+                if (this.fp) this.fp.destroy();
                 this.fp = null;
             },
 

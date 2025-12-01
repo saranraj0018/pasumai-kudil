@@ -120,7 +120,7 @@ $(function () {
                         reloadCouponList();
                     }, 500);
                 } else {
-                    showToast("Something went wrong!", "error", 2000);
+                    showToast(res.message, "error", 2000);
                 }
             },
             function (err) {

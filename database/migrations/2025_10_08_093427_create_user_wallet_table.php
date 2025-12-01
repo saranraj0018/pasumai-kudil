@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('wallets', function (Blueprint $table) {
             $table->id();
+            $table->string('transaction_id')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('no action');
+            $table->foreignId('subscription_id')->constrained('user_subscriptions')->onDelete('no action');
             $table->decimal('balance', 12, 2)->default(0);
             $table->timestamps();
         });

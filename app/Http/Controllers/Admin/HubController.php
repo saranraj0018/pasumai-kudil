@@ -16,7 +16,6 @@ class HubController extends Controller
        $hub_list = Hub::with('user')->orderBy('created_at', 'desc')->paginate(10);
        return view('admin.hub.view', compact('hub_list'));
    }
-
    public function citySave(Request $request) {
 
        $validator = Validator::make($request->all(), [
@@ -41,7 +40,6 @@ class HubController extends Controller
                'message' => $validator->errors()->first(),
            ], 409);
        }
-
 
        $city = !empty($request['hub_id']) ? Hub::find($request['hub_id']) : new Hub();
        $city->address = $request['hub_name'];

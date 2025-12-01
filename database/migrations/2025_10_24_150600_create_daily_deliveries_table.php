@@ -18,10 +18,14 @@ return new class extends Migration
             $table->foreignId('delivery_id')->constrained('delivery_partners')->onDelete('no action');
             $table->decimal('amount', 10, 2);
             $table->date('delivery_date');
-            $table->string('delivery_status')->default('pending');
+            $table->enum('delivery_status', ['pending', 'cancelled','delivered'])
+                ->default('pending');
             $table->string('image', 255)->nullable();
             $table->integer('quantity')->nullable();
             $table->string('pack')->nullable();
+            $table->enum('modify', ['1', '2'])
+                ->default('1')
+                ->comment('1:modify, 2:non-modify');
             $table->timestamps();
         });
     }

@@ -178,13 +178,13 @@ $(function () {
                         }">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Regular Price</label>
+                                <label class="block text-sm font-medium text-gray-700">Regular Price<span class="text-red-500">*</span></label>
                                 <input type="number" step="0.01" name="variants[${index}][regular_price]" class="regularPrice regularPriceInput border border-gray-300 rounded-lg w-full p-2" value="${
                             variant.regular_price ?? ""
                         }" required>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Purchase Price</label>
+                                <label class="block text-sm font-medium text-gray-700">Purchase Price<span class="text-red-500">*</span></label>
                                 <input type="number" step="0.01" name="variants[${index}][purchase_price]" class="purchasePrice purchasePriceInput border border-gray-300 rounded-lg w-full p-2" value="${
                             variant.purchase_price ?? ""
                         }" required>
@@ -253,7 +253,7 @@ $(function () {
                         }">
                             </div>
                             <div>
-                             <label class="block text-sm font-medium text-gray-700">Stock</label>
+                             <label class="block text-sm font-medium text-gray-700">Stock<span class="text-red-500">*</span></label>
                              <input name="variants[${index}][stock]" type="number" step="0.01" class="stock border border-gray-300 rounded-lg w-full p-2" value="${
                             variant.stock ?? ""
                         }">
@@ -329,12 +329,12 @@ $(function () {
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Regular Price</label>
+                <label class="block text-sm font-medium text-gray-700">Regular Price<span class="text-red-500">*</span></label>
                 <input type="number" step="0.01" name="variants[${variantIndex}][regular_price]" class="regularPrice regularPriceInput mt-1 block w-full border rounded-md p-2" required/>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Purchase Price</label>
+                <label class="block text-sm font-medium text-gray-700">Purchase Price<span class="text-red-500">*</span></label>
                 <input type="number" step="0.01" name="variants[${variantIndex}][purchase_price]" class="purchasePrice purchasePriceInput mt-1 block w-full border rounded-md p-2" required/>
             </div>
 
@@ -369,7 +369,7 @@ $(function () {
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Stock</label>
+                <label class="block text-sm font-medium text-gray-700">Stock<span class="text-red-500">*</span></label>
                 <input type="number" step="1" name="variants[${variantIndex}][stock]" class="stock mt-1 block w-full border rounded-md p-2"/>
             </div>
 

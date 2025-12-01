@@ -18,32 +18,32 @@
             <!-- Code + Type + Value -->
             <div class="flex items-center gap-3">
                 <div class="w-full">
-                    <label>Coupon Code</label>
+                    <label>Coupon Code<span class="text-red-500">*</span></label>
                     <input type="text" name="coupon_code" id="coupon_code" class="form-input w-full border rounded-lg p-2">
                 </div>
                 <div class="w-full">
-                    <label>Discount Type</label>
+                    <label>Discount Type<span class="text-red-500">*</span></label>
                     <select name="discount_type" id="discount_type" class="form-input w-full border rounded-lg p-2">
                         <option value="1">Percentage</option>
                         <option value="2">Fixed</option>
                     </select>
                 </div>
                 <div class="w-full">
-                    <label>Discount Value</label>
+                    <label>Discount Value<span class="text-red-500">*</span></label>
                     <input type="number" name="discount_value" id="discount_value" class="form-input w-full border rounded-lg p-2">
                 </div>
             </div>
 
             <!-- Description -->
             <div>
-                <label>Description</label>
+                <label>Description<span class="text-red-500">*</span></label>
                 <input type="text" name="description" id="description" class="form-input w-full border rounded-lg p-2">
             </div>
 
             <!-- Apply For + Prices + Orders -->
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 <div>
-                    <label>Apply For</label>
+                    <label>Apply For<span class="text-red-500">*</span></label>
                     <select name="apply_for" id="apply_for" class="form-input w-full border rounded-lg p-2">
                         <option value="1">Subtotal</option>
                         <option value="2">Order</option>
@@ -69,7 +69,7 @@
                     </select>
                 </div>
             <div>
-                <label>Order Count</label>
+                <label>Order Count<span class="text-red-500">*</span></label>
                 <input type="number" name="order_count" id="order_count" class="form-input w-full border rounded-lg p-2">
             </div>
 
@@ -79,7 +79,7 @@
             <!-- Expiry + Status -->
             <div class="flex items-center gap-3">
                 <div class="w-full" id="expires_at_wrapper">
-                    <label>Expires At</label>
+                    <label>Expires At<span class="text-red-500">*</span></label>
                     <input type="date" name="expires_at" id="expires_at" class="form-input w-full border rounded-lg p-2">
                 </div>
                 <div class="w-full">

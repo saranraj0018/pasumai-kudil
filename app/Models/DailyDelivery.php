@@ -18,7 +18,8 @@ class DailyDelivery extends Model
         'pack',
         'quantity',
         'delivery_status',
-        'amount'
+        'amount',
+        'modify',
     ];
 
     public function get_user()
@@ -29,5 +30,10 @@ class DailyDelivery extends Model
     public function get_delivery_partner()
     {
         return $this->belongsTo(DeliveryPartner::class, 'delivery_id', 'id');
+    }
+
+    public function get_user_subscription()
+    {
+        return $this->belongsTo(UserSubscription::class, 'subscription_id', 'id');
     }
 }

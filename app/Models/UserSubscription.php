@@ -16,6 +16,8 @@ class UserSubscription extends Model
         'valid_date',
         'pack',
         'quantity',
+        'price',
+        'days'
     ];
     public function get_subscription()
     {

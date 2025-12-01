@@ -110,5 +110,13 @@ function showToast(message, type = "success", duration = 3000) {
     startTimeout();
 }
 
+function showLoader() {
+    $("#globalLoader").removeClass("hidden").addClass("flex");
+}
+
+function hideLoader() {
+    $("#globalLoader").addClass("hidden").removeClass("flex");
+}
+
 
 

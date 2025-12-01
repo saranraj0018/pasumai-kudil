@@ -13,7 +13,6 @@ class CategoryController extends Controller
        $categories = Category::with('products')->paginate(10);
         return view('admin.category.view', compact('categories'));
     }
-
     public function save(Request $request){
         $rules = [
             'category_name' => 'required|max:255',

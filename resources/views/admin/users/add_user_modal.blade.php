@@ -33,7 +33,7 @@
                 plan_id: ''
             };
             this.previewUrl = null;
-            this.errors = {}; // ✅ clear errors on close
+            this.errors = {}; // clear errors on close
         },
     }"
     x-init="initMapAndAutocomplete()"
@@ -51,6 +51,8 @@
                     @csrf
                     <input type="hidden" name="latitude" x-model="latitude">
                     <input type="hidden" name="longitude" x-model="longitude">
+                    <input type="hidden" name="state" x-model="form.state">
+                    <input type="hidden" name="pincode" x-model="form.pincode">
                     <input type="hidden" name="exiting_image" x-model="exiting_image" id="exiting_image" />
                     <input type="hidden" name="user_id" x-model="form.user_id" id="user_id" />
                     <textarea x-model="form.address" name="address" type="hidden"></textarea>
@@ -121,6 +123,7 @@
                                 <x-label class="block text-sm font-medium text-gray-700 mb-1">Map</x-label>
                                 <div id="map" class="w-full h-64 rounded-lg border border-gray-300"></div>
                             </div>
+
                         </div>
 
                         <!-- Buttons -->
@@ -210,7 +213,7 @@
             fields: ['geometry', 'formatted_address', 'address_components', 'name'],
         });
 
-        // 🧭 When user selects an address
+        // When user selects an address
         autocomplete.addListener('place_changed', () => {
             const place = autocomplete.getPlace();
             if (!place.geometry) return;
@@ -224,13 +227,29 @@
             map.panTo(loc);
             map.setZoom(15);
 
-            // ✅ Store values in hidden inputs
             document.querySelector('[name=latitude]').value = lat;
             document.querySelector('[name=longitude]').value = lng;
-            addressField.value = address; // ✅ Save address text
+            addressField.value = address;
+
+            // 🔍 Extract State & Pincode
+            let state = '';
+            let pincode = '';
+
+            place.address_components.forEach(comp => {
+                if (comp.types.includes("administrative_area_level_1")) {
+                    state = comp.long_name;   // Tamil Nadu
+                }
+                if (comp.types.includes("postal_code")) {
+                    pincode = comp.long_name; // 600001
+                }
+            });
+
+            // Save values
+            document.querySelector('[name=state]').value = state;
+            document.querySelector('[name=pincode]').value = pincode;
         });
 
-        // 📍 When marker is dragged
+        // When marker is dragged
         marker.addListener('dragend', () => {
             const pos = marker.getPosition();
             document.querySelector('[name=latitude]').value = pos.lat();

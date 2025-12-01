@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
-
 class CouponController extends Controller
 {
    public function index(Request $request)
@@ -63,7 +62,6 @@ class CouponController extends Controller
         }
     }
 
-
     public static function getCouponDetails($coupon, $total_amount) {
         if (!$coupon) {
             return 0;
@@ -96,7 +94,6 @@ class CouponController extends Controller
                     : (int)$discount_value;
             }
         }
-
         return $discount;
     }
 

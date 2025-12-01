@@ -10,7 +10,6 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller {
-
     public function userRegister(Request $request) {
         $validator = Validator::make($request->all(), [
             'user_name'         => 'required',
@@ -109,7 +108,6 @@ class AuthController extends Controller {
         ],
     ], 200);
 }
-
 
     public function login(Request $request) {
         $validator = Validator::make($request->all(), [

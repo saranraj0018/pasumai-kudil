@@ -12,12 +12,14 @@ class TodayDeliveryController extends Controller
     public function index(Request $request)
     {
 
-        $this->data['today_delivery'] = DailyDelivery::select(
+        $this->data['today_delivery'] = DailyDelivery::with('get_user_subscription')->select(
             'delivery_id',
             DB::raw('COUNT(id) as total_scheduled'),
             DB::raw('SUM(CASE WHEN delivery_status = "pending" THEN 1 ELSE 0 END) as total_pending'),
             DB::raw('SUM(CASE WHEN delivery_status = "delivered" THEN 1 ELSE 0 END) as total_delivered')
-        )
+        )  ->whereHas('get_user_subscription', function ($query) {
+            $query->where('status', 1);
+            })
             ->whereDate('delivery_date', date('Y-m-d'))
             ->groupBy('delivery_id')
             ->with('get_delivery_partner') // your relationship

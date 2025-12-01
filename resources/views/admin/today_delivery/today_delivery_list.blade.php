@@ -7,7 +7,7 @@
                         <th class="px-3 py-2">S.No</th>
                         <th class="px-3 py-2">Delivery Partner</th>
                         <th class="px-3 py-2">Scheduled</th>
-                        <th class="px-3 py-2">Pending</th>
+{{--                        <th class="px-3 py-2">Pending</th>--}}
                         <th class="px-3 py-2">Delivered</th>
                     </tr>
                 </thead>
@@ -20,7 +20,7 @@
                                     {{ $delivery->get_delivery_partner->name ?? 'N/A' }}
                                 </td>
                                 <td class="px-4 py-3">{{ $delivery->total_scheduled }}</td>
-                                <td class="px-4 py-3 text-orange-600 font-semibold">{{ $delivery->total_pending }}</td>
+{{--                                <td class="px-4 py-3 text-orange-600 font-semibold">{{ $delivery->total_pending }}</td>--}}
                                 <td class="px-4 py-3 text-green-600 font-semibold">{{ $delivery->total_delivered }}</td>
                             </tr>
                         @endforeach

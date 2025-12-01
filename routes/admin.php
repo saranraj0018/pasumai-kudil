@@ -89,6 +89,8 @@ Route::prefix('admin')->group(function () {
             Route::post('/add_user_account', 'addUserAccount')->name('add_user_account.users');
             Route::post('/subscription_cancel', 'cancelSubscription')->name('subscription_cancel.users');
             Route::post('/modify_subscription', 'modifySubscription')->name('modify_subscription.users');
+            Route::post('/remove-previous-wallet', 'removePreviousWallet')->name('remove_previous_wallet.users');
+            Route::post('/revoke', 'revokeSubscriptionDay')->name('revoke.users');
         });
 
         // Shipping

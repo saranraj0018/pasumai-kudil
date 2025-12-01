@@ -13,8 +13,13 @@ class DeliveryListController extends Controller
 {
     public function index(Request $request)
     {
-        $this->data['daily_delivery'] =  DailyDelivery::with('get_user', 'get_delivery_partner')->orderBy('created_at', 'desc')
-                            ->paginate(10);
+        $this->data['daily_delivery'] = DailyDelivery::with('get_user', 'get_delivery_partner', 'get_user_subscription')
+            ->whereHas('get_user_subscription', function ($query) {
+                $query->where('status', 1);
+            })
+            ->orderBy('id', 'asc')
+            ->paginate(10);
+
          return view('admin.delivery_list.list')->with($this->data);
     }
 
@@ -26,58 +31,77 @@ class DeliveryListController extends Controller
 
         if (empty($request['delivery_id']) && !$request->has('existing_image')) {
             $rules['image'] = 'required|image|mimes:jpeg,png,jpg';
-        } else if ($request->hasFile('image')) {
+        } elseif ($request->hasFile('image')) {
             $rules['image'] = 'image|mimes:jpeg,png,jpg';
         }
+
         $request->validate($rules);
-        $message = 'Delivery Status updated successfully';
-        if ($request->hasFile('image')) {
-            $img_name = time() . '_' . $request->file('image')->getClientOriginalName();
-            $request->image->storeAs('products/', $img_name, 'public');
-            $image = 'delivery/' . $img_name;
-        } elseif ($request->filled('existing_image')) {
-            $image = $request->existing_image;
-        }
+
         try {
-            $get_user = DailyDelivery::where('id', $request['delivery_id'])->first();
-            $get_wallet = Wallet::where('user_id', $get_user->user_id)->first();
-            $amount = $get_wallet->balance - $get_user->amount;
+            $delivery = DailyDelivery::findOrFail($request->delivery_id);
+            $wallet   = Wallet::where(['user_id' => $delivery->user_id,'subscription_id' => $delivery->subscription_id])->first();
 
-            $exist_transaction = Transaction::where('user_id', $get_user->user_id)
-                                    ->where('date', $get_user->delivery_date)
-                                    ->exists();
-            if(!$exist_transaction){
-                $transaction = new Transaction();
-                $transaction->user_id  = $get_user->user_id;
-                $transaction->type = 'debit';
-                $transaction->amount  = $get_user->amount ?? 0;
-                $transaction->balance_amount  = $amount ?? 0;
-                $transaction->description = 'daily milk amount is' .$amount .'deducted successfully!'  ?? '';
-                $transaction->date = $get_user->delivery_date;
-                $transaction->save();
+            // ---- IMAGE HANDLING ----
+            if ($request->hasFile('image')) {
+                $img_name = time().'_'.$request->file('image')->getClientOriginalName();
+                $request->image->storeAs('products/', $img_name, 'public');
+                $image = 'delivery/'.$img_name;
+            } else {
+                $image = $request->existing_image ?? null;
+            }
 
-                $wallet_update = Wallet::where('user_id', $get_user->user_id)->update([
-                    'balance' => $amount
+            // ---------- WALLET CHECK ----------
+            $deductionAmount = $delivery->amount;
+            $remaining = $wallet->balance - $deductionAmount;
+
+            if ($remaining < 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Insufficient wallet balance. Please recharge wallet.'
                 ]);
             }
 
-            $update = DailyDelivery::where('id', $request['delivery_id'])->update([
-                 'delivery_status' => $request['status'],
-                 'image' => $image,
+            // ---------- CHECK IF ALREADY DEDUCTED ----------
+            $exists = Transaction::where('user_id', $delivery->user_id)
+                ->where('date', $delivery->delivery_date)
+                ->exists();
+
+            if (!$exists) {
+                // Deduct wallet
+                $transaction = new Transaction();
+                $transaction->user_id        = $delivery->user_id;
+                $transaction->wallet_id      = $wallet->id;
+                $transaction->type           = 'debit';
+                $transaction->amount         = $deductionAmount;
+                $transaction->balance_amount = $remaining; // always correct new balance
+                $transaction->description    = "Daily milk amount ₹{$deductionAmount} deducted.";
+                $transaction->date           = date('Y-m-d');
+                $transaction->save();
+
+                $wallet->update([
+                    'balance' => $remaining
                 ]);
+            }
 
-             return response()->json([
-                'success' => true,
-                'message' => $message,
-                'product' => $update,
+            // ---------- NOW ALLOW STATUS UPDATE ----------
+            $delivery->update([
+                'delivery_status' => $request->status,
+                'image' => $image,
             ]);
-        } catch (Exception $e) {
 
-             return response()->json([
+            return response()->json([
+                'success' => true,
+                'message' => 'Delivery status updated successfully',
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
                 'success' => false,
                 'message' => 'Failed to save delivery status',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
+
 }

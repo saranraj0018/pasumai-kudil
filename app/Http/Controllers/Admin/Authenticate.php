@@ -34,7 +34,7 @@ class Authenticate extends Controller
         }
 
         $admin = Auth::guard('admin')->user();
-        $role_id = Role::pluck('id')->all();
+//        $role_id = Role::pluck('id')->all();
 
         if (!empty($admin->role) && !empty($role_id) && !in_array($admin->role, $role_id)) {
             Auth::guard('admin')->logout();

@@ -40,11 +40,13 @@ $(document).on("click", ".editDeliveryList", function () {
      if (!isValid) return;
 
      let formData = new FormData(this);
+     showLoader();
      sendRequest(
          "/admin/delivery_list/status-save",
          formData,
          "POST",
          function (res) {
+             hideLoader();
              if (res.success) {
                  showToast(
                      "Delivery Status saved successfully!",
@@ -69,6 +71,7 @@ $(document).on("click", ".editDeliveryList", function () {
              }
          },
          function (err) {
+             hideLoader();
              if (err.errors) {
                  let msg = "";
                  $.each(err.errors, function (k, v) {

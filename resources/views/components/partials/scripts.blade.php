@@ -2,6 +2,8 @@
  <script src="{{ asset('admin/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
  <script src="{{ asset('admin/js/adminlte.min.js') }}"></script>
  <script src="{{ asset('admin/js/custom.js') }}"></script>
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.css">
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.js"></script>
 
  <script>
      $.ajaxSetup({

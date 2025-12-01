@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('latitude', 255)->nullable();
             $table->string('longitude', 255)->nullable();
             $table->string('address', 255)->nullable();
+            $table->string('pincode', 255)->nullable();
+            $table->string('state', 255)->nullable();
             $table->integer('subscription_id')->nullable();
             $table->string('account_number', 255)->nullable();
             $table->string('bank_name', 255)->nullable();

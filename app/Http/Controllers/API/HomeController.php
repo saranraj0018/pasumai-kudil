@@ -11,7 +11,6 @@ use App\Models\Notification;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
-
 class HomeController extends Controller {
     public function index(Request $request) {
         $bannerList = Banner::where('type', 'GroceryMain')
@@ -26,7 +25,7 @@ class HomeController extends Controller {
                 ];
             });
 
-        $subBannerList = Banner::where('type', 'sub')
+        $subBannerList = Banner::where('type', 'GrocerySub')
             ->orderBy('id', 'asc')
             ->get()
             ->map(function ($banner) {
