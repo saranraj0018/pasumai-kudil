@@ -2,9 +2,11 @@
     <div class="p-4">
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Hub List</h2>
+            @can('add_hub_list')
             <button id="create_hub" class="bg-[#ab5f00] text-white px-4 py-2 rounded">
                 Create Hub
             </button>
+            @endcan
         </div>
 
         <div class="overflow-x-auto bg-white rounded-xl shadow-md">
@@ -34,6 +36,7 @@
                         <td class="px-4 py-3">{{ showDate($list->created_at) }}</td>
                         <td class="px-4 py-3 flex justify-center gap-4">
                             <!-- Edit -->
+                            @can('edit_hub_list')
                             <button
                                 class="text-blue-600 hover:text-blue-800 transition editHubBtn"
                                 data-id="{{ $list->id }}"
@@ -44,12 +47,13 @@
                                 data-status="{{ $list->status }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
-
+                            @endcan
+                            @can('delete_hub_list')
                             <!-- Delete -->
-                            <button class="text-red-600 hover:text-red-800 transition deleteHubBtn"
-                                    data-id="{{ $list->id }}">
+                            <button class="text-red-600 hover:text-red-800 transition deleteHubBtn" data-id="{{ $list->id }}">
                                 <i class="fa-solid fa-delete-left"></i>
                             </button>
+                            @endcan
                         </td>
                     </tr>
                 @endforeach

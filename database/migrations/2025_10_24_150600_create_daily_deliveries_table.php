@@ -26,6 +26,7 @@ return new class extends Migration
             $table->enum('modify', ['1', '2'])
                 ->default('1')
                 ->comment('1:modify, 2:non-modify');
+            $table->string('description')->nullable();
             $table->timestamps();
         });
     }

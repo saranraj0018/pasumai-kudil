@@ -28,7 +28,6 @@ $(function () {
             formData,
             "POST",
             function (res) {
-                console.log(res.success);
                 if (res.success) {
                     showToast("Wallet added successfully!", "success", 2000);
                     setTimeout(() => {
@@ -122,7 +121,6 @@ $(function () {
                 }
             },
             function (err) {
-                console.log(err.errors);
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -217,7 +215,6 @@ $(function () {
                 }
             },
             function (err) {
-                console.log(err.errors);
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -242,16 +239,8 @@ $(function () {
             "POST",
             function (res) {
                 if (res.success) {
-                    showToast("Subscription cancelled successfully!", "success", 2000);
+                    showToast("Cancellation revoked successfully!", "success", 2000);
                     setTimeout(() => {
-                        let modalScope = document.querySelector(
-                            "#addSubscriptionModal"
-                        ).__x.$data;
-                        if (modalScope.hasOwnProperty("open")) {
-                            modalScope.open = false; // close modal
-                        }
-                        // Reset form
-                        document.getElementById("subscriptionCancelForm").reset();
                         window.location.reload();
                     }, 500);
                 } else {
@@ -259,7 +248,6 @@ $(function () {
                 }
             },
             function (err) {
-                console.log(err.errors);
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -341,7 +329,6 @@ $(function () {
                 }
             },
             function (err) {
-                console.log(err.errors);
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -367,7 +354,7 @@ $(function () {
                     allowInput: true,
                     onChange: function (selectedDates, dateStr) {
                         // Optional: console log selected range
-                        console.log("Selected Range:", dateStr);
+
                     },
                 });
             },

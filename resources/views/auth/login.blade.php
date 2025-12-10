@@ -19,9 +19,7 @@
                 {{-- Email --}}
                 <div>
                     <label class="text-sm text-gray-700">Email</label>
-                    <input type="email" name="email"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2 mt-1
-                          focus:outline-none focus:ring-2 focus:ring-[#ab5f00]"
+                    <input type="email" name="email" class="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-[#ab5f00]"
                         placeholder="you@example.com" />
                     @error('email')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

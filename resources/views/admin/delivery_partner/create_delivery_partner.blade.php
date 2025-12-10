@@ -20,9 +20,7 @@
             <div class="absolute inset-0 bg-black/40" @click="closeModal()"></div>
             <!-- Modal Box -->
             <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-[90%] relative z-50">
-
-                <h2 class="text-2xl font-bold mb-6 text-gray-800" x-text="modalTitle">Add Delivery
-                    Partner</h2>
+            <h2 class="text-2xl font-bold mb-6 text-gray-800" x-text="modalTitle">Add Delivery Partner</h2>
                 <form id="deliveryPartnerAddForm" enctype="multipart/form-data" novalidate
                     class="flex flex-col justify-start items-start w-full  h-[35vh] overflow-y-scroll">
                     @csrf

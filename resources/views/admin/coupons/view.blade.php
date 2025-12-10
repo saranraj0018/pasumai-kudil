@@ -2,11 +2,12 @@
     <div class="p-4">
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Coupons</h2>
+            @can('add_coupons')
             <button id="createCouponBtn" class="bg-[#ab5f00] text-white px-4 py-2 rounded">
                 Create
             </button>
+            @endcan
         </div>
-
         <div class="overflow-x-auto bg-white rounded-xl shadow-md">
             <table class="w-full text-sm text-left text-gray-700 border-collapse">
                 <thead>
@@ -57,6 +58,7 @@
                             </td>
                             <td class="px-4 py-3 flex justify-center gap-4">
                                 <!-- Edit -->
+                                @can('edit_coupons')
                                 <button class="text-blue-600 hover:text-blue-800 transition editCouponBtn"
                                     data-id="{{ $coupon->id }}" data-code="{{ $coupon->coupon_code }}"
                                     data-type="{{ $coupon->discount_type }}"
@@ -68,13 +70,16 @@
                                     data-status="{{ $coupon->status }}">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
+                                @endcan
 
                                 <!-- Delete -->
                                 @if ($coupon->get_order->isEmpty())
+                                  @can('delete_coupons')
                                     <button class="text-red-600 hover:text-red-800 transition btnDeleteCoupon"
                                         data-id="{{ $coupon->id }}">
                                         <i class="fa-solid fa-delete-left"></i>
                                     </button>
+                                    @endcan
                                 @endif
                             </td>
                         </tr>
@@ -82,11 +87,9 @@
                 </tbody>
             </table>
         </div>
-
         <div class="p-4">
             {{ $coupons->links() }}
         </div>
-
         @include('admin.coupons.modal')
     </div>
 </x-layouts.app>

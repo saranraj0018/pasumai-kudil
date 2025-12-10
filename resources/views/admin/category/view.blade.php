@@ -3,9 +3,11 @@
     <div class="p-4">
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Categories</h2>
+            @can('add_category')
             <button id="createCategoryBtn" class="bg-[#ab5f00] text-white px-4 py-2 rounded">
                 Create
             </button>
+            @endcan
         </div>
 
         <div class="overflow-x-auto bg-white rounded-xl shadow-md">
@@ -48,6 +50,7 @@
                             {{ $cat->created_at->format('d M Y, h:i A') }}
                         </td>
                         <td class="px-4 py-3 flex justify-center gap-4">
+                            @can('edit_category')
                             <!-- Edit -->
                             <button
                                 class="text-blue-600 hover:text-blue-800 transition editCategoryBtn"
@@ -57,14 +60,16 @@
                                 data-image="{{ $cat->image ? asset('storage/'.$cat->image) : '' }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
+                            @endcan
                             <!-- Delete -->
                             @if ($cat->products->isEmpty())
+                            @can('delete_category')
                             <button class="text-red-600 hover:text-red-800 transition btnDeleteCategory" data-id="{{ $cat->id }}">
                                 <i class="fa-solid fa-delete-left"></i>
                             </button>
+                            @endcan
                             @endif
                         </td>
-
                     </tr>
                 @endforeach
                 </tbody>

@@ -2,24 +2,25 @@
 
 namespace App\Http\Controllers\API\Milk;
 
-use App\Http\Controllers\Controller;
-use App\Jobs\GenerateDailyDeliveries;
-use App\Models\Banner;
-use App\Models\DailyDelivery;
-use App\Models\DeliveryPartner;
-use App\Models\Subscription;
-use App\Models\Transaction;
-use App\Models\User;
-use App\Models\UserSubscription;
-use App\Models\Wallet;
-use Carbon\Carbon;
 use Exception;
+use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Banner;
+use App\Models\Wallet;
+use App\Models\Transaction;
+use App\Models\Subscription;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Cache;
+use App\Models\DailyDelivery;
+use App\Events\NewNotification;
+use App\Models\DeliveryPartner;
+use App\Models\UserSubscription;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Jobs\GenerateDailyDeliveries;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 class MilkHomeAPIController extends Controller
@@ -206,14 +207,14 @@ class MilkHomeAPIController extends Controller
             $polygon[$i]['lng'] = (float)$polygon[$i]['lng'];
         }
 
-        // 1️⃣ Check if point is exactly on a vertex
+        // Check if point is exactly on a vertex
         foreach ($polygon as $point) {
             if (abs($lat - $point['lat']) < 1e-9 && abs($lng - $point['lng']) < 1e-9) {
                 return true;
             }
         }
 
-        // 2️⃣Check if point is on any polygon edge
+        // Check if point is on any polygon edge
         for ($i = 0; $i < $numPoints; $i++) {
             $iLat = $polygon[$i]['lat'];
             $iLng = $polygon[$i]['lng'];
@@ -234,7 +235,7 @@ class MilkHomeAPIController extends Controller
             $j = $i;
         }
 
-        // 3️⃣ Normal ray-casting
+        // Normal ray-casting
         $j = $numPoints - 1;
         for ($i = 0; $i < $numPoints; $i++) {
             $lat_i = $polygon[$i]['lat'];
@@ -370,6 +371,9 @@ class MilkHomeAPIController extends Controller
             // --- Update User with Active Subscription ---
             $user->subscription_id = $user_subscription->id;
             $user->save();
+            $get_user = User::where('id', $request['user_id'])->first();
+
+            event(new NewNotification($request['user_id'], "Subscription Added", "$get_user->name has added a new Subscription!", 2,1));
 
             DB::commit();
 
@@ -414,6 +418,7 @@ class MilkHomeAPIController extends Controller
             'account_details.ifsc_code' => 'required|string|max:20',
             'account_details.branch' => 'required|string|max:100',
         ]);
+
         try {
             DB::beginTransaction();
 
@@ -442,6 +447,10 @@ class MilkHomeAPIController extends Controller
                 'ifsc_code'           => $validated['account_details']['ifsc_code'],
                 'branch'              => $validated['account_details']['branch'],
             ]);
+            $get_user = User::where('id', $request['user_id'])->first();
+
+            event(new NewNotification($request['user_id'], "Subscription Cancelled", "$get_user->name has cancelled their subscription.", 2,1));
+
             DB::commit();
             return response()->json([
                 'status' => 200,

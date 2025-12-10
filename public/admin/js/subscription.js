@@ -1,6 +1,6 @@
 $(document).ready(function () {
     let deliveryDayList = [];
-     let deliveryDaysWithAmount = [];
+    let deliveryDaysWithAmount = [];
     let deleteId = null;
 
     // ===== Helper functions =====
@@ -97,9 +97,9 @@ $(document).ready(function () {
 
     // ===== Plan type change =====
     $("#plan_type").on("change", function () {
-          $("#customize_amount_list").empty();
-          $("#plan_amount").val("");
-         if ($(this).val() === "Customize") {
+        $("#customize_amount_list").empty();
+        $("#plan_amount").val("");
+        if ($(this).val() === "Customize") {
             $("#amount").text("Per Day Amount");
             $("#plan_pack_container").hide();
             $("#delivery_days_container").show();
@@ -111,7 +111,6 @@ $(document).ready(function () {
             $("#delivery_days_list").empty();
         }
     });
-
 
     // ===== Open create modal =====
     $("#createSubscriptionBtn").on("click", function () {
@@ -149,7 +148,7 @@ $(document).ready(function () {
                 deliveryDayList.push(d);
                 let $daySpan = $(`
             <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
-                ${d} Days
+                ${d.days} Days
                 <button type="button" class="ml-2 text-red-500 remove-delivery-day">&times;</button>
             </span>
         `);
@@ -182,7 +181,10 @@ $(document).ready(function () {
         formData.append("_token", $("input[name=_token]").val());
 
         if ($("#plan_type").val() === "Customize") {
-            formData.set("delivery_days", JSON.stringify(deliveryDaysWithAmount));
+            formData.set(
+                "delivery_days",
+                JSON.stringify(deliveryDaysWithAmount)
+            );
         }
 
         sendRequest(
@@ -256,7 +258,6 @@ $(document).ready(function () {
         });
     }
 
-
     function updateCustomizeAmountList() {
         if ($("#plan_type").val() !== "Customize") return;
         let perDayAmount = parseFloat($("#plan_amount").val()) || 0;
@@ -268,11 +269,11 @@ $(document).ready(function () {
         uniqueDays.forEach(function (days, index) {
             let dayAmount = days * perDayAmount;
             totalAmount += dayAmount;
-          deliveryDaysWithAmount.push({
-              days: days,
-              amount: dayAmount,
-          });
-             // Create display span
+            deliveryDaysWithAmount.push({
+                days: days,
+                amount: dayAmount,
+            });
+            // Create display span
             let $customizeAmountSpan = $(`
             <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
                 ${days} × ${perDayAmount} = ₹${dayAmount}
@@ -289,7 +290,6 @@ $(document).ready(function () {
 
         console.log("deliveryDaysWithAmount:", deliveryDaysWithAmount);
     }
-
 
     // When per-day amount changes
     $("#plan_amount").on("keyup change", function () {

@@ -16,16 +16,16 @@ $(document).on("click", ".editDeliveryList", function () {
     alpine.previewUrl = delivery.image || "";
 });
 
- $(document).on("submit", "#deliverystatusChangeForm", function (e) {
+$(document).on("submit", "#deliverystatusChangeForm", function (e) {
      e.preventDefault();
      let isValid = true;
 
      const fields = [
-         {
-             id: "#status",
-             condition: (val) => val === "",
-             message: "Status is required",
-         },
+        //  {
+        //      id: "#status",
+        //      condition: (val) => val === "",
+        //      message: "Status is required",
+        //  },
          {
              id: "#image",
              condition: (val) => val === "",
@@ -65,6 +65,7 @@ $(document).on("click", ".editDeliveryList", function () {
                          .getElementById("deliverystatusChangeForm")
                          .reset();
                      reloadDeliveryList();
+                     window.location.reload();
                  }, 500);
              } else {
                  showToast("Something went wrong!", "error", 2000);
@@ -83,7 +84,7 @@ $(document).on("click", ".editDeliveryList", function () {
              }
          }
      );
- });
+});
 
  function reloadDeliveryList() {
      $.get("/admin/delivery_list/delivery-list", function (html) {

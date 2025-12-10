@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\API\Milk;
 
-use App\Console\Commands\GenerateDailyDeliveries;
-use App\Http\Controllers\Controller;
-use App\Models\DailyDelivery;
-use App\Models\UserSubscription;
+use Exception;
 use Carbon\Carbon;
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\DailyDelivery;
+use App\Events\NewNotification;
+use App\Models\UserSubscription;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use App\Console\Commands\GenerateDailyDeliveries;
 
 class ManageDeliveriesController extends Controller
 {
@@ -78,6 +81,7 @@ class ManageDeliveriesController extends Controller
 
             // ------------------------- FETCH SUBSCRIPTION -------------------------
             $userId = auth()->id();
+            $get_user = User::where('id', $userId)->first();
             if (!$userId) {
                 DB::rollBack();
                 return response()->json(['status' => 401, 'message' => 'Unauthenticated'], 401);
@@ -170,8 +174,23 @@ class ManageDeliveriesController extends Controller
                         'pack' => $subscription->pack ?? null,
                         'amount' => round($qtyToday * $unitPrice, 2),
                     ]);
+
                 }
 
+                $cancelled_dates = implode(', ', $changeDays);
+                $added_dates = [];
+                for ($i = 1; $i <= $extendDays; $i++) {
+                    $added_dates[] = $oldEnd->copy()->addDays($i)->format('Y-m-d');
+                }
+                $added_dates_str = implode(', ', $added_dates);
+                $message = "$get_user->name has cancelled delivery for dates ($cancelled_dates) and added new delivery dates ($added_dates_str).";
+                event(new NewNotification(
+                    1, // Admin user id (replace if different)
+                    "Delivery Cancelled",
+                    $message,
+                    2,
+                    1
+                ));
                 $subscription->update(['end_date' => $newEnd->format('Y-m-d')]);
 
                 DB::commit();
@@ -308,14 +327,29 @@ class ManageDeliveriesController extends Controller
                     }
                     $subscription->update(['end_date' => $newEndCarbon->format('Y-m-d')]);
                 } else {
-                    // Fallback: set end_date to last non-pending delivery or today
                     $fallback = DailyDelivery::where('user_id', $userId)
                         ->where('subscription_id', $subscription->id)
                         ->max('delivery_date');
                     $subscription->update(['end_date' => $fallback ? Carbon::parse($fallback)->format('Y-m-d') : Carbon::now()->format('Y-m-d')]);
                 }
 
+                $updated_dates = implode(', ', $changeDays); // increased qty dates
+                $removed_data = [];
+                foreach ($pendingRemovable as $pr) {
+                    $removed_data[] = $pr->delivery_date . " (qty: " . $pr->quantity . ")";
+                }
+                $removed_str = implode(', ', $removed_data);
+                $message = "$get_user->name has updated delivery quantity. Increased $increaseQty qty for dates ($updated_dates). "
+                    . "Removed pending quantity from: $removed_str.";
+                // Trigger notification event
+                event(new NewNotification(1, // Admin user id (replace if different)
+                    "Delivery Updated",
+                    $message,
+                    2,1
+                ));
+
                 DB::commit();
+
                 return response()->json([
                     'status' => 200,
                     'message' => 'Quantity updated successfully',

@@ -1,12 +1,14 @@
 <x-layouts.app>
     <div class="p-4" x-data="{ open: false }">
-         <input type="text" name="search" id="searchInput" value="{{ $search ?? '' }}" placeholder="Search name or mobile number..." class="bg-white border rounded px-3 py-2 focus:ring-2 focus:ring-green-500">
+         <input type="text" name="search" id="searchInput" value="{{ $search ?? '' }}" placeholder="Search name or mobile number..." class="bg-white border rounded px-3 py-2 focus:ring focus:ring-[#ab5f00]">
         <div class="flex justify-between mb-4 items-center">
             <h2 class="text-xl font-bold">Users</h2>
+            @can('add_user_list')
             <button @click="document.querySelector('#userCreateModal').__x.$data.open = true"
                 class="bg-[#ab5f00] text-white px-4 py-2 rounded">
                 Create User
             </button>
+            @endcan
         </div>
         <div id="userListTableWrapper" class="overflow-x-auto bg-white rounded-xl shadow-md">
             <table id="users_table" class="w-full text-sm text-left text-gray-700 border-collapse">
@@ -31,11 +33,13 @@
                                 <td class="px-4 py-3">{{ $user->get_wallet->balance ?? 0 }}</td>
                                 <td class="px-4 py-3 flex justify-center gap-4">
                                     <!-- View -->
+                                    @can('view_user_list')
                                     <a href="{{ route('user_view.users', ['id' => $user->id]) }}"
                                         class="text-green-600 hover:text-green-800 viewuser"
                                         data-id="{{ $user->id }}">
                                         <i class="fa-solid fa-eye"></i>
                                     </a>
+                                    @endcan
 
                                 </td>
                             </tr>
@@ -57,7 +61,6 @@
 <script src="{{ asset('admin/js/users.js') }}"></script>
 <script>
     const input = document.getElementById('searchInput');
-    console.log(input);
 
     input.addEventListener('input', function() {
         let search = this.value;

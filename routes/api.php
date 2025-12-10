@@ -10,21 +10,21 @@ use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\ProfileController;
 use App\Http\Controllers\API\CouponController;
 use App\Http\Controllers\API\AddressController;
+use App\Http\Controllers\API\FCMController;
 use App\Http\Controllers\API\Milk\ManageDeliveriesController;
 use App\Http\Controllers\API\Milk\MilkAPIController;
 use App\Http\Controllers\API\Milk\MilkHomeAPIController;
 use App\Http\Controllers\API\Milk\MilkOrderAPIController;
 use App\Http\Controllers\API\Milk\UserAddressController;
+use App\Http\Controllers\API\Ticket\TicketController;
 
 Route::group(['prefix' => 'user'], function () {
     Route::post('/register', [AuthController::class, 'userRegister']);
     Route::post('/otp', [AuthController::class, 'VerifyOtp']);
     Route::post('/login', [AuthController::class, 'login']);
 
-
     Route::middleware('verify.jwt')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
-
         //home
         Route::get('/home', [HomeController::class, 'index']);
         Route::post('/check-location', [ProfileController::class, 'checkLocation']);
@@ -84,13 +84,19 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/cancel-subscription', [MilkHomeAPIController::class, 'cancelSubscription']);
         Route::post('/create-subscription', [MilkHomeAPIController::class, 'createSubscription']);
         Route::post('/subscription-plan', [MilkHomeAPIController::class, 'subscriptionPlan']);
-//        Route::get('/manage-deliveries', [ManageDeliveriesController::class, 'manageDeliveries']);
+        // Route::get('/manage-deliveries', [ManageDeliveriesController::class, 'manageDeliveries']);
         Route::post('/update-manage-deliveries', [ManageDeliveriesController::class, 'updateManageDeliveries']);
-
         //user address save
-
         Route::post('/user-address-save', [UserAddressController::class, 'userAddressSave']);
         Route::get('/user-address-details', [UserAddressController::class, 'userAddressDetails']);
 
+        //create ticket api
+        Route::post('/create-ticket', [TicketController::class, 'saveTicket']);
+        Route::get('/ticket-list', [TicketController::class, 'ticketLists']);
+
+        //fcm_token save
+        Route::post('/fcm-token-save', [FCMController::class, 'saveFCMToken']);
+        //notification list
+        Route::get('/notification-list', [FCMController::class, 'notificationList']);
     });
 });

@@ -116,14 +116,14 @@ class GenerateDailyDeliveries implements ShouldQueue
             $polygon[$i]['lng'] = (float)$polygon[$i]['lng'];
         }
 
-        // 1️⃣ Check if point is exactly on a vertex
+        // Check if point is exactly on a vertex
         foreach ($polygon as $point) {
             if (abs($lat - $point['lat']) < 1e-9 && abs($lng - $point['lng']) < 1e-9) {
                 return true;
             }
         }
 
-        // 2️⃣Check if point is on any polygon edge
+        // Check if point is on any polygon edge
         for ($i = 0; $i < $numPoints; $i++) {
             $iLat = $polygon[$i]['lat'];
             $iLng = $polygon[$i]['lng'];
@@ -144,7 +144,7 @@ class GenerateDailyDeliveries implements ShouldQueue
             $j = $i;
         }
 
-        // 3️⃣ Normal ray-casting
+        // Normal ray-casting
         $j = $numPoints - 1;
         for ($i = 0; $i < $numPoints; $i++) {
             $lat_i = $polygon[$i]['lat'];

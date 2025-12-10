@@ -10,8 +10,8 @@ class SubscriptionController extends Controller
 {
     public function view(Request $request)
     {
-        $subscriptions = Subscription::with('get_user')->orderBy('created_at', 'desc')->paginate(10);
-        return view('admin.subscription.view', compact('subscriptions'));
+        $this->data['subscriptions'] = Subscription::with('get_user')->orderBy('created_at', 'desc')->paginate(10);
+        return view('admin.subscription.view')->with($this->data);
     }
     public function save(Request $request)
     {

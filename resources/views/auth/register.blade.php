@@ -5,7 +5,9 @@
             <h2 class="text-3xl font-extrabold text-gray-900">Create an Account</h2>
             <p class="text-sm text-gray-500 mt-2">Fill in your details to register</p>
         </div>
-
+        @php
+            $roles = \App\Models\Role::get();
+        @endphp
         <!-- Form -->
         <form method="POST" action="{{ route('admin.register.update') }}" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @csrf
@@ -16,8 +18,9 @@
                 <select name="role"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-[#FFE6CE] focus:border-[#FFE6CE]">
                     <option value="">Choose Role</option>
-                    <option value="1">Admin</option>
-                    <option value="2">User</option>
+                    @foreach ($roles as $role)
+                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                    @endforeach
                 </select>
                 @error('role')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>

@@ -19,6 +19,9 @@ class Authenticate extends Controller
             'password' => 'required'
         ]);
 
+      $get_admin = Admin::where('email',$request->email)->first();
+
+
         if (!$validator->passes()) {
             return redirect()->route('admin.login')
                 ->withErrors($validator)
@@ -34,6 +37,7 @@ class Authenticate extends Controller
         }
 
         $admin = Auth::guard('admin')->user();
+        session()->put('user', $admin);
 //        $role_id = Role::pluck('id')->all();
 
         if (!empty($admin->role) && !empty($role_id) && !in_array($admin->role, $role_id)) {
@@ -90,7 +94,7 @@ class Authenticate extends Controller
         $admin->name          = $request['name'];
         $admin->email         = $request['email'];
         $admin->password      = Hash::make($request['password']);;
-        $admin->role          = $request['role'];
+        $admin->role_id          = $request['role'];
         $admin->mobile_number = $request['mobile_number'];
         $admin->code          = $request['code'];
         $admin->save();

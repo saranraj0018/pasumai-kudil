@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
+            'auth' => \App\Http\Middleware\Authenticate::class,
             'verify.jwt' => \App\Http\Middleware\VerifyJwt::class,
             'admin' => \App\Http\Middleware\AdminRedirect::class,
             'guest' => \App\Http\Middleware\Guest::class,

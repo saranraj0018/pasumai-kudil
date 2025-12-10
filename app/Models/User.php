@@ -97,6 +97,22 @@ class User extends Authenticatable implements JWTSubject
     {
       return $this->belongsTo(UserSubscription::class, 'id','user_id');
     }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function abilities()
+    {
+        return $this->role->abilities();
+    }
+
+    public function hasAbility($ability)
+    {
+        if ($this->role == 1) return true;
+        return $this->abilities()->where('ability', $ability)->exists();
+    }
 }
 
 

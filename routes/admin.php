@@ -14,7 +14,11 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ShippingController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\HubController;
+use App\Http\Controllers\Admin\RolesController;
+use App\Http\Controllers\Admin\Settings\RolesAndPermissionsController;
+use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TodayDeliveryController;
+use App\Http\Controllers\NotificationController;
 
 Route::prefix('admin')->group(function () {
 
@@ -28,7 +32,7 @@ Route::prefix('admin')->group(function () {
         });
     });
 
-    Route::middleware('admin')->group(function () {
+    Route::middleware('auth:admin')->group(function () {
         Route::get('/dashboard', [Dashboard::class, 'index'])->name('admin.dashboard');
         //categories
         Route::prefix('category')->controller(CategoryController::class)->group(function () {
@@ -61,13 +65,13 @@ Route::prefix('admin')->group(function () {
             Route::get('/get-city-coordinates', 'getCityCoordinates')->name('area.Coordinates');
             Route::post('/save-area', 'store')->name('area.store');
         });
+
         //coupons
         Route::prefix('coupon')->controller(CouponController::class)->group(function () {
             Route::get('/list', 'view')->name('view.coupons');
             Route::post('/save', 'save')->name('save.coupon');
             Route::post('/delete', 'destroy')->name('delete.coupon');
         });
-
 
         // Products
         Route::prefix('products')->controller(ProductsController::class)->group(function () {
@@ -109,10 +113,12 @@ Route::prefix('admin')->group(function () {
         Route::prefix('delivery_list')->controller(DeliveryListController::class)->group(function () {
             Route::get('/delivery-list', 'index')->name('lists.delivery_list');
             Route::post('/status-save', 'statusSave')->name('save.delivery_status_save');
+            Route::post('/change-delivery-boy', 'changeDeliveryBoy')->name('change_delivery_boy.users');
         });
 
         Route::prefix('today_delivery')->controller(TodayDeliveryController::class)->group(function () {
             Route::get('/today-delivery-list', 'index')->name('lists.today_delivery_list');
+            Route::post('/stock-maintain-save', 'stockSave')->name('stock_maintain_save');
         });
 
         Route::prefix('milk')->controller(App\Http\Controllers\Admin\SubscriptionController::class)->group(function () {
@@ -123,7 +129,20 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
         Route::post('/user_logout', [Authenticate::class, 'user_logout'])->name('admin.user_logout');
-    });
+        //ticket lists
+        Route::get('/ticket-lists', [TicketController::class, 'index'])->name('ticket_lists');
+        Route::post('/ticket-save', [TicketController::class, 'saveTicket'])->name('ticket_save');
+        // web.php
+        Route::get('/roles-and-permission', [RolesAndPermissionsController::class, 'roleAbilities'])->name('roles_and_permission');
+        Route::post('roles-and-permission-save', [RolesAndPermissionsController::class, 'updateRoleAbilities'])->name('roles_and_permission_save');
 
+        //create_role
+        Route::get('roles-list', [RolesController::class, 'index'])->name('roles_list');
+        Route::post('roles-save', [RolesController::class, 'roleSave'])->name('roles_save');
+
+        //notification
+        Route::get('/notifications/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    });
 
 });

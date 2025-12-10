@@ -71,7 +71,7 @@ class AuthController extends Controller {
     }
 
     $mobile_number = $request['phone_number'];
-    $stored_otp    = ($mobile_number === '1234567890') ? '0000' : Cache::get('otp_' . $mobile_number);
+    $stored_otp    = ($mobile_number) ? '0000' : Cache::get('otp_' . $mobile_number);
     $stored_mobile = Cache::get('mobile_' . $mobile_number);
     $stored_name   = Cache::get('name_' . $mobile_number);
 
@@ -124,7 +124,7 @@ class AuthController extends Controller {
         $mobile_number = $request->phone_number;
 
         $user = User::where('mobile_number', $mobile_number)->first();
-        if (!$user && $mobile_number !== '1234567890') {
+        if (!$user) {
             return response()->json([
                 'status'  => 400,
                 'message' => 'Sign Up With Your Mobile Number!',

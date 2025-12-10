@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-             $table->unsignedBigInteger('user_id');
-             $table->string('title');
-             $table->text('description')->nullable();
-             $table->tinyInteger('status')->default(0); // 0 = unread, 1 = read
-             $table->timestamps();
+            $table->unsignedBigInteger('user_id');
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->tinyInteger('status')->default(0); // 0 = unread, 1 = read
+            $table->tinyInteger('type')->nullable()->comment('1-Grocery, 2-Milk');
+            $table->tinyInteger('role')->comment('1-Admin, 2-User');
+            $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
@@ -26,8 +28,5 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-
-    }
+    public function down(): void {}
 };

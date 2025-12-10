@@ -7,10 +7,12 @@
 
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Delivery Partner</h2>
+            @can('add_delivery_partner')
             <button @click="document.querySelector('#deliveryPartnerCreateModal').__x.$data.open = true"
                 class="bg-[#ab5f00] text-white px-4 py-2 rounded add_delivery_partner">
                 Create Delivery Partner
             </button>
+            @endcan
         </div>
 
         <div class="overflow-x-auto bg-white rounded-xl shadow-md" id="deliveryTableWrapper">
@@ -32,8 +34,9 @@
                             <td class="px-4 py-3">{{ $partner->name ?? ''}}</td>
                             <td class="px-4 py-3">{{ $partner->mobile_number ?? '' }}</td>
                             <td class="px-4 py-3">{{ $partner->get_hub->name ?? ''}}</td>
-                           <td class="px-4 py-3 flex justify-center gap-4">
+                            <td class="px-4 py-3 flex justify-center gap-4">
                             <!-- Edit -->
+                            @can('edit_delivery_partner')
                             <button
                                 class="text-blue-600 hover:text-blue-800 transition editDeliveryPartner"
                                 data-id="{{ $partner->id }}"
@@ -42,12 +45,15 @@
                                 data-hub_id="{{ $partner->hub_id ?? ''}}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
+                            @endcan
 
                             <!-- Delete -->
                             @if ($partner->get_daily_deliveries->isEmpty())
+                            @can('delete_delivery_partner')
                             <button class="text-red-600 hover:text-red-800 deleteDeliveryPartner" data-id="{{ $partner->id }}">
                                 <i class="fa-solid fa-delete-left"></i>
                             </button>
+                            @endcan
                             @endif
                         </td>
                         </tr>

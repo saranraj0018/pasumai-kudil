@@ -33,10 +33,12 @@
                             <td class="px-4 py-3">₹{{ number_format($order->gross_amount, 2) }}</td>
                             <td class="px-4 py-3">{{ optional($order->created_at)->format('d M Y h:i A') }}</td>
                             <td class="px-4 py-3 text-center">
+                                @can('edit_orders')
                                 <button class="text-blue-500 hover:text-blue-700 viewOrderBtn"
                                     data-order='@json($order)'>
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
+                                @endcan
                             </td>
                         </tr>
                     @endforeach

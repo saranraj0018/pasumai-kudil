@@ -2,20 +2,22 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
-use App\Models\Address;
-use App\Models\Coupon;
+use App\Models\User;
 use App\Models\Order;
+use App\Models\Coupon;
+use App\Models\Address;
 use App\Models\Product;
-use App\Models\ProductDetail;
 use App\Models\Setting;
 use App\Models\Shipping;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use App\Models\ProductDetail;
+use App\Events\NewNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 class CartController extends Controller
@@ -427,7 +429,9 @@ public function removeFromCart(Request $request)
 
             $order->orderDetails()->create($detail);
         });
+        $get_user = User::where('id', auth()->id())->first();
 
+        event(new NewNotification(auth()->id(), "Support Ticket", "$get_user->name has created a Support Ticket!", 1,1));
 
         DB::commit();
 

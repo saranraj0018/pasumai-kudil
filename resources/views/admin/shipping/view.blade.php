@@ -70,12 +70,14 @@
             </div>
 
             <!-- Submit Button -->
+            @can('add_shipping')
             <div class="flex justify-center pt-5">
                 <button type="submit"
                     class="bg-[#ab5f00] text-white px-6 py-2.5 rounded-lg hover:bg-[#924f00] transition">
                     Save
                 </button>
             </div>
+            @endcan
         </form>
     </div>
 

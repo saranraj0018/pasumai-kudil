@@ -36,4 +36,9 @@ class DailyDelivery extends Model
     {
         return $this->belongsTo(UserSubscription::class, 'subscription_id', 'id');
     }
+
+    public function get_delivery_track()
+    {
+        return $this->belongsTo(DeliveryTrack::class, 'delivery_id', 'delivery_partner_id');
+    }
 }

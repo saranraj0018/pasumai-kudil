@@ -7,10 +7,12 @@
 
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Products</h2>
+            @can('add_products')
             <button @click="document.querySelector('#productCreateModal').__x.$data.open = true"
                 class="bg-[#ab5f00] text-white px-4 py-2 rounded add_product">
                 Create Product
             </button>
+            @endcan
         </div>
 
         <div class="overflow-x-auto bg-white rounded-xl shadow-md" id="productTableWrapper">
@@ -47,6 +49,7 @@
                             </td>
                            <td class="px-4 py-3 flex justify-center gap-4">
                             <!-- Edit -->
+                            @can('edit_products')
                             <button
                                 class="text-blue-600 hover:text-blue-800 transition editProduct"
                                 data-id="{{ $product->id }}"
@@ -65,14 +68,16 @@
                                 data-is_featured="{{ $product->details->is_featured_product ?? ''}}"
                                 data-image="{{ $product->image ? asset('storage/'.$product->image) : '' }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-
+                             </button>
+                              @endcan
                             <!-- Delete -->
+                            @can('delete_products')
                             @if ($product->order_details->isEmpty())
                             <button class="text-red-600 hover:text-red-800 deleteProduct" data-id="{{ $product->id }}">
                                 <i class="fa-solid fa-delete-left"></i>
                             </button>
                             @endif
+                            @endcan
                         </td>
                         </tr>
                     @endforeach
