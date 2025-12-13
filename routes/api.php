@@ -96,7 +96,12 @@ Route::group(['prefix' => 'user'], function () {
 
         //fcm_token save
         Route::post('/fcm-token-save', [FCMController::class, 'saveFCMToken']);
-        //notification list
+        //notification
         Route::get('/notification-list', [FCMController::class, 'notificationList']);
+        Route::delete('/notification-delete', [FCMController::class, 'deleteNotification']);
+
+        //read notification
+        Route::post('/notification-read', [FCMController::class, 'readNotification']);
+        Route::post('/notification-read-all', [FCMController::class, 'readNotificationAll']);
     });
 });

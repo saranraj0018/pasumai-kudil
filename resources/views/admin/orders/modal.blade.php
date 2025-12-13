@@ -2,7 +2,7 @@
 
     <!-- Modal -->
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[900px] mx-4 sm:mx-6 lg:mx-0 overflow-hidden flex flex-col max-h-[90vh]">
-
+ <input type="hidden" id="idSet">
         <!-- Header -->
         <div class="flex justify-between items-center p-5 border-b">
             <h2 class="text-2xl sm:text-3xl font-bold text-gray-800" id="orderModalTitle">Order #</h2>

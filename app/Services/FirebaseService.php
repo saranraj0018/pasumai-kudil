@@ -13,7 +13,7 @@ class FirebaseService
     public function __construct()
     {
         $factory = (new Factory)
-            ->withServiceAccount(storage_path('firebase/serviceAccount.json'));
+            ->withServiceAccount(storage_path('app/firebase/serviceAccount.json'));
 
         $this->messaging = $factory->createMessaging();
     }

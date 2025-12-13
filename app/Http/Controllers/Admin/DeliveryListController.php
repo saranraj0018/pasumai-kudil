@@ -173,7 +173,7 @@ class DeliveryListController extends Controller
                 $notification->user_id = $user->id;
                 $notification->title = 'Delivery Status Changed';
                 $notification->description = "Your delivery has been $request->status sucessfully!";
-                $notification->type = 1;
+                $notification->type = 2;
                 $notification->role = 2;
                 $notification->save();
 

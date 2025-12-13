@@ -32,12 +32,13 @@ class OrderController extends Controller
         try {
             // Validate request
             $request->validate([
-                'order_id' => 'required|exists:orders,id',
-                'status' => 'required|integer|in:3,4,5,6',
+                'order_id' => 'required',
+                'status' => 'required|integer',
                 'date' => 'required|date',
+                'id' => 'required',
             ]);
 
-            $order = Order::find($request->order_id);
+            $order = Order::with('user')->find($request->id);
             $user = $order->user; // Use relationship
 
             if (!$user) {
@@ -97,12 +98,13 @@ class OrderController extends Controller
      */
     protected function sendOrderNotification($user, $order, $statusName, $title)
     {
+
         if ($user->fcm_token) {
 
             $notification = new Notification();
             $notification->user_id = $user->id;
             $notification->title = $title;
-            $notification->description = "Your order #{$order->id} status is now {$statusName}";
+            $notification->description = "Your order #{$order->order_id} status is now {$statusName}";
             $notification->type = 1;
             $notification->role = 2;
             $notification->save();
@@ -110,9 +112,9 @@ class OrderController extends Controller
             $this->firebase->sendNotification(
                 $user->fcm_token,
                 $title,
-                "Your order #{$order->id} status is now {$statusName}",
+                "Your order #{$order->order_id} status is now {$statusName}",
                 [
-                    'order_id' => $order->id,
+                    'order_id' => $order->order_id,
                     'status' => $statusName,
                     'type' => 1
                 ]

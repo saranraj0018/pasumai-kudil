@@ -5,6 +5,7 @@ $(function () {
 
         // Fill order data inside modal
         $("#orderModalTitle").text("Order #" + order.order_id);
+        $("#idSet").val(order.id);
         $("#orderCustomerName").text(order.user?.name ?? "Guest");
         $("#orderCustomerEmail").text(order.user?.email ?? "—");
         $("#orderCustomerMobile").text(order.phone ?? "—");
@@ -98,7 +99,7 @@ $(function () {
 
         let orderTitle = $("#orderModalTitle").text();
         let orderId = orderTitle.replace("Order #", "").trim();
-
+        let Id = $("#idSet").val();
         let status = $("#status").val();
         let date = $("#statusDate").val();
 
@@ -111,6 +112,7 @@ $(function () {
         formData.append("order_id", orderId);
         formData.append("status", status);
         formData.append("date", date);
+        formData.append("id", Id);
 
         sendRequest(
             "/admin/orders/update-status",
