@@ -5,15 +5,19 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller {
     public function index() {
+        $user = auth('api')->user();
+        $cacheKey = "inside_grocery_zone:user:{$user->id}";
+        $isInside = Cache::get($cacheKey);
         $categories = Category::select('id', 'name', 'image')
             ->where('status', 1)
             ->get()
-            ->map(function ($category) {
+            ->map(function ($category){
                 return [
                     'category_id'    => $category->id,
                     'category_name'  => $category->name,
@@ -27,6 +31,8 @@ class CategoryController extends Controller {
             'status' => 200,
             'msg'    => 'Categories fetched successfully',
             'data'   => $categories,
+            'inside_grocery_zone' =>  $isInside
+
         ]);
     }
 

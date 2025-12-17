@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller {
     public function index(Request $request) {
@@ -94,7 +95,8 @@ class HomeController extends Controller {
             })->filter(fn($product) => $product['is_featured_product'] != 1)
             ->values()
             ->toArray();
-
+        $cacheKey = "inside_grocery_zone:user:{$user->id}";
+        $isInside = Cache::get($cacheKey);
         return response()->json([
             "status" => 200,
             "msg" => "success",
@@ -104,7 +106,8 @@ class HomeController extends Controller {
                 "featured_product_data" => $featuredProducts,
                 "SubBannerList"        => $subBannerList,
                 "best_seller_data"     => $bestSellerProducts,
-            ]
+            ],
+            "inside_grocery_zone" =>   $isInside
         ]);
     }
 

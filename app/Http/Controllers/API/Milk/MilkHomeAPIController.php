@@ -321,6 +321,7 @@ class MilkHomeAPIController extends Controller
             $existing = UserSubscription::where('user_id', $user->id)
                 ->where('status', 1)
                 ->first();
+
             $transaction_exists = Wallet::where('transaction_id', $request->transaction_id)->first();
             if ($transaction_exists) {
                 return response()->json([
@@ -328,6 +329,7 @@ class MilkHomeAPIController extends Controller
                     'message' => 'Transaction already exists!.Please create new order.',
                 ], 400);
             }
+
             if ($existing) {
                 return response()->json([
                     'success' => false,
@@ -371,9 +373,9 @@ class MilkHomeAPIController extends Controller
             // --- Update User with Active Subscription ---
             $user->subscription_id = $user_subscription->id;
             $user->save();
-            $get_user = User::where('id', $request['user_id'])->first();
+            // $get_user = User::where('id', $request['user_id'])->first();
 
-            event(new NewNotification($request['user_id'], "Subscription Added", "$get_user->name has added a new Subscription!", 2,1));
+            event(new NewNotification($request['user_id'], "Subscription Added", "  $user->name has added a new Subscription!", 2,1));
 
             DB::commit();
 
@@ -420,8 +422,8 @@ class MilkHomeAPIController extends Controller
         ]);
 
         try {
-            DB::beginTransaction();
 
+            DB::beginTransaction();
             $subscription = UserSubscription::where('user_id', $request['user_id'])
             ->where('subscription_id', $validated['plan_id'])
             ->where('status', 1)

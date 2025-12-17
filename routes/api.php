@@ -11,6 +11,7 @@ use App\Http\Controllers\API\ProfileController;
 use App\Http\Controllers\API\CouponController;
 use App\Http\Controllers\API\AddressController;
 use App\Http\Controllers\API\FCMController;
+use App\Http\Controllers\API\Grocery\GroceryLocationFindController;
 use App\Http\Controllers\API\Milk\ManageDeliveriesController;
 use App\Http\Controllers\API\Milk\MilkAPIController;
 use App\Http\Controllers\API\Milk\MilkHomeAPIController;
@@ -52,9 +53,9 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/notification/read-status', [HomeController::class, 'notificationReadStatus']);
         Route::post('/notification/delete', [HomeController::class, 'notificationDelete']);
 
-       //coupons
-       Route::post('/coupons', [CouponController::class, 'index']);
-       Route::post('/coupon/delete', [CouponController::class, 'deleteCoupon']);
+        //coupons
+        Route::post('/coupons', [CouponController::class, 'index']);
+        Route::post('/coupon/delete', [CouponController::class, 'deleteCoupon']);
 
         //Address
         Route::get('/address/list', [AddressController::class, 'index']);
@@ -62,9 +63,11 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/address/update', [AddressController::class, 'update']);
         Route::post('/address/set-default', [AddressController::class, 'setDefaultAddress']);
         Route::post('/address/delete', [AddressController::class, 'delete']);
+
         //orders
         Route::get('/orders', [OrderController::class, 'index']);
         Route::post('/get-single-order', [OrderController::class, 'getSingleOrder']);
+
         //Cart
         Route::post('/add-to-cart', [CartController::class, 'addToCart']);
         Route::post('/cart', [CartController::class, 'getCart']);
@@ -103,5 +106,8 @@ Route::group(['prefix' => 'user'], function () {
         //read notification
         Route::post('/notification-read', [FCMController::class, 'readNotification']);
         Route::post('/notification-read-all', [FCMController::class, 'readNotificationAll']);
+
+        //grocery-api
+        Route::post('/grocery-location-find', [GroceryLocationFindController::class, 'GroceryLocationFind']);
     });
 });

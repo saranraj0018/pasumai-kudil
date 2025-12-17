@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 
 class ProfileController extends Controller
 {
@@ -17,7 +18,8 @@ class ProfileController extends Controller
     {
         try {
             $user = User::find(auth('api')->id());
-
+            $cacheKey = "inside_grocery_zone:user:{$user->id}";
+            $isInside = Cache::get($cacheKey);
             if (!$user) {
                 throw new \Exception('User not found', 404);
             }
@@ -32,7 +34,8 @@ class ProfileController extends Controller
                         "mobile_number"   => $user->mobile_number,
                         "user_email"    => $user->email,
                     ]
-                ]
+                    ],
+                "inside_grocery_zone" => $isInside 
             ], 200);
 
         } catch (\Throwable $th) {
@@ -100,6 +103,8 @@ class ProfileController extends Controller
      public function index(Request $request)
     {
         $user = auth('api')->user();
+        $cacheKey = "inside_grocery_zone:user:{$user->id}";
+        $isInside = Cache::get($cacheKey);
 
         return response()->json([
             'status' => 200,
@@ -119,7 +124,8 @@ class ProfileController extends Controller
                         'isFeaturedProduct' => $product->details->is_featured_product ?? 0,
                         'variation_id' => $product->details?->id ?? null,
                     ];
-                })
+                }),
+            "inside_grocery_zone" => $isInside,
         ], 200);
     }
 

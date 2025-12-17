@@ -11,9 +11,16 @@ use Illuminate\Http\Request;
 
 class AddressController extends Controller
 {
-    public function index() {
-        $addresses = Address::where('created_by',Auth::id())->get();
-        return response()->json(['status' => 200, 'data' => $addresses, 'message' => $addresses->isEmpty() ? 'Address Not Found' :'All addresses retrieved successfully']);
+    public function index()
+    {
+        $addresses = Address::where('created_by', Auth::id())->get();
+        return response()->json([
+            'status'  => 200,
+            'data'    => $addresses->isEmpty() ? (object)[] : $addresses,
+            'message' => $addresses->isEmpty()
+                ? 'Address Not Found'
+                : 'All addresses retrieved successfully',
+        ]);
     }
 
     public function save(Request $request)
