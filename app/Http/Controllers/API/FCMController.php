@@ -160,20 +160,7 @@ class FCMController extends Controller
     public function readNotificationAll(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'id' => 'required',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 409,
-                    'message' => $validator->errors()->first(),
-                ], 409);
-            }
-
-            $data = $validator->validated();
             $userId = auth()->id();
-
             $update = Notification::where(['user_id' => $userId])->update([
                 'status' => 1
             ]);
