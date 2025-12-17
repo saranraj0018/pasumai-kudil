@@ -35,7 +35,7 @@ class ProfileController extends Controller
                         "user_email"    => $user->email,
                     ]
                     ],
-                "inside_grocery_zone" => $isInside 
+                "inside_grocery_zone" =>  (bool) $isInside
             ], 200);
 
         } catch (\Throwable $th) {
@@ -125,7 +125,7 @@ class ProfileController extends Controller
                         'variation_id' => $product->details?->id ?? null,
                     ];
                 }),
-            "inside_grocery_zone" => $isInside,
+            "inside_grocery_zone" =>  (bool) $isInside,
         ], 200);
     }
 

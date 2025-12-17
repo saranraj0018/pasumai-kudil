@@ -31,7 +31,7 @@ class CategoryController extends Controller {
             'status' => 200,
             'msg'    => 'Categories fetched successfully',
             'data'   => $categories,
-            'inside_grocery_zone' =>  $isInside
+            'inside_grocery_zone' => (bool) $isInside
 
         ]);
     }

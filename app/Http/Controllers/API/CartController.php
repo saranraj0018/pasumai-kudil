@@ -223,7 +223,7 @@ class CartController extends Controller
             "couponDetail" =>  $coupon,
             "addressDetails" => $address,
             "coupon_status" => $coupon_status,
-            "inside_grocery_zone" => $isInside
+            "inside_grocery_zone" => (bool) $isInside
         ]);
     }
 

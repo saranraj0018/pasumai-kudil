@@ -107,7 +107,7 @@ class HomeController extends Controller {
                 "SubBannerList"        => $subBannerList,
                 "best_seller_data"     => $bestSellerProducts,
             ],
-            "inside_grocery_zone" =>   $isInside
+            "inside_grocery_zone" =>  (bool) $isInside
         ]);
     }
 

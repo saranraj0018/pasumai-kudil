@@ -36,11 +36,13 @@ class GroceryLocationFindController extends Controller
             ], 401);
         }
         Cache::forget("inside_grocery_zone:user:{$userId}");
+
         $cacheKey = "inside_grocery_zone:user:{$userId}";
+
         if (Cache::has($cacheKey)) {
             return response()->json([
                 'status' => 200,
-                'inside_grocery_zone' => Cache::get($cacheKey),
+                'inside_grocery_zone' => (bool) Cache::get($cacheKey),
             ]);
         }
 
@@ -61,7 +63,7 @@ class GroceryLocationFindController extends Controller
 
         return response()->json([
             'status' => 200,
-            'inside_grocery_zone' => $isInside,
+            'inside_grocery_zone' => (bool) $isInside,
         ]);
     }
 
@@ -83,7 +85,7 @@ class GroceryLocationFindController extends Controller
             return false;
         }
 
-        // ✅ Normalize polygon (fix key names & cast to float)
+        //  Normalize polygon (fix key names & cast to float)
         $polygon = [];
         foreach ($polygonRaw as $point) {
             $polygon[] = [
@@ -92,7 +94,7 @@ class GroceryLocationFindController extends Controller
             ];
         }
 
-        // ✅ Close polygon if not closed
+        //  Close polygon if not closed
         if ($polygon[0] !== end($polygon)) {
             $polygon[] = $polygon[0];
         }
