@@ -1,7 +1,6 @@
 <div id="productCreateModal" x-data="{
     open: false,
     previewUrl: null,
-    exiting_image: '',
     steps: ['Product Info', 'Product Details', 'Review'],
     stepNumber: 0,
     form: {
@@ -17,7 +16,8 @@
         weight_unit: 'kg',
         tax_type: '',
         tax_percentage: null,
-        is_featured_product: false
+        is_featured_product: false,
+        existing_image: '',
     },
     closeModal() {
         this.open = false;
@@ -54,7 +54,7 @@
                 <form id="productAddForm" enctype="multipart/form-data" novalidate
                     class="flex flex-col justify-start items-start w-full  h-[75vh] overflow-y-scroll">
                     @csrf
-                    <input type="hidden" name="exiting_image" x-model="exiting_image" id="exiting_image" />
+                    <input type="hidden" name="existing_image" x-model="existing_image" id="existing_image" />
                     <input type="hidden" name="product_id" x-model="form.product_id" id="product_id" />
                     <div class="p-5 space-y-5 flex-1 w-full h-fit">
                         {{-- Step 1: Product Information --}}

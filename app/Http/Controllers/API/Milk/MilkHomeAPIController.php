@@ -29,7 +29,6 @@ class MilkHomeAPIController extends Controller
     public function fetchHomeDetails(Request $request)
     {
         try {
-
             $user = $request->user();
             if (!$user) {
                 return response()->json([
@@ -111,6 +110,7 @@ class MilkHomeAPIController extends Controller
                     'plan_start_date' => $startDate->format('d/m/Y'),
                     'plan_end_date' => $endDate->format('d/m/Y'),
                     'subscription_type' => $subscription->get_subscription?->plan_type ?? null,
+                    'customer_id' =>  $user->prefix ?? '',
                 ],
             ];
 

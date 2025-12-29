@@ -35,7 +35,8 @@ class ProfileController extends Controller
                         "user_email"    => $user->email,
                     ]
                     ],
-                "inside_grocery_zone" =>  (bool) $isInside
+                "inside_grocery_zone" =>  (bool) $isInside,
+                'customer_id' =>  $user->prefix ?? '',
             ], 200);
 
         } catch (\Throwable $th) {

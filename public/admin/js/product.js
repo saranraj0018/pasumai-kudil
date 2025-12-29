@@ -14,10 +14,11 @@ $(function () {
                 let newContent = doc.querySelector(
                     "#productTableWrapper"
                 ).innerHTML;
-                document.getElementById("productTableWrapper").innerHTML = newContent;
+                document.getElementById("productTableWrapper").innerHTML =
+                    newContent;
                 attachPaginationEvents();
-             })
-            .catch((err) => console.error(err,'error is occured'));
+            })
+            .catch((err) => console.error(err, "error is occured"));
     }
 
     function attachPaginationEvents() {
@@ -67,9 +68,22 @@ $(function () {
         fields.forEach((field) => {
             if (!validateField(field)) isValid = false;
         });
-
+        let image = $("#image").val();
+        let existing_image = $("#existing_image").val();
+        const errorEl = $("#image").siblings(".error-message");
+        if (image == "") {
+            $("#image").addClass("border-red-500 ring-1 ring-red-500");
+            if (errorEl.length === 0) {
+                $("#image").after(
+                    `<div class="error-message text-red-500 text-sm mt-1">Please select Image</div>`
+                );
+            }
+            isValid = false;
+        } else {
+            $("#image").removeClass("border-red-500 ring-1 ring-red-500");
+            if (errorEl.length) errorEl.remove();
+        }
         if (!isValid) return;
-
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -77,7 +91,7 @@ $(function () {
             formData,
             "POST",
             function (res) {
-                 hideLoader();
+                hideLoader();
                 if (res.success) {
                     showToast("Product saved successfully!", "success", 2000);
                     setTimeout(() => {
@@ -97,11 +111,11 @@ $(function () {
                         });
                     }, 500);
                 } else {
-                    showToast("Something went wrong!", "error", 2000);
+                    showToast(res.message, "error", 2000);
                 }
             },
             function (err) {
-                 hideLoader();
+                hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -287,7 +301,7 @@ $(function () {
             { id: id },
             "POST",
             function (res) {
-                 hideLoader();
+                hideLoader();
                 if (res.success) {
                     showToast("Product deleted successfully!", "success", 2000);
                     reloadProductList();
@@ -299,7 +313,7 @@ $(function () {
                 ).__x.$data.open = false;
             },
             function (err) {
-                 hideLoader();
+                hideLoader();
                 showToast(err.message || "Delete failed", "error", 2000);
                 document.querySelector(
                     "#deleteProductModal"

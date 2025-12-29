@@ -48,7 +48,10 @@ class ProductsController extends Controller
      DB::beginTransaction();
 
     try {
-
+            echo '<pre>';
+            print_r($request->all());
+            echo '<pre>';
+            exit;
         if (!empty($request['product_id'])) {
             $message = 'Product updated successfully';
             $product = Product::findOrFail($request['product_id']);
@@ -134,7 +137,7 @@ class ProductsController extends Controller
         DB::rollBack();
         return response()->json([
             'success' => false,
-            'message' => 'Failed to save product',
+            'message' => $e->getMessage(),
             'error' => $e->getMessage(),
         ], 500);
     }
