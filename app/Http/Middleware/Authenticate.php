@@ -19,7 +19,7 @@ class Authenticate extends Middleware
                 return route('admin.login');
             }
             // Default redirect for other guests
-            return route('login');  // If you don't have public login, you may remove this
+            return route('admin.login');  // If you don't have public login, you may remove this
         }
 
         return null;
