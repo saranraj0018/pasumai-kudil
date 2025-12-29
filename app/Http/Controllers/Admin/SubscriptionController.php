@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Models\Subscription;
 
@@ -62,5 +63,50 @@ class SubscriptionController extends Controller
 
         $sub->delete();
         return response()->json(['success' => true, 'message' => 'Subscription deleted successfully']);
+    }
+
+    public function saveConfigTime(Request $request)
+    {
+        $request->validate([
+            'config_time' => 'required',
+        ]);
+        try {
+
+            $exists_setting = Setting::where('data_key','milk_config_time')->first();
+            if(!empty($exists_setting)){
+              $update = Setting::where('data_key', 'milk_config_time')
+              ->update([
+                    'data_value' => $request->config_time
+              ]);
+                $message = 'Config Time updated successfully';
+                return response()->json(['success' => true, 'message' => $message]);
+            }else{
+                $settings = new Setting();
+                $settings->data_key = 'milk_config_time';
+                $settings->data_value = $request->config_time;
+                $settings->save();
+                $message = 'Config Time created successfully';
+                return response()->json(['success' => true, 'message' => $message]);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getConfigTime()
+    {
+        try {
+            $setting = Setting::where('data_key', 'milk_config_time')->first();
+            return response()->json([
+                'success' => true,
+                'config_time' => $setting ? $setting->data_value : null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

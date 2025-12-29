@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ShippingController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\HubController;
+use App\Http\Controllers\Admin\ProductImportExportController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\Settings\RolesAndPermissionsController;
 use App\Http\Controllers\Admin\TicketController;
@@ -125,6 +126,8 @@ Route::prefix('admin')->group(function () {
             Route::get('/subscription', 'view')->name('view.milk.subscription');
             Route::post('/save', 'save')->name('save.milk.subscription');
             Route::post('/delete', 'destroy')->name('delete.milk.subscription');
+            Route::post('/save-config-time', 'saveConfigTime')->name('save_config_time');
+            Route::get('/get-config-time', 'getConfigTime')->name('get_config_time');
         });
 
         Route::get('/logout', [Authenticate::class, 'logout'])->name('admin.logout');
@@ -143,6 +146,13 @@ Route::prefix('admin')->group(function () {
         //notification
         Route::get('/notifications/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+        //Product Upload
+        Route::get('/download-template', [ProductImportExportController::class, 'downloadTemplate'])
+            ->name('download_template');
+
+        Route::post('/product-upload', [ProductImportExportController::class, 'uploadProduct'])
+            ->name('product_upload');
     });
 
 });

@@ -52,13 +52,14 @@ $(function () {
             if (!result) isValid = false;
         }
         if (!isValid) return;
-
+         showLoader();
         let formData = new FormData(this);
         sendRequest(
             "/admin/banner/save",
             formData,
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast(res.message, "success", 2000);
                     setTimeout(() => {
@@ -80,6 +81,7 @@ $(function () {
                 }
             },
             function (err) {
+                 hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) { msg += v[0] + "<br>"; });
@@ -100,11 +102,13 @@ $(function () {
     });
 
     window.deleteBanner = function (id) {
+         showLoader();
         sendRequest(
             "/admin/banner/delete",
             { id: id },
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast("Banner deleted successfully!", "success", 2000);
                     reloadBannerList();
@@ -114,6 +118,7 @@ $(function () {
                 document.querySelector('#deleteBannerModal').__x.$data.open = false;
             },
             function (err) {
+                 hideLoader();
                 showToast(err.message || "Delete failed", "error", 2000);
                 document.querySelector('#deleteBannerModal').__x.$data.open = false;
             }

@@ -44,13 +44,14 @@
          }
 
          if (!isValid) return;
-
+          showLoader();
          let formData = new FormData(this);
          sendRequest(
              "/admin/roles-save",
              formData,
              "POST",
              function (res) {
+                 hideLoader();
                  if (res.success) {
                      showToast(res.message, "success", 2000);
                      setTimeout(() => {
@@ -71,6 +72,7 @@
                  }
              },
              function (err) {
+                 hideLoader();
                  if (err.errors) {
                      let msg = "";
                      $.each(err.errors, function (k, v) {

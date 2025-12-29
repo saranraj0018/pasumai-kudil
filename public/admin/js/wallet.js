@@ -23,11 +23,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/users/add_wallet",
             formData,
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast("Wallet added successfully!", "success", 2000);
                     setTimeout(() => {
@@ -47,6 +49,7 @@ $(function () {
                 }
             },
             function (err) {
+                 hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -99,11 +102,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/users/add_user_account",
             formData,
             "POST",
             function (res) {
+                hideLoader();
                 if (res.success) {
                     showToast("Account Details added successfully!", "success", 2000);
                     setTimeout(() => {
@@ -121,6 +126,7 @@ $(function () {
                 }
             },
             function (err) {
+                 hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -192,11 +198,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/users/subscription_cancel",
             formData,
             "POST",
             function (res) {
+                hideLoader();
                 if (res.success) {
                     showToast("Subscription cancelled successfully!", "success", 2000);
                     setTimeout(() => {
@@ -215,6 +223,7 @@ $(function () {
                 }
             },
             function (err) {
+                 hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -233,11 +242,13 @@ $(function () {
         e.preventDefault();
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/users/revoke",
             formData,
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast("Cancellation revoked successfully!", "success", 2000);
                     setTimeout(() => {
@@ -248,6 +259,7 @@ $(function () {
                 }
             },
             function (err) {
+                 hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -287,11 +299,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/users/modify_subscription",
             formData,
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast(
                         "Subscription date has been modified successfully!",
@@ -329,6 +343,7 @@ $(function () {
                 }
             },
             function (err) {
+                 hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {

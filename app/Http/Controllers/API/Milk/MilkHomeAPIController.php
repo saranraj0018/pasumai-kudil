@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Banner;
 use App\Models\Wallet;
+use App\Models\Setting;
 use App\Models\Transaction;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
@@ -78,7 +79,8 @@ class MilkHomeAPIController extends Controller
                         'previous_wallet_balance' => (string) $previouswalletamount,
                         'wallet_balance' => (string) $walletBalance,
                         'banner' => $banner,
-                        'plan_details' => (object) []
+                        'plan_details' => (object) [],
+                        'customer_id' =>  $user->prefix ?? '',
                         ]
                     ]);
                 }

@@ -3,8 +3,6 @@ $(function () {
         openModal()
     });
 
-
-
     function openModal() {
         $("#hub_model").fadeIn(200, function () {
             // Trigger your custom modal event after visible
@@ -14,6 +12,7 @@ $(function () {
             $('#hub_name').focus(); // Ensure the input is focused
         }, 500);
     }
+
     $(document).on("click", "#cancel_hub_Modal", function () {
     $('#hub_model').fadeOut(200);
     });
@@ -94,8 +93,6 @@ $(function () {
 
     $(document).on("submit", "#hub_form", function (e) {
         e.preventDefault();
-
-
         // Fields to validate
         let fields = [
             { id: "#hub_name", condition: (val) => val === "", message: "City Name is required" },
@@ -111,11 +108,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/hub/city/save",
             formData,
             "POST",
             function(res){
+                 hideLoader();
                 if(res.success){
                     showToast(res.message, "success", 2000);
                     setTimeout(() => {
@@ -132,6 +131,7 @@ $(function () {
                 }
             },
             function(err){
+                 hideLoader();
                 if(err.errors){
                     let msg = "";
                     $.each(err.errors, function(k,v){ msg+=v[0]+"<br>"; });
@@ -175,12 +175,13 @@ $(function () {
 
     $(document).on("click", "#delete_hub_Btn", function () {
         if (!delete_id) return;
+        showLoader();
         sendRequest(
             "/admin/hub/delete",
             { id: delete_id },
             "Delete",
             function (res) {
-                console.log(res)
+                 hideLoader();
                 if (res.success) {
                     showToast(
                         "City deleted successfully!",
@@ -195,6 +196,7 @@ $(function () {
                 $("#delete_hub_modal").hide();
             },
             function (err) {
+                hideLoader();
                 showToast(err.message || "Delete failed", "error", 2000);
                 delete_id = null;
                 $("#delete_hub_modal").hide();

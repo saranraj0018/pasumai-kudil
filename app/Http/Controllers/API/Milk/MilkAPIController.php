@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\API\Milk;
 
-use App\Http\Controllers\Controller;
-use App\Models\DailyDelivery;
-use App\Models\Subscription;
-use App\Models\Transaction;
-use App\Models\UserSubscription;
-use App\Models\Wallet;
 use Carbon\Carbon;
+use App\Models\Wallet;
+use App\Models\Setting;
+use App\Models\Transaction;
+use App\Models\Subscription;
 use Illuminate\Http\Request;
+use App\Models\DailyDelivery;
+use App\Models\UserSubscription;
+use App\Http\Controllers\Controller;
 
 class MilkAPIController extends Controller
 {
@@ -231,6 +232,7 @@ class MilkAPIController extends Controller
                     ];
                 })
                 ->values(); // <-- Removes numeric keys
+            $setting = Setting::where('data_key', 'milk_config_time')->first();
             return response()->json([
                 'status' => 200,
                 'message' => 'Fetched calendar details successfully.',
@@ -253,6 +255,7 @@ class MilkAPIController extends Controller
                         'usage_history' => $usageHistory,
                         'remaining_history' =>(object) $remainingHistory,
                     ],
+                    'milk_config_time' => $setting->data_value ?? '',
                     'createdAt' => Carbon::now()->format('d/m/Y'),
                 ]
             ]);

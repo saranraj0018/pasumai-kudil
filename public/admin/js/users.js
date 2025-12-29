@@ -5,6 +5,11 @@ $(function () {
 
         const fields = [
             {
+                id: "#prefix",
+                condition: (val) => val === "",
+                message: "User Code Prefix is required",
+            },
+            {
                 id: "#name",
                 condition: (val) => val === "",
                 message: "User Name is required",
@@ -33,11 +38,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/users/save_user",
             formData,
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast("User saved successfully!", "success", 2000);
                     setTimeout(() => {
@@ -61,6 +68,7 @@ $(function () {
                 }
             },
             function (err) {
+                 hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -76,9 +84,8 @@ $(function () {
 
     $(document).on("change", "#plan_id", function (e) {
         e.preventDefault();
-
+       showLoader();
         let subs_id = $(this).val();
-
         $.ajax({
             url: "get_subscription",
             type: "GET",
@@ -87,6 +94,7 @@ $(function () {
                 get_custom_subscription: true,
             },
             success: function (response) {
+                 hideLoader();
                 $("#custom_plan_days").empty();
                if (response.subs.delivery_days) {
                    try {
@@ -120,6 +128,7 @@ $(function () {
 
             },
             error: function (xhr) {
+                 hideLoader();
                 console.error(xhr.responseText);
             },
         });

@@ -278,6 +278,7 @@ class UserlistController extends Controller
                 $user->latitude      = $request['latitude'] ?? '';
                 $user->longitude     = $request['longitude'] ?? '';
                 $user->address       = $request['address'] ?? '';
+                $user->prefix        = $request['prefix'] ?? '';
                 $user->save();
             }
 

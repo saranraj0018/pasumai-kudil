@@ -1,9 +1,7 @@
 $(function () {
     $(document).on("submit", "#shippingAddForm", function (e) {
-        alert(1);
         e.preventDefault();
         let isValid = true;
-
         const fields = [
             {
                 id: "#city",
@@ -19,11 +17,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/shipping/save-shipping",
             formData,
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast("Shipping saved successfully!", "success", 2000);
                     setTimeout(() => {
@@ -41,6 +41,7 @@ $(function () {
                 }
             },
             function (err) {
+                 hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {

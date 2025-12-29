@@ -178,8 +178,8 @@ $(document).ready(function () {
         if (!validateForm()) return;
 
         let formData = new FormData(this);
+        showLoader();
         formData.append("_token", $("input[name=_token]").val());
-
         if ($("#plan_type").val() === "Customize") {
             formData.set(
                 "delivery_days",
@@ -192,6 +192,7 @@ $(document).ready(function () {
             formData,
             "POST",
             function (res) {
+                hideLoader();
                 if (res.success) {
                     showToast(res.message, "success", 2000);
                     setTimeout(() => {
@@ -207,6 +208,7 @@ $(document).ready(function () {
                 }
             },
             function (err) {
+                hideLoader();
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
         );
@@ -323,4 +325,81 @@ $(document).ready(function () {
             showToast("Please enter valid delivery days", "error", 1000);
         }
     });
+
+    $("#configTimeBtn").on("click", function () {
+        $("#configTimeModal").hide();
+        $("#configtimeForm")[0].reset();
+        $("#configtimeForm input").each(function () {
+            clearFieldError("#" + $(this).attr("id"));
+        });
+        $.ajax({
+            url: "/admin/milk/get-config-time",
+            type: "GET",
+            success: function (res) {
+                if (res.success && res.config_time) {
+                    $("#config_time").val(res.config_time); // HH:MM format
+                }
+
+                $("#configTimeModal").removeClass("hidden").addClass("flex");
+            },
+        });
+        $("#configTimeModal").show();
+    });
+
+     $(document).on("submit", "#configtimeForm", function (e) {
+        e.preventDefault();
+        let isValid = true;
+
+        const fields = [
+            {
+                id: "#config_time",
+                condition: (val) => val === "",
+                message: "Config Time is required",
+            }
+        ];
+
+        fields.forEach((field) => {
+            if (!validateField(field)) isValid = false;
+        });
+
+        if (!isValid) return;
+
+        let formData = new FormData(this);
+        showLoader();
+        sendRequest(
+            "/admin/milk/save-config-time",
+            formData,
+            "POST",
+            function (res) {
+                hideLoader();
+                if (res.success) {
+                    showToast("Config Time saved successfully!", "success", 2000);
+                    setTimeout(() => {
+                        // Reset form
+                        document.getElementById("configtimeForm").reset();
+                        window.location.reload();
+
+                    }, 500);
+                } else {
+                    showToast("Something went wrong!", "error", 2000);
+                }
+            },
+            function (err) {
+                hideLoader();
+                if (err.errors) {
+                    let msg = "";
+                    $.each(err.errors, function (k, v) {
+                        msg += v[0] + "<br>";
+                    });
+                    showToast(msg, "error", 2000);
+                } else {
+                    showToast(err.message || "Unexpected error", "error", 2000);
+                }
+            }
+        );
+     });
+
+     $(document).on("click", "#cancelConfigTimeModal", function () {
+         $("#configTimeModal").hide();
+     });
 });

@@ -41,4 +41,9 @@ class DailyDelivery extends Model
     {
         return $this->belongsTo(DeliveryTrack::class, 'delivery_id', 'delivery_partner_id');
     }
+
+    public function get_order()
+    {
+        return $this->belongsTo(Order::class, 'user_id', 'user_id');
+    }
 }

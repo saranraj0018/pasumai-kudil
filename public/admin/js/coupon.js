@@ -106,11 +106,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/coupon/save", // same route add/update handle
             formData,
             "POST",
             function (res) {
+                hideLoader();
                 if (res.success) {
                     showToast(res.message, "success", 2000);
                     setTimeout(() => {
@@ -124,6 +126,7 @@ $(function () {
                 }
             },
             function (err) {
+                 hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) { msg += v[0] + "<br>"; });
@@ -144,11 +147,13 @@ $(function () {
     });
 
     window.deleteCoupon = function (id) {
+        showLoader();
         sendRequest(
             "/admin/coupon/delete",
             { id: id },
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast("Coupon deleted successfully!", "success", 2000);
                     reloadCouponList();
@@ -158,6 +163,7 @@ $(function () {
                 document.querySelector('#deleteCouponModal').__x.$data.open = false;
             },
             function (err) {
+                hideLoader();
                 showToast(err.message || "Delete failed", "error", 2000);
                 document.querySelector('#deleteCouponModal').__x.$data.open = false;
             }

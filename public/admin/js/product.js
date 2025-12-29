@@ -1,14 +1,11 @@
 $(function () {
     const input = document.getElementById("searchInput");
-
     input.addEventListener("input", function () {
         let search = this.value;
-        loadUsers(
-            `{{ route('lists.products') }}?search=${encodeURIComponent(search)}`
-        );
+        loadProduct(`${SEARCH_URL}?search=${encodeURIComponent(search)}`);
     });
 
-    function loadUsers(url) {
+    function loadProduct(url) {
         fetch(url)
             .then((res) => res.text())
             .then((html) => {
@@ -17,12 +14,10 @@ $(function () {
                 let newContent = doc.querySelector(
                     "#productTableWrapper"
                 ).innerHTML;
-                document.getElementById("productTableWrapper").innerHTML =
-                    newContent;
-
+                document.getElementById("productTableWrapper").innerHTML = newContent;
                 attachPaginationEvents();
-            })
-            .catch((err) => console.error(err));
+             })
+            .catch((err) => console.error(err,'error is occured'));
     }
 
     function attachPaginationEvents() {
@@ -31,7 +26,7 @@ $(function () {
             .forEach((link) => {
                 link.addEventListener("click", function (e) {
                     e.preventDefault();
-                    loadUsers(this.href);
+                    loadProduct(this.href);
                 });
             });
     }
@@ -76,11 +71,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/products/save_product",
             formData,
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast("Product saved successfully!", "success", 2000);
                     setTimeout(() => {
@@ -104,6 +101,7 @@ $(function () {
                 }
             },
             function (err) {
+                 hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -146,7 +144,7 @@ $(function () {
         alpine.form.product_id = product.id || "";
         alpine.form.name = product.name || "";
         alpine.form.category_id = product.category || "";
-        alpine.description = product.description || "";
+        alpine.form.description = product.description || "";
         alpine.form.benefits = product.benefits || "";
         alpine.form.sale_price = product.sale_price || "";
         alpine.form.regular_price = product.regular_price || "";
@@ -283,11 +281,13 @@ $(function () {
     });
 
     window.deleteProduct = function (id) {
+        showLoader();
         sendRequest(
             "/admin/products/delete_product",
             { id: id },
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast("Product deleted successfully!", "success", 2000);
                     reloadProductList();
@@ -299,6 +299,7 @@ $(function () {
                 ).__x.$data.open = false;
             },
             function (err) {
+                 hideLoader();
                 showToast(err.message || "Delete failed", "error", 2000);
                 document.querySelector(
                     "#deleteProductModal"

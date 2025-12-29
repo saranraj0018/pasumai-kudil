@@ -3,16 +3,26 @@
     href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&family=Nunito:wght@400;700&display=swap"
     rel="stylesheet">
 
-<div id="userCreateModal"
-    x-data="{
-        open: false,
-        previewUrl: null,
-        exiting_image: '',
-        latitude: null,
-        longitude: null,
-        stepNumber: 0,
-        errors: {}, // Added missing reactive object
-        form: {
+<div id="userCreateModal" x-data="{
+    open: false,
+    previewUrl: null,
+    exiting_image: '',
+    latitude: null,
+    longitude: null,
+    stepNumber: 0,
+    errors: {}, // Added missing reactive object
+    form: {
+        name: '',
+        email: '',
+        image: '',
+        mobile_number: '',
+        city: '',
+        address: '',
+        plan_id: ''
+    },
+    closeModal() {
+        this.open = false;
+        this.form = {
             name: '',
             email: '',
             image: '',
@@ -20,25 +30,11 @@
             city: '',
             address: '',
             plan_id: ''
-        },
-        closeModal() {
-            this.open = false;
-            this.form = {
-                name: '',
-                email: '',
-                image: '',
-                mobile_number: '',
-                city: '',
-                address: '',
-                plan_id: ''
-            };
-            this.previewUrl = null;
-            this.errors = {}; // clear errors on close
-        },
-    }"
-    x-init="initMapAndAutocomplete()"
-    x-cloak
->
+        };
+        this.previewUrl = null;
+        this.errors = {}; // clear errors on close
+    },
+}" x-init="initMapAndAutocomplete()" x-cloak>
     <template x-if="open">
         <div x-show="open" class="fixed inset-0 flex items-center justify-center z-50">
             <!-- Backdrop -->
@@ -46,7 +42,7 @@
             <!-- Modal Box -->
             <div class="bg-white p-4 rounded-2xl shadow-2xl w-full max-w-[90%] relative z-50">
                 <h2 class="text-2xl font-bold mb-6 text-gray-800" id="product_label">Add User</h2>
-                <form autocomplete="off"  id="userAddForm" enctype="multipart/form-data" novalidate
+                <form autocomplete="off" id="userAddForm" enctype="multipart/form-data" novalidate
                     class="flex flex-col justify-start items-start w-full  h-[65vh] overflow-y-scroll">
                     @csrf
                     <input type="hidden" name="latitude" x-model="latitude">
@@ -60,19 +56,25 @@
                     <div class="p-5 space-y-5 flex-1 w-full h-fit">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
+                                <x-label>Prefix</x-label>
+                                <x-input type="text" x-model="form.prefix" name="prefix" id="prefix"
+                                    placeholder="Enter User Code Prefix" autocomplete="off" required />
+                            </div>
+                            <div>
                                 <x-label>Name</x-label>
                                 <x-input type="text" x-model="form.name" name="name" id="name"
-                                    placeholder="Enter Your Name"  autocomplete="off" required />
+                                    placeholder="Enter Your Name" autocomplete="off" required />
                             </div>
                             <div>
                                 <x-label>Email</x-label>
                                 <x-input type="text" x-model="form.email" name="email" id="email"
-                                    placeholder="Enter Your Email"  autocomplete="off"/>
+                                    placeholder="Enter Your Email" autocomplete="off" />
                             </div>
                             <div>
                                 <x-label>Mobile Number</x-label>
                                 <x-input type="text" x-model="form.mobile_number" name="mobile_number"
-                                    id="mobile_number" placeholder="Enter Your Mobile Number"  autocomplete="off" required />
+                                    id="mobile_number" placeholder="Enter Your Mobile Number" autocomplete="off"
+                                    required />
                             </div>
                             <div>
                                 <x-label>Plan Name</x-label>
@@ -83,7 +85,7 @@
                                     @endforeach
                                 </x-select>
                             </div>
-                           <div id="custom_plan_days"></div>
+                            <div id="custom_plan_days"></div>
                             <!-- Profile Image -->
                             <div class="col-span-2">
                                 <x-label>Profile Image</x-label>
@@ -113,7 +115,7 @@
                                 <x-input type="text" x-model="form.city" name="city" x-ref="cityInput"
                                     id="cityInput" autocomplete="off"
                                     placeholder="Type address, area, shop name, company..."
-                                    class="w-full rounded-lg border border-gray-300 p-2 text-gray-700 focus:border-[#ab5f00] focus:ring-[#ab5f00]/30"
+                                    class="w-full rounded-lg border border-gray-300 p-2"
                                     required />
                                 <p x-show="errors.city" x-text="errors.city" class="text-red-600 text-sm mt-1"></p>
                             </div>
@@ -165,7 +167,9 @@
 <!-- Google Transliteration (optional for Tamil typing) -->
 <script src="https://www.google.com/jsapi"></script>
 <script>
-    google.load("elements", "1", { packages: "transliteration" });
+    google.load("elements", "1", {
+        packages: "transliteration"
+    });
 </script>
 
 <!-- Google Maps JS -->
@@ -193,7 +197,10 @@
         const mapEl = document.getElementById('map');
         const input = document.getElementById('cityInput');
         const addressField = document.querySelector('textarea[name=address]');
-        const defaultCenter = { lat: 11.1271, lng: 78.6569 }; // Tamil Nadu center
+        const defaultCenter = {
+            lat: 11.1271,
+            lng: 78.6569
+        }; // Tamil Nadu center
 
         const map = new google.maps.Map(mapEl, {
             center: defaultCenter,
@@ -209,7 +216,9 @@
         const geocoder = new google.maps.Geocoder();
 
         const autocomplete = new google.maps.places.Autocomplete(input, {
-            componentRestrictions: { country: 'in' },
+            componentRestrictions: {
+                country: 'in'
+            },
             fields: ['geometry', 'formatted_address', 'address_components', 'name'],
         });
 
@@ -237,7 +246,7 @@
 
             place.address_components.forEach(comp => {
                 if (comp.types.includes("administrative_area_level_1")) {
-                    state = comp.long_name;   // Tamil Nadu
+                    state = comp.long_name; // Tamil Nadu
                 }
                 if (comp.types.includes("postal_code")) {
                     pincode = comp.long_name; // 600001
@@ -255,7 +264,9 @@
             document.querySelector('[name=latitude]').value = pos.lat();
             document.querySelector('[name=longitude]').value = pos.lng();
 
-            geocoder.geocode({ location: pos }, (results, status) => {
+            geocoder.geocode({
+                location: pos
+            }, (results, status) => {
                 if (status === 'OK' && results.length) {
                     const address = results[0].formatted_address;
                     input.value = address;
@@ -277,4 +288,3 @@
         }
     }
 </script>
-

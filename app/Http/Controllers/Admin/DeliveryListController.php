@@ -31,11 +31,10 @@ class DeliveryListController extends Controller
         //     })
         //     ->orderBy('id', 'asc')
         //     ->paginate(10);
-        $query = DailyDelivery::with(['get_user', 'get_delivery_partner', 'get_user_subscription'])
+        $query = DailyDelivery::with(['get_user', 'get_delivery_partner', 'get_user_subscription', 'get_order'])
             ->whereHas('get_user_subscription', function ($q) {
                 $q->where('status', 1);
             });
-
         // City polygon filter
         if ($request->city) {
             $hub = Hub::find($request->city);
@@ -111,7 +110,7 @@ class DeliveryListController extends Controller
         }
 
         $request->validate($rules);
-
+ 
         try {
             $delivery = DailyDelivery::findOrFail($request->delivery_id);
             $wallet   = Wallet::where(['user_id' => $delivery->user_id,'subscription_id' => $delivery->subscription_id])->first();

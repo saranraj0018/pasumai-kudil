@@ -2,8 +2,7 @@ $(function () {
     // ===== OPEN VIEW ORDER MODAL =====
     $(document).on("click", ".viewOrderBtn", function () {
         let order = $(this).data("order");
-
-        // Fill order data inside modal
+         // Fill order data inside modal
         $("#orderModalTitle").text("Order #" + order.order_id);
         $("#idSet").val(order.id);
         $("#orderCustomerName").text(order.user?.name ?? "Guest");
@@ -28,35 +27,41 @@ $(function () {
         $("#orderGrandTotal").text("₹" + (order.gross_amount ?? 0));
 
         // status & date
-        $("#status").val(order.status);
-        let statusDate = "";
-        switch (order.status) {
-            case 3:
-                statusDate = order.shipped_at;
-                break;
-            case 4:
-                statusDate = order.delivered_at;
-                break;
-            case 5:
-                statusDate = order.cancelled_at;
-                break;
-            case 6:
-                statusDate = order.refunded_at;
-                break;
-            default:
-                statusDate = "";
-                break;
-        }
+         let status = parseInt(order.status);
+         var get_status = $("#status").val(order.status);
+      console.log(order.status);
 
-        if (statusDate) {
-            let dt = new Date(statusDate);
-            let yyyy = dt.getFullYear();
-            let mm = ("0" + (dt.getMonth() + 1)).slice(-2);
-            let dd = ("0" + dt.getDate()).slice(-2);
-            $("#statusDate").val(`${yyyy}-${mm}-${dd}`);
-        } else {
-            $("#statusDate").val("");
-        }
+         let statusDate = null;
+         switch (status) {
+             case 3:
+                 statusDate = order.shipped_at;
+                 break;
+             case 4:
+                 statusDate = order.delivered_at;
+                 break;
+             case 5:
+                 statusDate = order.cancelled_at;
+                 break;
+             case 6:
+                 statusDate = order.refunded_at;
+                 break;
+         }
+
+         if (statusDate) {
+             let dt = new Date(statusDate);
+             if (!isNaN(dt.getTime())) {
+                 let yyyy = dt.getFullYear();
+                 let mm = String(dt.getMonth() + 1).padStart(2, "0");
+                 let dd = String(dt.getDate()).padStart(2, "0");
+
+                 $("#statusDate").val(`${yyyy}-${mm}-${dd}`);
+             } else {
+                 $("#statusDate").val("");
+             }
+         } else {
+             $("#statusDate").val("");
+         }
+
         let tbody = $("#orderProductsBody");
         tbody.empty(); // clear old data first
         if (order.order_details && order.order_details.length > 0) {
@@ -96,7 +101,6 @@ $(function () {
     // ===== SAVE ORDER STATUS =====
     $(document).on("click", "#saveStatusBtn", function (e) {
         e.preventDefault();
-
         let orderTitle = $("#orderModalTitle").text();
         let orderId = orderTitle.replace("Order #", "").trim();
         let Id = $("#idSet").val();
@@ -109,6 +113,7 @@ $(function () {
         }
 
         let formData = new FormData();
+        showLoader();
         formData.append("order_id", orderId);
         formData.append("status", status);
         formData.append("date", date);
@@ -119,6 +124,7 @@ $(function () {
             formData,
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast(res.message, "success", 2000);
                     setTimeout(() => {
@@ -130,6 +136,7 @@ $(function () {
                 }
             },
             function (err) {
+                hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {

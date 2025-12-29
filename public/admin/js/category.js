@@ -14,7 +14,6 @@ $(function () {
         $("#save_cat").text("Save");
     });
 
-
     $(document).on("click", ".editCategoryBtn", function () {
         let id     = $(this).data("id");
         let name   = $(this).data("name");
@@ -37,12 +36,9 @@ $(function () {
 
     });
 
-
     // Use event delegation because #categoryForm may not exist initially
     $(document).on("submit", "#categoryForm", function (e) {
         e.preventDefault();
-
-
         // Fields to validate
         let fields = [
             { id: "#category_name", condition: (val) => val === "", message: "Category name is required" },
@@ -62,11 +58,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/category/save",
             formData,
             "POST",
             function(res){
+                 hideLoader();
                 if(res.success){
                     showToast(res.message, "success", 2000);
                     setTimeout(() => {
@@ -89,6 +87,7 @@ $(function () {
                 }
             },
             function(err){
+                 hideLoader();
                 if(err.errors){
                     let msg = "";
                     $.each(err.errors, function(k,v){ msg+=v[0]+"<br>"; });
@@ -109,11 +108,13 @@ $(function () {
     });
 
     window.deleteCategory = function (id) {
+         showLoader();
         sendRequest(
             "/admin/category/delete",
             { id: id },
             "POST",
             function (res) {
+                 hideLoader();
                 if (res.success) {
                     showToast("Category deleted successfully!", "success", 2000);
                     reloadCategoryList();
@@ -123,6 +124,7 @@ $(function () {
                 document.querySelector('#deleteCategoryModal').__x.$data.open = false;
             },
             function (err) {
+                 hideLoader();
                 showToast(err.message || "Delete failed", "error", 2000);
                 document.querySelector('#deleteCategoryModal').__x.$data.open = false;
             }

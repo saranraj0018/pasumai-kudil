@@ -1,48 +1,7 @@
 $(function () {
-    //  const input = document.getElementById("searchInput");
-
-    //  input.addEventListener("input", function () {
-    //      let search = this.value;
-    //      loadUsers(
-    //          `{{ route('lists.delivery_partner') }}?search=${encodeURIComponent(
-    //              search
-    //          )}`
-    //      );
-    //  });
-
-    //  function loadUsers(url) {
-    //      fetch(url)
-    //          .then((res) => res.text())
-    //          .then((html) => {
-    //              let parser = new DOMParser();
-    //              let doc = parser.parseFromString(html, "text/html");
-    //              let newContent = doc.querySelector(
-    //                  "#deleveryTableWrapper"
-    //              ).innerHTML;
-    //              document.getElementById("deleveryTableWrapper").innerHTML =
-    //                  newContent;
-
-    //              attachPaginationEvents();
-    //          })
-    //          .catch((err) => console.error(err));
-    //  }
-
-    //  function attachPaginationEvents() {
-    //      document
-    //          .querySelectorAll('#deleveryTableWrapper a[href*="page="]')
-    //          .forEach((link) => {
-    //              link.addEventListener("click", function (e) {
-    //                  e.preventDefault();
-    //                  loadUsers(this.href);
-    //              });
-    //          });
-    //  }
-    //  attachPaginationEvents();
-
     $(document).on("submit", "#deliveryPartnerAddForm", function (e) {
         e.preventDefault();
         let isValid = true;
-
         const fields = [
             {
                 id: "#name",
@@ -68,11 +27,13 @@ $(function () {
         if (!isValid) return;
 
         let formData = new FormData(this);
+        showLoader();
         sendRequest(
             "/admin/delivery_partner/save-delivery-partner",
             formData,
             "POST",
             function (res) {
+                hideLoader();
                 if (res.success) {
                     showToast("Delivery Partner saved successfully!", "success", 2000);
                     setTimeout(() => {
@@ -91,6 +52,7 @@ $(function () {
                 }
             },
             function (err) {
+                hideLoader();
                 if (err.errors) {
                     let msg = "";
                     $.each(err.errors, function (k, v) {
@@ -143,11 +105,13 @@ $(function () {
     });
 
     window.deleteDeliveryPartner = function (id) {
+         showLoader();
            sendRequest(
                "/admin/delivery_partner/delete-delivery-partner",
                { id: id },
                "POST",
                function (res) {
+                 hideLoader();
                    if (res.success) {
                        showToast(
                            "Delivery Partner deleted successfully!",
@@ -163,6 +127,7 @@ $(function () {
                    ).__x.$data.open = false;
                },
                function (err) {
+                 hideLoader();
                    showToast(err.message || "Delete failed", "error", 2000);
                    document.querySelector(
                        "#deleteDeliveryPartnerModal"

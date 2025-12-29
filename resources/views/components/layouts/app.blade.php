@@ -3,6 +3,21 @@
 
 <head>
     <x-partials.header />
+    <style>
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
 </head>
 
 <body class="hold-transition sidebar-mini bg-gray-100">
@@ -26,12 +41,22 @@
         </div>
 
         <div id="globalLoader" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-            <div class="max-w-sm p-6 bg-neutral-primary-soft border border-default rounded-base shadow-xs relative text-center">
-                <h5 class="mb-2 text-xl font-semibold text-heading opacity-40">
+            <div
+                class="max-w-sm p-6 bg-neutral-primary-soft border border-default rounded-base shadow-xs relative text-center">
+                <!-- Loading SVG -->
+                <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                        stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+
+                <h5 class="mt-4 text-xl font-semibold text-heading opacity-80">
                     Loading...
                 </h5>
             </div>
         </div>
+
 
         <!-- Toast Container -->
         <div id="toast-container" class="fixed top-5 right-5 space-y-2 z-50"></div>

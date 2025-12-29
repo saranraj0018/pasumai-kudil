@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('ifsc_code', 255)->nullable();
             $table->string('account_holder_name', 255)->nullable();
             $table->string('branch', 255)->nullable();
+            $table->string('prefix', 255)->nullable();
             $table->string('fcm_token')->nullable()->after('remember_token');
         });
     }
@@ -34,8 +35,5 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-
-    }
+    public function down(): void {}
 };
