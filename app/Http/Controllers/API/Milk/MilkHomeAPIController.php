@@ -43,15 +43,15 @@ class MilkHomeAPIController extends Controller
             $latestinactivesubscription = UserSubscription::with('get_subscription')->where('user_id', $user->id)
                 ->where('status', 2)
                 ->pluck('id');
-            $previouswalletamount = Wallet::where('user_id' , $user->id)
-                ->whereIn('subscription_id' ,$latestinactivesubscription)
+            $previouswalletamount = Wallet::where('user_id', $user->id)
+                ->whereIn('subscription_id', $latestinactivesubscription)
                 ->pluck('balance')
                 ->sum();
 
             // Get wallet balance
-            if(!empty($subscription)){
-                $wallet = Wallet::where(['user_id' => $user->id,'subscription_id' => $subscription->id])->first();
-            }else{
+            if (!empty($subscription)) {
+                $wallet = Wallet::where(['user_id' => $user->id, 'subscription_id' => $subscription->id])->first();
+            } else {
                 $wallet = null;
             }
 
@@ -80,19 +80,19 @@ class MilkHomeAPIController extends Controller
                         'banner' => $banner,
                         'plan_details' => (object) [],
                         'customer_id' =>  $user->prefix ?? '',
-                        ]
-                    ]);
-                }
+                    ]
+                ]);
+            }
             // Calculate remaining days
             $startDate = Carbon::parse($subscription->start_date);
             $endDate = Carbon::parse($subscription->end_date);
             // $remainingDays = max($endDate->diffInDays(Carbon::now(), false), 0);
-            $remainingDays = DailyDelivery::where(['user_id' => $user->id, 'subscription_id' => $subscription->id,'delivery_status' => 'pending'])->count();
-            $completedDays = DailyDelivery::where(['user_id' => $user->id, 'subscription_id' => $subscription->id,'delivery_status' => 'delivered'])->count();
+            $remainingDays = DailyDelivery::where(['user_id' => $user->id, 'subscription_id' => $subscription->id, 'delivery_status' => 'pending'])->count();
+            $completedDays = DailyDelivery::where(['user_id' => $user->id, 'subscription_id' => $subscription->id, 'delivery_status' => 'delivered'])->count();
 
-                // Build response
+            // Build response
             $response = [
-                'user_image' => $user->image ? url('storage/'.$user->image) : 'https://example.com/default_user.jpg',
+                'user_image' => $user->image ? url('storage/' . $user->image) : 'https://example.com/default_user.jpg',
                 'user_name' => $user->name,
                 'plan_status' => $subscription->status,
                 'previous_wallet_balance' => (string) $previouswalletamount,
@@ -110,8 +110,8 @@ class MilkHomeAPIController extends Controller
                     'plan_start_date' => $startDate->format('d/m/Y'),
                     'plan_end_date' => $endDate->format('d/m/Y'),
                     'subscription_type' => $subscription->get_subscription?->plan_type ?? null,
-                    'customer_id' =>  $user->prefix ?? '',
                 ],
+                'customer_id' =>  $user->prefix ?? '',
             ];
 
             return response()->json([
@@ -131,8 +131,8 @@ class MilkHomeAPIController extends Controller
     {
         $validator = Validator::make($request->all(), [
             "order_amount" => 'required|numeric',
-//            "paymentMode" => 'required|string', need to change
-//            "addressId" => 'required|string',
+            //            "paymentMode" => 'required|string', need to change
+            //            "addressId" => 'required|string',
         ]);
 
         #check if successful
@@ -156,16 +156,16 @@ class MilkHomeAPIController extends Controller
 
         $useraddresscheck = User::where('id', $user->id)->first();
 
-        if($useraddresscheck->address == null && $useraddresscheck->address == '' || $useraddresscheck->latitude == '' && $useraddresscheck->latitude == null || $useraddresscheck->longitude == null && $useraddresscheck->longitude == '' || $useraddresscheck->city == null && $useraddresscheck->city == ''){
-        return response()->json([
-            'status' => 404,
-            'message' => 'Address not found.Please enter your address!',
-        ], 404);
+        if ($useraddresscheck->address == null && $useraddresscheck->address == '' || $useraddresscheck->latitude == '' && $useraddresscheck->latitude == null || $useraddresscheck->longitude == null && $useraddresscheck->longitude == '' || $useraddresscheck->city == null && $useraddresscheck->city == '') {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Address not found.Please enter your address!',
+            ], 404);
         }
 
         $partner = $this->getMappedDeliveryPartner($user);
 
-        if (!$partner){
+        if (!$partner) {
             return response()->json([
                 'status' => 404,
                 'message' => 'Nearby delivery partners not found.',
@@ -178,7 +178,6 @@ class MilkHomeAPIController extends Controller
             'message' => 'Subscription created successfully!',
             'order_id' => $razorPayOrder->id,
         ], 200);
-
     }
 
     private function getMappedDeliveryPartner($user)
@@ -299,7 +298,7 @@ class MilkHomeAPIController extends Controller
 
             if ($request->filled('custom_days')) {
                 $amount =  round((float)$subscription->plan_amount, 2);
-            }else{
+            } else {
                 $totalDays = $start_date->diffInDays($end_date) + 1;
                 $totalDays = $totalDays > 0 ? $totalDays : 1;
                 $totalAmount = (float)$subscription->plan_amount;
@@ -354,13 +353,13 @@ class MilkHomeAPIController extends Controller
                 'days'            => $start_date->diffInDays($end_date) + 1,
             ]);
 
-                // New wallet → create with all fields
-                $wallet = new Wallet();
-                $wallet->user_id         = $user->id;
-                $wallet->balance         = $walletamount;
-                $wallet->subscription_id = $user_subscription->id;
-                $wallet->transaction_id  = $request->transaction_id ?? null;
-                $wallet->save();
+            // New wallet → create with all fields
+            $wallet = new Wallet();
+            $wallet->user_id         = $user->id;
+            $wallet->balance         = $walletamount;
+            $wallet->subscription_id = $user_subscription->id;
+            $wallet->transaction_id  = $request->transaction_id ?? null;
+            $wallet->save();
 
             $transaction = new Transaction();
             $transaction->user_id        = $user->id;
@@ -377,7 +376,7 @@ class MilkHomeAPIController extends Controller
             $user->save();
             // $get_user = User::where('id', $request['user_id'])->first();
 
-            event(new NewNotification($request['user_id'], "Subscription Added", "  $user->name has added a new Subscription!", 2,1));
+            event(new NewNotification($request['user_id'], "Subscription Added", "  $user->name has added a new Subscription!", 2, 1));
 
             DB::commit();
 
@@ -398,7 +397,6 @@ class MilkHomeAPIController extends Controller
                 'success' => true,
                 'message' => 'Subscription added successfully!',
             ]);
-
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -427,9 +425,9 @@ class MilkHomeAPIController extends Controller
 
             DB::beginTransaction();
             $subscription = UserSubscription::where('user_id', $request['user_id'])
-            ->where('subscription_id', $validated['plan_id'])
-            ->where('status', 1)
-            ->first();
+                ->where('subscription_id', $validated['plan_id'])
+                ->where('status', 1)
+                ->first();
             if (!$subscription) {
                 return response()->json([
                     'status' => 404,
@@ -444,7 +442,7 @@ class MilkHomeAPIController extends Controller
                 'in_active_date' => Carbon::today()->toDateString(),
             ]);
 
-            User::where('id',$request['user_id'])->update([
+            User::where('id', $request['user_id'])->update([
                 'account_holder_name' => $validated['account_details']['account_holder_name'],
                 'bank_name'           => $validated['account_details']['bank_name'],
                 'account_number'      => $validated['account_details']['account_number'],
@@ -453,7 +451,7 @@ class MilkHomeAPIController extends Controller
             ]);
             $get_user = User::where('id', $request['user_id'])->first();
 
-            event(new NewNotification($request['user_id'], "Subscription Cancelled", "$get_user->name has cancelled their subscription.", 2,1));
+            event(new NewNotification($request['user_id'], "Subscription Cancelled", "$get_user->name has cancelled their subscription.", 2, 1));
 
             DB::commit();
             return response()->json([
