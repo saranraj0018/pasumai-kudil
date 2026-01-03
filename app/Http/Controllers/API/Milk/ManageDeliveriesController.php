@@ -185,7 +185,7 @@ class ManageDeliveriesController extends Controller
                 $added_dates_str = implode(', ', $added_dates);
                 $message = "$get_user->name has cancelled delivery for dates ($cancelled_dates) and added new delivery dates ($added_dates_str).";
                 event(new NewNotification(
-                    1, // Admin user id (replace if different)
+                    $userId, // Admin user id (replace if different)
                     "Delivery Cancelled",
                     $message,
                     2,
@@ -342,7 +342,8 @@ class ManageDeliveriesController extends Controller
                 $message = "$get_user->name has updated delivery quantity. Increased $increaseQty qty for dates ($updated_dates). "
                     . "Removed pending quantity from: $removed_str.";
                 // Trigger notification event
-                event(new NewNotification(1, // Admin user id (replace if different)
+                event(new NewNotification(
+                    $userId, // Admin user id (replace if different)
                     "Delivery Updated",
                     $message,
                     2,1

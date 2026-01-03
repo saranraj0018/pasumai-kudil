@@ -376,7 +376,7 @@ class MilkHomeAPIController extends Controller
             $user->save();
             // $get_user = User::where('id', $request['user_id'])->first();
 
-            event(new NewNotification($request['user_id'], "Subscription Added", "  $user->name has added a new Subscription!", 2, 1));
+            event(new NewNotification($user->id, "Subscription Added", "  $user->name has added a new Subscription!", 2, 1));
 
             DB::commit();
 
@@ -422,7 +422,6 @@ class MilkHomeAPIController extends Controller
         ]);
 
         try {
-
             DB::beginTransaction();
             $subscription = UserSubscription::where('user_id', $request['user_id'])
                 ->where('subscription_id', $validated['plan_id'])
@@ -434,7 +433,6 @@ class MilkHomeAPIController extends Controller
                     'message' => 'Active subscription not found for this plan.'
                 ], 404);
             }
-
             $subscription->update([
                 'status' => 2,
                 'description' => $validated['reason'],

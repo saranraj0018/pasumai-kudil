@@ -355,11 +355,8 @@ class CartController extends Controller
             $address_id = Address::where('created_by', Auth::id())->where('is_default', 1)->first()->id;
             if ($address_id != Cache::get('address_id_' . Auth::id()))
                 throw new \Exception('Address Not found', 404);
-
             $coupon_amount = 0;
-
             if (!empty($request['coupon_id']) && !empty($request['total_amount'])) {
-
                 $coupon = Coupon::find($request['coupon_id']);
                 $coupon_amount = self::getCouponDetails($coupon, $request['total_amount']);
             }
@@ -368,24 +365,19 @@ class CartController extends Controller
                 $shipping = self::calculateShipping($address_id);
             }
             $orderDetails = collect(Cache::get("cart_" . auth()->id(), []))->map(function ($item) use ($coupon_amount, $shipping) {
-
-                $product  = Product::with('details')->find($item['product_id']);
-
-
-                $variant = $product->details;
+            $product  = Product::with('details')->find($item['product_id']);
+            $variant = $product->details;
                 if ($variant->id != intval($item['variant_id'])) {
                     return response()->json([
                         'status' => 409,
                         'message' => 'Variant not found for this product',
                     ]);
                 }
-
                 $variant = ProductDetail::find($item['variant_id']);
                 if ($variant) {
                     $variant->stock = max(0, $variant->stock - intval($item['quantity']));
                     $variant->save();
                 }
-
                 return [
                     ...$item,
                     'category_id' => $product->details->category_id,
@@ -424,12 +416,11 @@ class CartController extends Controller
 
             //$variant = collect(json_decode($product->details->varients,true))->firstWhere('id', $item['variant_id']);
             $orderDetails->map(function ($detail) use ($order) {
-
                 $order->orderDetails()->create($detail);
             });
-            $get_user = User::where('id', auth()->id())->first();
 
-            event(new NewNotification(auth()->id(), "Support Ticket", "$get_user->name has created a Support Ticket!", 1, 1));
+            $get_user = User::where('id', auth()->id())->first();
+            event(new NewNotification($get_user->id, "Support Ticket", "$get_user->name has created a Support Ticket!", 1, 1));
 
             DB::commit();
 
