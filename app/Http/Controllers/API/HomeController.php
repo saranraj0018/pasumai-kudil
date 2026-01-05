@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\Category;
+use App\Models\Hub;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Notification;
@@ -97,9 +98,11 @@ class HomeController extends Controller {
             ->toArray();
         $cacheKey = "inside_grocery_zone:user:{$user->id}";
         $isInside = Cache::get($cacheKey);
+        $name = Hub::where('type',1)->first()->name ?? null;
         return response()->json([
             "status" => 200,
             "msg" => "success",
+            'vendor_name'=>  $name,
             "data" => [
                 "Bannerlist"           => $bannerList,
                 "category_data"        => $categories,

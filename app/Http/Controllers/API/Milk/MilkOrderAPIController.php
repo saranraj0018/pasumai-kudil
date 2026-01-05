@@ -3,6 +3,7 @@ namespace App\Http\Controllers\API\Milk;
 
 use App\Http\Controllers\Controller;
 use App\Models\DailyDelivery;
+use App\Models\Setting;
 use App\Models\UserSubscription;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -105,13 +106,14 @@ class MilkOrderAPIController extends Controller
                     ];
                 })
                 ->values();
-
+            $setting = Setting::where('data_key', 'milk_config_time')->first();
             // Final Response
             return response()->json([
                 'status' => 200,
                 'message' => 'Fetch orders details successfully.',
                 'response' => [
                     'month' => $monthName,
+                    'milk_config_time' => $setting->data_value ?? '',
                     'user_subscription' => $subscription->id ?? 0,
                     'subscription_dates' => [
                         'schedule_date' => $scheduleDates,
@@ -196,6 +198,7 @@ class MilkOrderAPIController extends Controller
                 })
                 ->values()
                 ->toArray();
+            $setting = Setting::where('data_key', 'milk_config_time')->first();
             // Step 8: Final response structure
             $responseData = [
                 'id' => $subscription->id,
@@ -207,6 +210,7 @@ class MilkOrderAPIController extends Controller
                 'completed_days' => $completedDates,
                 'remaining_days' => $remainingDates,
                 'cancelled_days' => $cancelledDates,
+                'milk_config_time' => $setting->data_value ?? '',
             ];
 
             return response()->json([

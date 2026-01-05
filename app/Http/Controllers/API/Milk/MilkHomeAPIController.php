@@ -89,7 +89,7 @@ class MilkHomeAPIController extends Controller
             // $remainingDays = max($endDate->diffInDays(Carbon::now(), false), 0);
             $remainingDays = DailyDelivery::where(['user_id' => $user->id, 'subscription_id' => $subscription->id, 'delivery_status' => 'pending'])->count();
             $completedDays = DailyDelivery::where(['user_id' => $user->id, 'subscription_id' => $subscription->id, 'delivery_status' => 'delivered'])->count();
-
+            $setting = Setting::where('data_key', 'milk_config_time')->first();
             // Build response
             $response = [
                 'user_image' => $user->image ? url('storage/' . $user->image) : 'https://example.com/default_user.jpg',
@@ -98,6 +98,7 @@ class MilkHomeAPIController extends Controller
                 'previous_wallet_balance' => (string) $previouswalletamount,
                 'wallet_balance' => (string) $walletBalance,
                 'banner' => $banner,
+                'milk_config_time' => $setting->data_value ?? '',
                 'plan_details' => [
                     'plan_id' => $subscription->subscription_id,
                     'plan_amount' => $subscription->get_subscription?->plan_amount ?? 0,
