@@ -71,7 +71,7 @@ $(function () {
         let image = $("#image").val();
         let existing_image = $("#existing_image").val();
         const errorEl = $("#image").siblings(".error-message");
-        if (image == "") {
+        if (image == "" && existing_image == "") {
             $("#image").addClass("border-red-500 ring-1 ring-red-500");
             if (errorEl.length === 0) {
                 $("#image").after(
