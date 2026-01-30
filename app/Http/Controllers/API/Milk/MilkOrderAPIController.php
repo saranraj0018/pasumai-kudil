@@ -262,7 +262,9 @@ class MilkOrderAPIController extends Controller
             }
 
             $order = DailyDelivery::find($validated['order_id']);
-            $lastOrder = DailyDelivery::where(['user_id' => $userId , 'subscription_id' => $subscription->id])->latest()->first();
+
+            $lastOrder = DailyDelivery::where(['user_id' => $userId , 'subscription_id' => $subscription->id])->get()->last();
+
             if (!$order) {
                 return response()->json(['status' => 404, 'message' => 'Order not found']);
             }

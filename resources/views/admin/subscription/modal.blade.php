@@ -52,7 +52,7 @@
                 </div>
                 <!-- Plan Amount -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1" id="amount">Plan Amount<span
+                    <label class="block text-sm font-medium text-gray-700 mb-1" id="amount">Plan Amount(Per Day)<span
                             class="text-red-500">*</span></label>
                     <input type="number" name="plan_amount" id="plan_amount"
                         class="form-input w-full border rounded-lg p-2">

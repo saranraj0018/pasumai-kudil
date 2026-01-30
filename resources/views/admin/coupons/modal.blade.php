@@ -79,6 +79,10 @@
             <!-- Expiry + Status -->
             <div class="flex items-center gap-3">
                 <div class="w-full" id="expires_at_wrapper">
+                    <label>Started At<span class="text-red-500">*</span></label>
+                    <input type="date" name="started_at" id="started_at" class="form-input w-full border rounded-lg p-2">
+                </div>
+                <div class="w-full" id="expires_at_wrapper">
                     <label>Expires At<span class="text-red-500">*</span></label>
                     <input type="date" name="expires_at" id="expires_at" class="form-input w-full border rounded-lg p-2">
                 </div>

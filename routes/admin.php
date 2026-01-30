@@ -90,6 +90,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/transaction-history', 'transactionHistory')->name('transaction_history.users');
             Route::post('/add_wallet', 'addWallet')->name('add_wallet.users');
             Route::post('/save_user', 'saveUser')->name('save_user.users');
+            Route::post('/update', 'updateUser')->name('update_user.users');
             Route::get('/get_subscription', 'getCustomSubscription')->name('get_subscription.users');
             Route::post('/add_user_account', 'addUserAccount')->name('add_user_account.users');
             Route::post('/subscription_cancel', 'cancelSubscription')->name('subscription_cancel.users');

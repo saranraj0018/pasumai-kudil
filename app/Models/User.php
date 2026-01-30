@@ -30,7 +30,8 @@ class User extends Authenticatable implements JWTSubject
         'bank_name',
         'ifsc_code',
         'account_holder_name',
-        'upi'
+        'upi',
+        'prefix'
     ];
 
     /**

@@ -11,4 +11,9 @@ class Wallet extends Model
         'subscription_id',
         'balance',
     ];
+
+    public function user_subscription()
+    {
+        return $this->belongsTo(UserSubscription::class, 'subscription_id', 'id');
+    }
 }

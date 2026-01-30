@@ -28,6 +28,7 @@ class CouponController extends Controller
             'min_price'     => 'nullable|numeric',
             'order_count'   => 'nullable|integer',
             'order_type'    => 'nullable|in:1,2',
+            'started_at'    => 'nullable|date',
             'expires_at'    => 'nullable|date',
             'status'        => 'required|boolean',
         ];
@@ -56,6 +57,7 @@ class CouponController extends Controller
             $coupon->min_price     = $request->min_price ?? 0;
             $coupon->order_count   = $request->order_count ?? 0;
             $coupon->order_type    = $request->order_type ?? 1;
+            $coupon->started_at    = $request->started_at;
             $coupon->expires_at    = $request->expires_at;
             $coupon->status        = $request->status;
             $coupon->save();

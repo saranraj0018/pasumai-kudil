@@ -263,9 +263,9 @@ $(document).ready(function () {
     function updateCustomizeAmountList() {
         if ($("#plan_type").val() !== "Customize") return;
         let perDayAmount = parseFloat($("#plan_amount").val()) || 0;
-        let totalAmount = 0;
         $("#customize_amount_list").empty();
         deliveryDaysWithAmount = [];
+        let totalAmount = 0;
         if (!deliveryDayList.length) return;
         let uniqueDays = [...new Set(deliveryDayList)];
         uniqueDays.forEach(function (days, index) {
@@ -275,22 +275,24 @@ $(document).ready(function () {
                 days: days,
                 amount: dayAmount,
             });
-            // Create display span
-            let $customizeAmountSpan = $(`
+            let $customizeAmountSpan;
+            if (typeof days === 'object' && days !== null) {
+                const total = days.days * perDayAmount;
+                $customizeAmountSpan = $(`
+            <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
+                ${days.days} × ${perDayAmount} = ₹${total}
+            </span>
+        `);
+            } else {
+                $customizeAmountSpan = $(`
             <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
                 ${days} × ${perDayAmount} = ₹${dayAmount}
             </span>
         `);
+            }
+
             $("#customize_amount_list").append($customizeAmountSpan);
         });
-
-        $("#customize_amount_list").append(`
-        <div class="mt-2 font-semibold text-blue-600">
-            Total Plan Amount: ₹${totalAmount}
-        </div>
-    `);
-
-        console.log("deliveryDaysWithAmount:", deliveryDaysWithAmount);
     }
 
     // When per-day amount changes

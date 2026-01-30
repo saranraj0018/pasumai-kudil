@@ -142,6 +142,54 @@
     </template>
 </div>
 
+<div id="editUserModal"
+     x-data="{ open: false }"
+     x-show="open"
+     class="fixed inset-0 flex items-center justify-center z-50"
+     style="display:none">
+
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40" @click="open=false"></div>
+
+    <!-- Modal -->
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-[700px] max-w-[95%] relative z-10">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800" id="coupon_label">Edit User</h2>
+
+        <form id="userForm" class="space-y-6">
+            @csrf
+            <input type="hidden" name="edit_user_id" id="edit_user_id">
+
+            <!-- Code + Type + Value -->
+            <div class="flex items-center gap-3">
+                <div class="w-full">
+                    <label>User Id<span class="text-red-500">*</span></label>
+                    <input type="text" name="prefix_id" id="prefix_id" class="form-input w-full border rounded-lg p-2">
+                </div>
+                <div class="w-full">
+                    <div class="w-full">
+                        <label>User Name<span class="text-red-500">*</span></label>
+                        <input type="text" name="user_name" id="user_name" class="form-input w-full border rounded-lg p-2">
+                    </div>
+                </div>
+                <div class="w-full">
+                    <label>User Email<span class="text-red-500">*</span></label>
+                    <input type="email" name="user_email" id="user_email" class="form-input w-full border rounded-lg p-2">
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end gap-3 pt-4">
+                <button type="button" @click="open=false" class="px-5 py-2 border rounded-lg">Cancel</button>
+                <button type="submit" id="save_edit_user"
+                        class="bg-[#ab5f00] text-white px-5 py-2 rounded-lg">
+                    Save
+                </button>
+
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Global Font + Map Styles -->
 <style>
     body,
