@@ -30,7 +30,14 @@ class User extends Authenticatable implements JWTSubject
         'bank_name',
         'ifsc_code',
         'account_holder_name',
-        'upi'
+        'upi',
+        'prefix',
+        'latitude',
+        'longitude',
+        'address',
+        'pincode',
+        'state',
+        'city'
     ];
 
     /**
@@ -64,7 +71,7 @@ class User extends Authenticatable implements JWTSubject
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
+            ->map(fn($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
 
@@ -88,14 +95,14 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-     public function get_wallet()
+    public function get_wallet()
     {
         return $this->belongsTo(Wallet::class, 'id', 'user_id');
     }
 
     public function subscriptions()
     {
-      return $this->belongsTo(UserSubscription::class, 'id','user_id');
+        return $this->belongsTo(UserSubscription::class, 'id', 'user_id');
     }
 
     public function role()
@@ -114,6 +121,3 @@ class User extends Authenticatable implements JWTSubject
         return $this->abilities()->where('ability', $ability)->exists();
     }
 }
-
-
-
