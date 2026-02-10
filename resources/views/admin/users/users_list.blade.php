@@ -17,8 +17,8 @@
                         <th class="px-3 py-2">S.No</th>
                         <th class="px-3 py-2">User Id</th>
                         <th class="px-3 py-2">Name</th>
-                        <th class="px-3 py-2">Email</th>
                         <th class="px-3 py-2">Mobile Number</th>
+                        <th class="px-3 py-2">Address</th>
                         <th class="px-3 py-2">Wallet</th>
                         <th class="px-3 py-2 text-center">Actions</th>
                     </tr>
@@ -28,10 +28,10 @@
                         @foreach ($getuser as $user)
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-3">{{ $user->prefix }}</td>
-                                <td class="px-4 py-3">{{ $user->name }}</td>
-                                <td class="px-4 py-3">{{ $user->email }}</td>
-                                <td class="px-4 py-3">{{ $user->mobile_number }}</td>
+                                <td class="px-4 py-3">{{ $user->prefix ?? '' }}</td>
+                                <td class="px-4 py-3">{{ $user->name ?? ''}}</td>
+                                <td class="px-4 py-3">{{ $user->mobile_number ?? '' }}</td>
+                                <td class="px-4 py-3">{{ $user->address ?? '' }}</td>
                                 <td class="px-4 py-3">{{ $user->get_wallet->balance ?? 0 }}</td>
                                 <td class="px-4 py-3 flex justify-center gap-4">
                                     <!-- View -->
