@@ -67,7 +67,7 @@ class HubController extends Controller
    }
 
     public function showMap() {
-        $hub_list = Hub::orderBy('created_at', 'desc')->get();
+        $hub_list = Hub::where('status',1)->orderBy('created_at', 'desc')->get();
         return view('admin.map.view', compact('hub_list'));
     }
 

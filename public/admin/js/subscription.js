@@ -33,6 +33,10 @@ $(document).ready(function () {
         let isValid = true;
         let planType = $("#plan_type").val();
         let planName = $("#plan_name").val();
+        let planPack = $("#pack").val();
+        let quantity = $("#quantity").val();
+        let delivery = $("#delivery_days_list").text().trim();
+
 
         if (planType === "") {
             showFieldError("#plan_type", "Plan type is required");
@@ -72,6 +76,21 @@ $(document).ready(function () {
 
         if (planName === "") {
             showFieldError("#plan_name", "Plan name is required");
+            isValid = false;
+        }
+
+        if (planPack === "") {
+            showFieldError("#pack", "Plan Pack is required");
+            isValid = false;
+        }
+
+        if (quantity === "") {
+            showFieldError("#quantity", "Quantity is required");
+            isValid = false;
+        }
+
+        if (planType === "Customize" && delivery === "") {
+            showFieldError("#delivery_days_input", "Delivery days is required");
             isValid = false;
         }
 
