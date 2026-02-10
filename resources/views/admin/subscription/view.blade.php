@@ -78,4 +78,4 @@
     </div>
 </x-layouts.app>
 
-<script src="{{ asset('admin/js/subscription.js') }}"></script>
+<script src="{{ asset('admin/js/subscription.js') }}?v={{ time() }}"></script>

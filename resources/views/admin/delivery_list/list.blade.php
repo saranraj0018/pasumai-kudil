@@ -165,5 +165,5 @@
         @include('admin.delivery_list.edit_delivery_status', ['delivery_boy' => $delivery_boy])
     </div>
 </x-layouts.app>
-<script src="{{ asset('admin/js/delivery_list.js') }}"></script>
-<script src="{{ asset('admin/js/order.js') }}"></script>
+<script src="{{ asset('admin/js/delivery_list.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('admin/js/order.js') }}?v={{ time() }}"></script>

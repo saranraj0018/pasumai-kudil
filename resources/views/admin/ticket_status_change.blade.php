@@ -38,7 +38,7 @@
                             class="px-5 py-2 rounded-lg border border-gray-300 hover:bg-gray-100">
                             Cancel
                         </button>
-                        <button type="submit" class="bg-[#ab5f00] text-white px-5 py-2 rounded-lg hover:bg-[#ab5f00]">
+                        <button type="submit" class="bg-[#ab5f00] text-white px-5 py-2 rounded-lg hover:bg-[#ab5f00]" id="ticket">
                             Save
                         </button>
                     </div>

@@ -157,4 +157,4 @@
 <script>
   SEARCH_URL = "{{ route('lists.products') }}";
 </script>
-<script src="{{ asset('admin/js/product.js') }}"></script>
+<script src="{{ asset('admin/js/product.js') }}?v={{ time() }}"></script>

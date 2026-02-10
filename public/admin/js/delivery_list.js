@@ -19,7 +19,7 @@ $(document).on("click", ".editDeliveryList", function () {
 $(document).on("submit", "#deliverystatusChangeForm", function (e) {
      e.preventDefault();
      let isValid = true;
-
+     let $saveBtn = $("#save_product");
      const fields = [
         //  {
         //      id: "#status",
@@ -38,7 +38,10 @@ $(document).on("submit", "#deliverystatusChangeForm", function (e) {
      });
 
      if (!isValid) return;
-
+ $saveBtn
+     .prop("disabled", true)
+     .removeClass("opacity-50 cursor-not-allowed")
+     .text("Save");
      let formData = new FormData(this);
      showLoader();
      sendRequest(
@@ -70,6 +73,10 @@ $(document).on("submit", "#deliverystatusChangeForm", function (e) {
              } else {
                  showToast(res.message, "error", 2000);
              }
+              $saveBtn
+                  .prop("disabled", false)
+                  .removeClass("opacity-50 cursor-not-allowed")
+                  .text("Save");
          },
          function (err) {
              hideLoader();
@@ -82,6 +89,9 @@ $(document).on("submit", "#deliverystatusChangeForm", function (e) {
              } else {
                  showToast(err.message || "Unexpected error", "error", 2000);
              }
+             $saveBtn.prop("disabled", false)
+                       .removeClass("opacity-50 cursor-not-allowed")
+                       .text("Save");
          }
      );
 });

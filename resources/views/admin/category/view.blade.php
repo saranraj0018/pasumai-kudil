@@ -82,5 +82,5 @@
     </div>
 
 </x-layouts.app>
-<script src="{{ asset('admin/js/category.js') }}"></script>
+<script src="{{ asset('admin/js/category.js') }}?v={{ time() }}"></script>
 

@@ -52,4 +52,4 @@
           @include('admin.orders.modal')
     </div>
 </x-layouts.app>
-<script src="{{ asset('admin/js/order.js') }}"></script>
+<script src="{{ asset('admin/js/order.js') }}?v={{ time() }}"></script>

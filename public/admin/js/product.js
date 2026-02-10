@@ -36,7 +36,7 @@ $(function () {
     $(document).on("submit", "#productAddForm", function (e) {
         e.preventDefault();
         let isValid = true;
-
+        let $saveBtn = $("#save_product");
         const fields = [
             {
                 id: "#product_name",
@@ -84,6 +84,10 @@ $(function () {
             if (errorEl.length) errorEl.remove();
         }
         if (!isValid) return;
+         $saveBtn
+             .prop("disabled", true)
+             .removeClass("opacity-50 cursor-not-allowed")
+             .text("Save");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -113,6 +117,10 @@ $(function () {
                 } else {
                     showToast(res.message, "error", 2000);
                 }
+                 $saveBtn
+                     .prop("disabled", false)
+                     .removeClass("opacity-50 cursor-not-allowed")
+                     .text("Save");
             },
             function (err) {
                 hideLoader();
@@ -125,6 +133,10 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                 $saveBtn
+                     .prop("disabled", false)
+                     .removeClass("opacity-50 cursor-not-allowed")
+                     .text("Save");
             }
         );
     });

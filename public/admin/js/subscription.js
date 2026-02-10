@@ -174,9 +174,12 @@ $(document).ready(function () {
     $(document).on("submit", "#subscriptionForm", function (e) {
         e.preventDefault();
         clearAllFieldErrors();
-
+   let $saveBtn = $("#save_subscription");
         if (!validateForm()) return;
-
+$saveBtn
+    .prop("disabled", true)
+    .removeClass("opacity-50 cursor-not-allowed")
+    .text("Save");
         let formData = new FormData(this);
         showLoader();
         formData.append("_token", $("input[name=_token]").val());
@@ -206,10 +209,18 @@ $(document).ready(function () {
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
+                $saveBtn
+                    .prop("disabled", false)
+                    .removeClass("opacity-50 cursor-not-allowed")
+                    .text("Save");
             },
             function (err) {
                 hideLoader();
                 showToast(err.message || "Unexpected error", "error", 2000);
+                  $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             }
         );
     });
@@ -349,6 +360,7 @@ $(document).ready(function () {
      $(document).on("submit", "#configtimeForm", function (e) {
         e.preventDefault();
         let isValid = true;
+        let $saveBtn = $("#save_config_time");
 
         const fields = [
             {
@@ -363,7 +375,10 @@ $(document).ready(function () {
         });
 
         if (!isValid) return;
-
+  $saveBtn
+      .prop("disabled", true)
+      .removeClass("opacity-50 cursor-not-allowed")
+      .text("Save");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -383,6 +398,10 @@ $(document).ready(function () {
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
+                  $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             },
             function (err) {
                 hideLoader();
@@ -395,6 +414,10 @@ $(document).ready(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                  $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             }
         );
      });

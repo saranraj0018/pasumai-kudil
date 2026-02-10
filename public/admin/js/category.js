@@ -39,6 +39,7 @@ $(function () {
     // Use event delegation because #categoryForm may not exist initially
     $(document).on("submit", "#categoryForm", function (e) {
         e.preventDefault();
+         let $saveBtn = $("#save_cat");
         // Fields to validate
         let fields = [
             { id: "#category_name", condition: (val) => val === "", message: "Category name is required" },
@@ -56,7 +57,10 @@ $(function () {
         }
 
         if (!isValid) return;
-
+  $saveBtn
+      .prop("disabled", true)
+      .removeClass("opacity-50 cursor-not-allowed")
+      .text("Save");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -85,6 +89,10 @@ $(function () {
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
+                  $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             },
             function(err){
                  hideLoader();
@@ -95,6 +103,10 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                  $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             }
         );
     });

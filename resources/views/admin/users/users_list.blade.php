@@ -58,7 +58,7 @@
         @include('admin.users.add_user_modal')
     </div>
 </x-layouts.app>
-<script src="{{ asset('admin/js/users.js') }}"></script>
+<script src="{{ asset('admin/js/users.js') }}?v={{ time() }}"></script>
 <script>
     const input = document.getElementById('searchInput');
 

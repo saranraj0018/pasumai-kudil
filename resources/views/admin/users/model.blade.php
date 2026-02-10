@@ -13,7 +13,7 @@
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="open = false"
                                 class="px-4 py-2 border rounded-lg">Cancel</button>
-                        <button type="submit" class="bg-[#ab5f00] text-white px-4 py-2 rounded-lg">Change</button>
+                        <button type="submit" id="revokeform" class="bg-[#ab5f00] text-white px-4 py-2 rounded-lg">Change</button>
                     </div>
                 </form>
             </div>
@@ -59,7 +59,7 @@
                             class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
                             Cancel
                         </button>
-                        <button type="submit" class="bg-[#ab5f00] text-white px-4 py-2 rounded-lg hover:bg-amber-500">
+                        <button type="submit" class="bg-[#ab5f00] text-white px-4 py-2 rounded-lg hover:bg-amber-500" id="change_delivery">
                             Save
                         </button>
                     </div>

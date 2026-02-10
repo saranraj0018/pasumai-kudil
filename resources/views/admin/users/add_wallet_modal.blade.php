@@ -145,8 +145,8 @@
 
                         <div>
                             <x-label>UPI Number</x-label>
-                            <x-input name="upi" id="upi" placeholder="Enter Your UPI Number"
-                                     type="text" x-model="form.upi" />
+                            <x-input name="upi" id="upi" placeholder="Enter Your UPI Number" type="text"
+                                x-model="form.upi" />
                         </div>
                     </div>
 
@@ -217,7 +217,7 @@
                             class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
                             Cancel
                         </button>
-                        <button type="submit"
+                        <button type="submit" id="save_subscription"
                             class="bg-[#ab5f00] text-white px-4 py-2 rounded-lg hover:bg-amber-500">
                             Save
                         </button>
@@ -235,7 +235,7 @@
 <div id="modifySubscriptionModal" x-data="modifySubscription(
     '{{ $userSubscription->start_date ?? '' }}',
     '{{ $userSubscription->end_date ?? '' }}',
-      @js($cancelled_date)
+    @js($cancelled_date)
 )" x-init="init()" x-cloak
     @keydown.escape.window="closeModal()">
 
@@ -277,7 +277,7 @@
                 <div class="flex items-center justify-end gap-3 pt-2">
                     <button type="button" @click="closeModal()"
                         class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">Cancel</button>
-                    <button type="submit"
+                    <button type="submit" id="save_modify"
                         class="bg-[#ab5f00] text-white px-4 py-2 rounded-lg hover:bg-amber-500">Save</button>
                 </div>
             </form>
@@ -346,13 +346,14 @@
                     maxDate: this.maxDate,
                     disable: highlightRanges,
 
-                    defaultDate: this.cancelledDates.length === 1
-                        ? [this.cancelledDates[0].start_date, this.cancelledDates[0].end_date]
-                        : null,
+                    defaultDate: this.cancelledDates.length === 1 ?
+                        [this.cancelledDates[0].start_date, this.cancelledDates[0].end_date] :
+                        null,
 
                     onDayCreate: (dObj, dStr, fp, dayElem) => {
                         const d = dayElem.dateObj;
-                        const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                        const ymd =
+                            `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
                         if (highlightRanges.some(r => ymd >= r.from && ymd <= r.to)) {
                             dayElem.style.background = '#ef4444';

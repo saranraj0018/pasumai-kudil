@@ -57,7 +57,7 @@ $(function () {
     // ===== COUPON FORM SUBMIT =====
     $(document).on("submit", "#couponForm", function (e) {
         e.preventDefault();
-
+        let $saveBtn = $("#save_coupon");
         let applyFor = $("#apply_for").val();
         let min_price = $("#min_price").val();
         let max_price = $("#max_price").val();
@@ -98,13 +98,17 @@ $(function () {
         }
 
         let isValid = true;
+
         for (const field of fields) {
             const result = validateField(field);
             if (!result) isValid = false;
         }
 
         if (!isValid) return;
-
+ $saveBtn
+     .prop("disabled", true)
+     .removeClass("opacity-50 cursor-not-allowed")
+     .text("Save");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -124,6 +128,10 @@ $(function () {
                 } else {
                     showToast(res.message, "error", 2000);
                 }
+                 $saveBtn
+                     .prop("disabled", false)
+                     .removeClass("opacity-50 cursor-not-allowed")
+                     .text("Save");
             },
             function (err) {
                  hideLoader();
@@ -134,6 +142,10 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                 $saveBtn
+                     .prop("disabled", false)
+                     .removeClass("opacity-50 cursor-not-allowed")
+                     .text("Save");
             }
         );
     });

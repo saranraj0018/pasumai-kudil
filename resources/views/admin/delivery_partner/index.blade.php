@@ -74,4 +74,4 @@
     </div>
 </x-layouts.app>
 
-<script src="{{ asset('admin/js/delivery_partner.js') }}"></script>
+<script src="{{ asset('admin/js/delivery_partner.js') }}?v={{ time() }}"></script>

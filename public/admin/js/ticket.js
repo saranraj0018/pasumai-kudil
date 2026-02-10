@@ -16,7 +16,7 @@ $(function () {
     $(document).on("submit", "#ticketstatusChangeForm", function (e) {
         e.preventDefault();
         let isValid = true;
-
+        let $saveBtn = $("#ticket");
         const fields = [
             {
                 id: "#status",
@@ -30,7 +30,10 @@ $(function () {
         });
 
         if (!isValid) return;
-
+  $saveBtn
+      .prop("disabled", true)
+      .removeClass("opacity-50 cursor-not-allowed")
+      .text("Save");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -56,6 +59,10 @@ $(function () {
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
+                  $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             },
             function (err) {
                 hideLoader();
@@ -68,6 +75,10 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                  $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             }
         );
     });

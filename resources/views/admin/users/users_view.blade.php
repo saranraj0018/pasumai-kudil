@@ -152,4 +152,4 @@
 
 
 </x-layouts.app>
-<script src="{{ asset('admin/js/wallet.js') }}"></script>
+<script src="{{ asset('admin/js/wallet.js') }}?v={{ time() }}"></script>

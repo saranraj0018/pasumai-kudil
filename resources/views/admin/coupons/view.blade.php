@@ -94,4 +94,4 @@
     </div>
 </x-layouts.app>
 
-<script src="{{ asset('admin/js/coupon.js') }}"></script>
+<script src="{{ asset('admin/js/coupon.js') }}?v={{ time() }}"></script>

@@ -68,4 +68,4 @@
     </div>
 </x-layouts.app>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places"></script>
-<script src="{{ asset('admin/js/hub.js') }}"></script>
+<script src="{{ asset('admin/js/hub.js') }}?v={{ time() }}"></script>

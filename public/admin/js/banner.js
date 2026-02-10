@@ -35,7 +35,7 @@ $(function () {
     // ==== SAVE BANNER ====
     $(document).on("submit", "#bannerForm", function (e) {
         e.preventDefault();
-
+        let $saveBtn = $("#save_banner");
         // Basic validation
         let fields = [
             { id: "#banner_type", condition: val => val === "", message: "Banner type is required" },
@@ -52,7 +52,8 @@ $(function () {
             if (!result) isValid = false;
         }
         if (!isValid) return;
-         showLoader();
+        $saveBtn.prop("disabled", true).addClass("opacity-50 cursor-not-allowed").text("Saving...");
+        showLoader();
         let formData = new FormData(this);
         sendRequest(
             "/admin/banner/save",
@@ -79,6 +80,10 @@ $(function () {
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
+                  $saveBtn
+                      .prop("disabled", false)
+                      .addClass("opacity-50 cursor-not-allowed")
+                      .text("Saving...");
             },
             function (err) {
                  hideLoader();
@@ -89,6 +94,7 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                $saveBtn.prop("disabled", false).addClass("opacity-50 cursor-not-allowed").text("Saving...");
             }
         );
     });

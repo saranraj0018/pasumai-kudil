@@ -148,7 +148,7 @@
             {{-- Submit Button Center --}}
             @can('add_roles_permissions')
                 <div class="flex justify-center mt-6">
-                    <button type="submit"
+                    <button type="submit" id="save_ability"
                         class="bg-[#ab5f00] hover:bg-[#ab5e00fd] text-white px-6 py-2 rounded font-medium">
                         Save
                     </button>
@@ -157,4 +157,4 @@
         </form>
     </div>
 </x-layouts.app>
-<script src="{{ asset('admin/js/role.js') }}"></script>
+<script src="{{ asset('admin/js/role.js') }}?v={{ time() }}"></script>

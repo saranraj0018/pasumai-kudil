@@ -21,6 +21,11 @@ $(function () {
     $(document).on("submit", "#deliveryTrackForm", function (e) {
         e.preventDefault();
         let formData = new FormData(this);
+          let $saveBtn = $("#save_product");
+            $saveBtn
+                .prop("disabled", true)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .text("Save");
         showLoader();
         sendRequest(
             "/admin/today_delivery/stock-maintain-save",
@@ -47,6 +52,10 @@ $(function () {
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
+                  $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             },
             function (err) {
                 hideLoader();
@@ -59,9 +68,13 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                  $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             }
         );
     });
-    
+
 });
 

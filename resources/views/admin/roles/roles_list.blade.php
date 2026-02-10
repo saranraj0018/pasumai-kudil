@@ -42,5 +42,5 @@
         @include('admin.roles.add_role_model')
     </div>
 </x-layouts.app>
-<script src="{{ asset('admin/js/role.js') }}"></script>
+<script src="{{ asset('admin/js/role.js') }}?v={{ time() }}"></script>
 

@@ -71,12 +71,12 @@
 
             <!-- Submit Button -->
             @can('add_shipping')
-            <div class="flex justify-center pt-5">
-                <button type="submit"
-                    class="bg-[#ab5f00] text-white px-6 py-2.5 rounded-lg hover:bg-[#924f00] transition">
-                    Save
-                </button>
-            </div>
+                <div class="flex justify-center pt-5">
+                    <button type="submit" id="shipping"
+                        class="bg-[#ab5f00] text-white px-6 py-2.5 rounded-lg hover:bg-[#924f00] transition">
+                        Save
+                    </button>
+                </div>
             @endcan
         </form>
     </div>
@@ -122,10 +122,12 @@
         async defer></script>
     <script>
         let googleMapsLoaded = false;
+
         function initGoogleMaps() {
             // Called once Maps library loaded
             googleMapsLoaded = true;
         }
+
         function shippingForm(existing = null) {
             return {
                 form: {
@@ -184,12 +186,14 @@
                         this._reverseGeocode(pos);
                     });
 
-                        // Setup city autocomplete
-                        const autocomplete = new google.maps.places.Autocomplete(this.$refs.cityInput, {
-                            types: ['(cities)'],
-                            componentRestrictions: { country: 'in' },
-                            fields: ['address_components', 'geometry', 'name'],
-                        });
+                    // Setup city autocomplete
+                    const autocomplete = new google.maps.places.Autocomplete(this.$refs.cityInput, {
+                        types: ['(cities)'],
+                        componentRestrictions: {
+                            country: 'in'
+                        },
+                        fields: ['address_components', 'geometry', 'name'],
+                    });
 
 
                     // If we have initial lat/lng but no address loaded, reverse-geocode to fill address
@@ -320,7 +324,9 @@
                     // Prepare form data
                     const formEl = document.getElementById('shippingAddForm');
                     const formData = new FormData(formEl);
+                    let $saveBtn = $("#shipping");
 
+                    $saveBtn.prop("disabled", true).removeClass("opacity-50 cursor-not-allowed").text("Save");
                     // Ensure status is submitted as 1 or 0
                     formData.set('status', this.form.status || 0);
 
@@ -342,6 +348,9 @@
                             } else {
                                 showToast("Something went wrong!", "error", 2000);
                             }
+                            $saveBtn.prop("disabled", false)
+                                .removeClass("opacity-50 cursor-not-allowed")
+                                .text("Save");
                         },
                         (err) => {
                             if (err.errors) {
@@ -353,6 +362,9 @@
                             } else {
                                 showToast(err.message || "Unexpected error", "error", 2200);
                             }
+                            $saveBtn.prop("disabled", false)
+                                .removeClass("opacity-50 cursor-not-allowed")
+                                .text("Save");
                         }
                     );
                 }

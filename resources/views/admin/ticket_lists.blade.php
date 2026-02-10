@@ -71,4 +71,4 @@
         @include('admin.ticket_status_change')
     </div>
 </x-layouts.app>
-<script src="{{ asset('admin/js/ticket.js') }}"></script>
+<script src="{{ asset('admin/js/ticket.js') }}?v={{ time() }}"></script>
