@@ -49,11 +49,11 @@ class OrderController extends Controller
         $status = (int) $request->status;
         $date   = $request->date;
 
-        // Reset timestamps
-        $order->shipped_at   = null;
-        $order->delivered_at = null;
-        $order->cancelled_at = null;
-        $order->refunded_at  = null;
+//        // Reset timestamps
+//        $order->shipped_at   = null;
+//        $order->delivered_at = null;
+//        $order->cancelled_at = null;
+//        $order->refunded_at  = null;
 
         switch ($status) {
             case 3:

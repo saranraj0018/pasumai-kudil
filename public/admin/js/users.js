@@ -58,11 +58,11 @@ $(function () {
                         }
                         // Reset form
                         document.getElementById("productAddForm").reset();
-                        $.get("/admin/users/users", function (html) {
+                        $.get("/admin/users/lists", function (html) {
                             let $tbody = $(html)
-                                .find("#userListTableBody")
+                                .find("#userTableBody")
                                 .html();
-                            $("#userListTableBody").html($tbody);
+                            $("#userTableBody").html($tbody);
                         });
                     }, 500);
                 } else {
@@ -88,6 +88,75 @@ $(function () {
                        .prop("disabled", false)
                        .removeClass("opacity-50 cursor-not-allowed")
                        .text("Save");
+            }
+        );
+    });
+
+    $(document).on("click", ".editUserBtn", function () {
+        $("#edit_user_id").val($(this).data("id"));
+        $("#prefix_id").val($(this).data("prefix_id"));
+        $("#user_name").val($(this).data("name"));
+        $("#user_email").val($(this).data("email"));
+
+        $("#coupon_label").text("Edit Coupon");
+        $("#save_coupon").text("Update");
+
+        let modal = document.getElementById("editUserModal");
+        let alpine = modal.__x.$data;
+        alpine.open = true;
+    });
+
+    // ==== SAVE BANNER ====
+    $(document).on("submit", "#userForm", function (e) {
+        e.preventDefault();
+
+        // Basic validation
+        let fields = [
+            { id: "#prefix_id", condition: val => val === "", message: "User Id is required" },
+            { id: "#user_name", condition: val => val === "", message: "User Name is required" },
+            { id: "#user_name", condition: val => val === "", message: "User Email is required" },
+        ];
+
+        let isValid = true;
+        for (const field of fields) {
+            const result = validateField(field);
+            if (!result) isValid = false;
+        }
+        if (!isValid) return;
+        showLoader();
+        let formData = new FormData(this);
+        sendRequest(
+            "/admin/users/update",
+            formData,
+            "POST",
+            function (res) {
+                hideLoader();
+                if (res.success) {
+                    showToast(res.message, "success", 2000);
+                    setTimeout(() => {
+                        let modalScope = document.querySelector('#editUserModal').__x.$data;
+                        modalScope.open = false; // close modal
+                        document.getElementById("userForm").reset();
+                        $.get("/admin/users/lists", function (html) {
+                            let $tbody = $(html)
+                                .find("#userTableBody")
+                                .html();
+                            $("#userTableBody").html($tbody);
+                        });
+                    }, 500);
+                } else {
+                    showToast(res.message, "error", 2000);
+                }
+            },
+            function (err) {
+                hideLoader();
+                if (err.errors) {
+                    let msg = "";
+                    $.each(err.errors, function (k, v) { msg += v[0] + "<br>"; });
+                    showToast(msg, "error", 2000);
+                } else {
+                    showToast(err.message || "Unexpected error", "error", 2000);
+                }
             }
         );
     });

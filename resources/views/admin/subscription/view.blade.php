@@ -56,7 +56,7 @@
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                 @endcan
-                                @if (isset($sub->get_user) && !empty($sub->get_user))
+                                @if (empty($sub->get_user))
                                     @can('delete_subscription')
                                         <button class="text-red-600 hover:text-red-800 transition btnDeleteSubscription"
                                             data-id="{{ $sub->id }}">

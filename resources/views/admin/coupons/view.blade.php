@@ -67,20 +67,20 @@
                                     data-apply="{{ $coupon->apply_for }}" data-max="{{ $coupon->max_price }}"
                                     data-min="{{ $coupon->min_price }}" data-order="{{ $coupon->order_count }}"
                                     data-expires="{{ $coupon->expires_at ? \Carbon\Carbon::parse($coupon->expires_at)->format('Y-m-d') : '' }}"
+                                    data-started="{{ $coupon->started_at ? \Carbon\Carbon::parse($coupon->started_at)->format('Y-m-d') : '' }}"
                                     data-status="{{ $coupon->status }}">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 @endcan
 
                                 <!-- Delete -->
-                                @if ($coupon->get_order->isEmpty())
+
                                   @can('delete_coupons')
                                     <button class="text-red-600 hover:text-red-800 transition btnDeleteCoupon"
                                         data-id="{{ $coupon->id }}">
                                         <i class="fa-solid fa-delete-left"></i>
                                     </button>
                                     @endcan
-                                @endif
                             </td>
                         </tr>
                     @endforeach

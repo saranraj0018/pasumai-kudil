@@ -15,6 +15,7 @@
                 <thead>
                     <tr class="bg-[#ab5f00] text-white text-sm uppercase tracking-wider">
                         <th class="px-3 py-2">S.No</th>
+                        <th class="px-3 py-2">User Id</th>
                         <th class="px-3 py-2">Name</th>
                         <th class="px-3 py-2">Email</th>
                         <th class="px-3 py-2">Mobile Number</th>
@@ -27,12 +28,25 @@
                         @foreach ($getuser as $user)
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
+                                <td class="px-4 py-3">{{ $user->prefix }}</td>
                                 <td class="px-4 py-3">{{ $user->name }}</td>
                                 <td class="px-4 py-3">{{ $user->email }}</td>
                                 <td class="px-4 py-3">{{ $user->mobile_number }}</td>
                                 <td class="px-4 py-3">{{ $user->get_wallet->balance ?? 0 }}</td>
                                 <td class="px-4 py-3 flex justify-center gap-4">
                                     <!-- View -->
+
+                                    <!-- Edit -->
+                                    @can('edit_user_list')
+                                        <button class="text-blue-600 hover:text-blue-800 transition editUserBtn"
+                                                data-id="{{ $user->id }}"
+                                                data-prefix_id="{{ $user->prefix }}"
+                                                data-name="{{ $user->name }}"
+                                                data-email="{{ $user->email }}">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                    @endcan
+
                                     @can('view_user_list')
                                     <a href="{{ route('user_view.users', ['id' => $user->id]) }}"
                                         class="text-green-600 hover:text-green-800 viewuser"

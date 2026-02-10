@@ -15,7 +15,7 @@ use App\Models\DeliveryPartner;
 use App\Models\UserSubscription;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Jobs\GenerateDailyDeliveries;
 use Illuminate\Support\Facades\Validator;
@@ -58,7 +58,7 @@ class UserlistController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         $this->data['subscription_plan'] = Subscription::get();
-        $this->data['search'] = $search;
+         $this->data['search'] = $search;
 
         return view('admin.users.users_list')->with($this->data);
     }
@@ -79,23 +79,25 @@ class UserlistController extends Controller
         $this->data['cancelled'] = $cancelled;
         // Convert to array of ranges {start_date,end_date}
         // if you have single-day cancellations only, start=end
-        $this->data['cancelledRanges']  = array_map(function ($d) {
+        $this->data['cancelledRanges']  = array_map(function($d) {
             return ['start_date' => $d, 'end_date' => $d];
         }, array_values(array_unique($cancelled)));
         $latestinactivesubscription = UserSubscription::with('get_subscription')->where('user_id', $request->id)
             ->where('status', 2)
             ->pluck('id');
-        $this->data['previouswalletamount'] = Wallet::where('user_id', $request->id)
-            ->whereIn('subscription_id', $latestinactivesubscription)
+        $this->data['previouswalletamount'] = Wallet::where('user_id' , $request->id)
+            ->whereIn('subscription_id' ,$latestinactivesubscription)
             ->pluck('balance')
             ->sum();
         $this->data['delivery'] = $this->data['getuserSubscription']?->id
             ? DailyDelivery::with('get_delivery_partner')
             ->where('user_id', $request->id)
-            ->where('subscription_id', $this->data['getuserSubscription']->id)
-            ->paginate(10)   // <<< add pagination (10 per page)
+            ->where('subscription_id', $this->data['getuserSubscription']->id)->get()
             : collect();
         $this->data['delivery_boy'] = DeliveryPartner::get();
+        $this->data['user_current_blalnce'] = Wallet::with('user_subscription')->whereHas('user_subscription', function ($query) {
+            $query->where('status', 1);
+        })->first();
         return view('admin.users.users_view')->with($this->data);
     }
 
@@ -103,7 +105,7 @@ class UserlistController extends Controller
     {
         $this->data['transactions'] = Transaction::with('get_user')->where('user_id', $request->id)
             ->paginate(15)
-            ->appends($request->query());
+          ->appends($request->query());
 
         return view('admin.users.user_transaction_history')->with($this->data);
     }
@@ -185,6 +187,7 @@ class UserlistController extends Controller
                 'message' => 'Wallet updated successfully!',
                 'balance' => $newBalance,
             ], 200);
+
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -198,15 +201,15 @@ class UserlistController extends Controller
     public function saveUser(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'           => 'required|string|max:255',
-            'mobile_number'  => 'required|regex:/^[0-9]{10}$/|unique:users,mobile_number', // 10-digit validation
-            'email'          => 'nullable|unique:users,email',
-            'plan_id'        => 'required|integer|exists:subscriptions,id',
-            'custom_days'    => 'nullable|integer|min:1',
-            'image'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'state'        => 'nullable|string|max:255',
-            'pincode'      => 'nullable|string|max:10',
-        ]);
+             'name'           => 'required|string|max:255',
+             'mobile_number'  => 'required|regex:/^[0-9]{10}$/|unique:users,mobile_number', // 10-digit validation
+             'email'          => 'nullable|unique:users,email',
+             'plan_id'        => 'required|integer|exists:subscriptions,id',
+             'custom_days'    => 'nullable|integer|min:1',
+             'image'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+             'state'        => 'nullable|string|max:255',
+             'pincode'      => 'nullable|string|max:10',
+         ]);
 
         if ($validator->fails()) {
             return response()->json([
@@ -238,12 +241,9 @@ class UserlistController extends Controller
 
             if ($request->filled('custom_days')) {
                 $amount =  round((float)$subscription->plan_amount, 2);
-            } else {
-                $totalDays = $start_date->diffInDays($end_date) + 1;
-                $totalDays = $totalDays > 0 ? $totalDays : 1;
+            }else{
                 $totalAmount = (float)$subscription->plan_amount;
-                $perDay = $totalAmount / $totalDays;
-                $amount = round($perDay, 2);
+                $amount = $totalAmount;
             }
 
             $validdaycount = (int) ($subscription->plan_duration ?? 0);
@@ -320,6 +320,29 @@ class UserlistController extends Controller
                     $chunk->toArray()
                 );
             }
+            if (!empty($subscription->delivery_days)) {
+                $plan_amount = $subscription->plan_amount ?? 0;
+                $days = $subscription->plan_duration;
+                $total_amounts = $plan_amount * $days;
+            } else {
+                $days = $startDate->diffInDays($endDate) + 1;
+                $plan_amount = $subscription->plan_amount ?? 0;
+                $total_amounts = $plan_amount * $days;
+            }
+
+            $wallet = new Wallet();
+            $wallet->user_id = $user->id;
+            $wallet->subscription_id = $user_subscription->id;
+            $wallet->balance  = $total_amounts;
+            $wallet->save();
+
+            $transaction = new Transaction();
+            $transaction->wallet_id = $wallet->id;
+            $transaction->user_id = $user->id;
+            $transaction->type = 'credit';
+            $transaction->amount  = $total_amounts;
+            $transaction->balance_amount  = $total_amounts;
+            $transaction->save();
 
             return response()->json([
                 'success' => true,
@@ -335,6 +358,56 @@ class UserlistController extends Controller
             ], 500);
         }
     }
+
+
+    public function updateUser(Request $request)
+    {
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'edit_user_id' => 'required|exists:users,id',
+                'prefix_id' => 'required|unique:users,prefix,' . $request->edit_user_id . ',id',
+                'user_name' => 'required|string|max:255',
+                'user_email' => 'nullable|email|unique:users,email,' . $request->edit_user_id . ',id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors(),
+                    'message' => $validator->errors()->first(),
+                ], 422);
+            }
+
+            $user = User::findOrFail($request->edit_user_id);
+
+            $user->update([
+                'name'      => $request->user_name,
+                'email'     => $request->user_email,
+                'prefix'    => $request->prefix_id,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully!',
+            ]);
+
+        } catch (\Throwable $e) {
+
+            // Log actual error (VERY important for debugging)
+            Log::error('User update failed', [
+                'error' => $e->getMessage(),
+                'line'  => $e->getLine(),
+                'file'  => $e->getFile(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong. Please try again.',
+            ], 500);
+        }
+    }
+
 
     public function getCustomSubscription(Request $request)
     {
@@ -394,7 +467,7 @@ class UserlistController extends Controller
     public function cancelSubscription(Request $request)
     {
         try {
-            $exist_check = UserSubscription::where(['user_id' => $request['user_id'], 'status' => 1])->first();
+            $exist_check = UserSubscription::where(['user_id' => $request['user_id'] , 'status' => 1])->first();
             if (!$exist_check) {
                 return response()->json([
                     'success' => false,
@@ -496,10 +569,10 @@ class UserlistController extends Controller
             $extendDays = (int) ceil($totalCancelQty / $subQty);
             $newEnd     = $oldEnd->copy()->addDays($extendDays);
 
-            DailyDelivery::where('user_id', $userId)
+                 DailyDelivery::where('user_id', $userId)
                 ->where('subscription_id', $subscription->id)
                 ->whereIn('delivery_date', $changeDays)
-                ->update(['delivery_status' => 'cancelled', 'modify' => 2]);
+                ->update(['delivery_status' => 'cancelled','modify' => 2]);
             $cancelledDatesText = implode(', ', $changeDays);
 
             // SEND NOTIFICATION TO USER
@@ -527,7 +600,7 @@ class UserlistController extends Controller
             $qtyPending = $totalCancelQty;
             $deliveryId = $orders->first()->delivery_id ?? null;
 
-            if ($newEnd <= $validDate) {
+            if($newEnd <= $validDate){
                 for ($i = 1; $i <= $extendDays; $i++) {
                     $qtyToday = min($subQty, $qtyPending);
                     $qtyPending -= $qtyToday;
@@ -555,12 +628,13 @@ class UserlistController extends Controller
                     'extended_days' => $extendDays,
                     'new_end_date'  => $newEnd->format('Y-m-d'),
                 ]);
-            } else {
+            }else{
                 return response()->json([
                     'success'        => false,
                     'message'       => '"Order Cancelled Successfully, but the valid date is less than or equal to the current date, so it was not extended."',
                 ]);
             }
+
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -712,7 +786,7 @@ class UserlistController extends Controller
             $notification->role = 2;
             $notification->save();
 
-            $this->firebase->sendNotification(
+         $this->firebase->sendNotification(
                 $user->fcm_token,
                 "Subscription Cancellation Revoked",
                 "Your cancelled delivery for {$revokeDate->format('Y-m-d')} has been restored."
@@ -723,4 +797,5 @@ class UserlistController extends Controller
             'message' => 'Cancellation revoked successfully!'
         ]);
     }
+
 }

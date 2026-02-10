@@ -23,6 +23,7 @@ $(function () {
         $("#max_price").val($(this).data("max"));
         $("#min_price").val($(this).data("min"));
         $("#order_count").val($(this).data("order"));
+        $("#started_at").val($(this).data("started"));
         $("#expires_at").val($(this).data("expires"));
         $("#status").val($(this).data("status"));
 
@@ -80,21 +81,19 @@ $(function () {
         });
     }
 
-        if (min_price > 0 && max_price > 0) {
-        fields.push(
-            {
-                id: "#min_price",
-                condition: () =>
-                    !isNaN(min_price) && !isNaN(max_price) && min_price > max_price,
-                message: "Min price cannot be greater than max price",
-            },
-            {
-                id: "#max_price",
-                condition: () =>
-                    !isNaN(min_price) && !isNaN(max_price) && max_price < min_price,
-                message: "Max price cannot be less than min price",
-            }
-        );
+        if (!isNaN(min_price) && !isNaN(max_price) && min_price > 0 && max_price > 0) {
+            fields.push(
+                {
+                    id: "#min_price",
+                    condition: () => min_price < max_price,
+                    message: "Min price cannot be greater than max price",
+                },
+                {
+                    id: "#max_price",
+                    condition: () => max_price > min_price,
+                    message: "Max price cannot be less than min price",
+                }
+            );
         }
 
         let isValid = true;

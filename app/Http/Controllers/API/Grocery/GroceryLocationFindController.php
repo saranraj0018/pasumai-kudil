@@ -59,7 +59,7 @@ class GroceryLocationFindController extends Controller
 
         $isInside = $this->isUserInsideGroceryHub($user);
 
-        Cache::put($cacheKey, $isInside, now()->addMinutes(10));
+        Cache::put($cacheKey, $isInside, now()->addDay());
 
         return response()->json([
             'status' => 200,

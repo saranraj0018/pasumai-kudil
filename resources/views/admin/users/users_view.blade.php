@@ -69,7 +69,7 @@
                         </h3>
                         <p class="text-gray-700 mt-1 font-semibold">
                             Current Wallet Balance: <span class="font-semibold text-green-600">₹
-                                {{ $user->get_wallet->balance ?? 0 }}</span>
+                                {{ $user_current_blalnce->balance ?? 0 }}</span>
                         </p>
                         <p class="font-semibold text-red-700 mt-1">
                             Previous Wallet Balance: <span class="font-semibold text-red-700">₹
@@ -118,12 +118,13 @@
                 </thead>
                 <tbody id="deliveryTableBody" class="divide-y divide-gray-200 text-center">
                     @if (!empty($delivery))
+
                         @foreach ($delivery as $list)
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-2 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
                                 <td class="px-2 py-3">{{ $list->get_delivery_partner?->name ?? '' }}</td>
                                 <td class="px-2 py-3">{{ $list->amount ?? '0' }}</td>
-                                <td class="px-2 py-3">{{ showDate($list->delivery_date) ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $list->delivery_date ? showDate($list->delivery_date) : '' }}</td>
                                 <td class="px-2 py-3">{{ $list->delivery_status }}</td>
                                 <td class="px-2 py-3">{{ $list->quantity ?? '0' }}</td>
                                 <td class="px-2 py-3">{{ $list->pack ?? '0' }}</td>

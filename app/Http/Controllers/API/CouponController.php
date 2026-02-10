@@ -28,10 +28,16 @@ class CouponController extends Controller
         }
         try {
             $coupons = Coupon::where('status', 1)
-                ->whereNull('expires_at')
-                ->orWhereDate('expires_at', '>', now())
+                ->where(function ($q) {
+                    $q->whereNull('started_at')
+                        ->orWhere('started_at', '<=', now());
+                })
+                ->where(function ($q) {
+                    $q->whereNull('expires_at')
+                        ->orWhere('expires_at', '>=', now());
+                })
                 ->get()
-                ->map(function ($coupon) use ($request) {
+            ->map(function ($coupon) use ($request) {
                     $coupon_amount = CartController::getCouponDetails($coupon, $request['total_amount']) ?? 0;
 
                     return [

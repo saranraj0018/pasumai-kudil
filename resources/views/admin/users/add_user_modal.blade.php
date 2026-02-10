@@ -18,8 +18,6 @@
         mobile_number: '',
         city: '',
         address: '',
-        state: '',
-            pincode: '',
         plan_id: ''
     },
     closeModal() {
@@ -31,8 +29,6 @@
             mobile_number: '',
             city: '',
             address: '',
-            state: '',
-            pincode: '',
             plan_id: ''
         };
         this.previewUrl = null;
@@ -119,7 +115,8 @@
                                 <x-input type="text" x-model="form.city" name="city" x-ref="cityInput"
                                     id="cityInput" autocomplete="off"
                                     placeholder="Type address, area, shop name, company..."
-                                    class="w-full rounded-lg border border-gray-300 p-2" required />
+                                    class="w-full rounded-lg border border-gray-300 p-2"
+                                    required />
                                 <p x-show="errors.city" x-text="errors.city" class="text-red-600 text-sm mt-1"></p>
                             </div>
 
@@ -145,8 +142,11 @@
     </template>
 </div>
 
-<div id="editUserModal" x-data="{ open: false }" x-show="open"
-    class="fixed inset-0 flex items-center justify-center z-50" style="display:none">
+<div id="editUserModal"
+     x-data="{ open: false }"
+     x-show="open"
+     class="fixed inset-0 flex items-center justify-center z-50"
+     style="display:none">
 
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/40" @click="open=false"></div>
@@ -163,29 +163,28 @@
             <div class="flex items-center gap-3">
                 <div class="w-full">
                     <label>User Id<span class="text-red-500">*</span></label>
-                    <input type="text" name="prefix_id" id="prefix_id"
-                        class="form-input w-full border rounded-lg p-2">
+                    <input type="text" name="prefix_id" id="prefix_id" class="form-input w-full border rounded-lg p-2">
                 </div>
                 <div class="w-full">
                     <div class="w-full">
                         <label>User Name<span class="text-red-500">*</span></label>
-                        <input type="text" name="user_name" id="user_name"
-                            class="form-input w-full border rounded-lg p-2">
+                        <input type="text" name="user_name" id="user_name" class="form-input w-full border rounded-lg p-2">
                     </div>
                 </div>
                 <div class="w-full">
                     <label>User Email<span class="text-red-500">*</span></label>
-                    <input type="email" name="user_email" id="user_email"
-                        class="form-input w-full border rounded-lg p-2">
+                    <input type="email" name="user_email" id="user_email" class="form-input w-full border rounded-lg p-2">
                 </div>
             </div>
 
             <!-- Buttons -->
             <div class="flex justify-end gap-3 pt-4">
                 <button type="button" @click="open=false" class="px-5 py-2 border rounded-lg">Cancel</button>
-                <button type="submit" id="save_edit_user" class="bg-[#ab5f00] text-white px-5 py-2 rounded-lg">
+                <button type="submit" id="save_edit_user"
+                        class="bg-[#ab5f00] text-white px-5 py-2 rounded-lg">
                     Save
                 </button>
+
             </div>
         </form>
     </div>
@@ -242,104 +241,98 @@
         }, 200);
     }
 
-function setupMapAndAutocomplete() {
+    function setupMapAndAutocomplete() {
+        const mapEl = document.getElementById('map');
+        const input = document.getElementById('cityInput');
+        const addressField = document.querySelector('textarea[name=address]');
+        const defaultCenter = {
+            lat: 11.1271,
+            lng: 78.6569
+        }; // Tamil Nadu center
 
-    const modal = document.getElementById('userCreateModal');
-
-    // ✅ FIX for Alpine v3
-    const alpine = modal.__x.$data;
-
-    const mapEl = document.getElementById('map');
-    const input = document.getElementById('cityInput');
-
-    const defaultCenter = {
-        lat: 11.1271,
-        lng: 78.6569
-    };
-
-    const map = new google.maps.Map(mapEl, {
-        center: defaultCenter,
-        zoom: 6
-    });
-
-    const marker = new google.maps.Marker({
-        position: defaultCenter,
-        map: map,
-        draggable: true
-    });
-
-    const geocoder = new google.maps.Geocoder();
-
-    const autocomplete = new google.maps.places.Autocomplete(input, {
-        componentRestrictions: { country: 'in' },
-        fields: ['geometry', 'formatted_address', 'address_components'],
-    });
-
-    autocomplete.addListener('place_changed', () => {
-
-        const place = autocomplete.getPlace();
-
-        if (!place.geometry) return;
-
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-
-        marker.setPosition(place.geometry.location);
-
-        map.panTo(place.geometry.location);
-        map.setZoom(15);
-
-        const address = place.formatted_address;
-
-        // ✅ update Alpine state
-        alpine.latitude = lat;
-        alpine.longitude = lng;
-
-        alpine.form.city = address;
-        alpine.form.address = address;
-
-        let state = '';
-        let pincode = '';
-
-        place.address_components.forEach(comp => {
-
-            if (comp.types.includes("administrative_area_level_1"))
-                state = comp.long_name;
-
-            if (comp.types.includes("postal_code"))
-                pincode = comp.long_name;
-
+        const map = new google.maps.Map(mapEl, {
+            center: defaultCenter,
+            zoom: 6
         });
 
-        alpine.form.state = state;
-        alpine.form.pincode = pincode;
-
-    });
-
-    marker.addListener('dragend', () => {
-
-        const pos = marker.getPosition();
-
-        alpine.latitude = pos.lat();
-        alpine.longitude = pos.lng();
-
-        geocoder.geocode({ location: pos }, (results, status) => {
-
-            if (status === 'OK' && results.length) {
-
-                const address = results[0].formatted_address;
-
-                input.value = address;
-
-                alpine.form.city = address;
-                alpine.form.address = address;
-
-            }
-
+        const marker = new google.maps.Marker({
+            position: defaultCenter,
+            map: map,
+            draggable: true
         });
 
-    });
+        const geocoder = new google.maps.Geocoder();
 
-}
+        const autocomplete = new google.maps.places.Autocomplete(input, {
+            componentRestrictions: {
+                country: 'in'
+            },
+            fields: ['geometry', 'formatted_address', 'address_components', 'name'],
+        });
 
+        // When user selects an address
+        autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) return;
+
+            const loc = place.geometry.location;
+            const lat = loc.lat();
+            const lng = loc.lng();
+            const address = place.formatted_address || input.value;
+
+            marker.setPosition(loc);
+            map.panTo(loc);
+            map.setZoom(15);
+
+            document.querySelector('[name=latitude]').value = lat;
+            document.querySelector('[name=longitude]').value = lng;
+            addressField.value = address;
+
+            // 🔍 Extract State & Pincode
+            let state = '';
+            let pincode = '';
+
+            place.address_components.forEach(comp => {
+                if (comp.types.includes("administrative_area_level_1")) {
+                    state = comp.long_name; // Tamil Nadu
+                }
+                if (comp.types.includes("postal_code")) {
+                    pincode = comp.long_name; // 600001
+                }
+            });
+
+            // Save values
+            document.querySelector('[name=state]').value = state;
+            document.querySelector('[name=pincode]').value = pincode;
+        });
+
+        // When marker is dragged
+        marker.addListener('dragend', () => {
+            const pos = marker.getPosition();
+            document.querySelector('[name=latitude]').value = pos.lat();
+            document.querySelector('[name=longitude]').value = pos.lng();
+
+            geocoder.geocode({
+                location: pos
+            }, (results, status) => {
+                if (status === 'OK' && results.length) {
+                    const address = results[0].formatted_address;
+                    input.value = address;
+                    addressField.value = address; // ✅ Save dragged address
+                }
+            });
+        });
+
+        // 🈹 Optional: Tamil transliteration
+        try {
+            const control = new google.elements.transliteration.TransliterationControl({
+                sourceLanguage: 'en',
+                destinationLanguage: ['ta'],
+                transliterationEnabled: true,
+            });
+            control.makeTransliteratable(['cityInput']);
+        } catch (err) {
+            console.warn('Transliteration unavailable');
+        }
+    }
 </script>

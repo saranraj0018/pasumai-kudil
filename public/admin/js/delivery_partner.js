@@ -83,7 +83,7 @@ $(function () {
          let modal = document.getElementById("deliveryPartnerCreateModal");
          let alpine = modal.__x.$data;
          alpine.open = true;
-         alpine.modalTitle = "Edit Delivery Partner";
+         alpine.modalTitle = "Add Delivery Partner";
          alpine.buttonText = "Save";
      });
 

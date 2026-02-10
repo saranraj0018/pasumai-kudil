@@ -170,9 +170,17 @@ class CartController extends Controller
         $coupon_status = true;
         if (!empty($coupon_id)) {
             $key = 'coupon_id_' . Auth::id();
-            $coupon = Coupon::where('status', 1)->where(function ($query) {
-                $query->whereNull('expires_at') // Include if expires_at is NULL
-                    ->orWhereDate('expires_at', '>', now()); // Include if expires_at is in the future
+            $coupon = Coupon::where('status', 1)
+                ->where(function ($query) {
+                    // started_at is optional
+                    $query->whereNull('started_at')
+                        ->orWhere('started_at', '<=', now());
+                })
+                ->where(function ($query) {
+                    // expires_at is optional
+                    $query->whereNull('expires_at')
+                        ->orWhere('expires_at', '>=', now());
+                // Include if expires_at is in the future
             })->find($coupon_id);
             $user_coupon = Setting::where('data_key', 'temp_coupon_' . Auth::id())->where('expires_at', '>=', now())
                 ->where('data_value', $coupon->id)->first();
@@ -220,7 +228,7 @@ class CartController extends Controller
             'status' => 200,
             "productData" => $productData,
             "billSummary" => $billSummary,
-            "couponDetail" =>  $coupon,
+            "couponDetail" =>  !empty($coupon_discount) ? $coupon : null,
             "addressDetails" => $address,
             "coupon_status" => $coupon_status,
             "inside_grocery_zone" => (bool) $isInside

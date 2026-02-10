@@ -20,7 +20,7 @@ class DeliveryPartnerController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        $this->data['hub'] = Hub::get();
+        $this->data['hub'] = Hub::where('status',1)->get();
         $this->data['search'] = $search;
         return view('admin.delivery_partner.index')->with($this->data);
     }

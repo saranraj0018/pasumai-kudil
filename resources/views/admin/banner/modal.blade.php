@@ -15,7 +15,6 @@
                     <select id="banner_type" name="type" x-model="form.type"
                         class="form-input w-full border p-2 rounded-lg">
                         <option value="GroceryMain">Grocery Main</option>
-                        <option value="GrocerySub">Grocery Sub</option>
                         <option value="MilkMain">Milk Main</option>
                         <option value="MilkSub">Milk Sub</option>
                     </select>
