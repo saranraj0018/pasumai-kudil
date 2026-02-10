@@ -75,7 +75,7 @@ class ProductsController extends Controller
             if (!empty($request['variants']) && is_array($request['variants'])) {
                 foreach ($request['variants'] as $index => $variantData) {
                     if (empty($variantData)) {
-                        Log::warning("Variant #{$index} is empty");
+                        Log::info("Variant #{$index} is empty",);
                         continue;
                     }
                     if (!empty($variantData['id'])) {

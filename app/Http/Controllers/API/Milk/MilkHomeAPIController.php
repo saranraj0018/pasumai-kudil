@@ -72,13 +72,14 @@ class MilkHomeAPIController extends Controller
                     'status' => 200,
                     'message' => 'No active subscription found.',
                     'response' => [
-                        'user_image' => $user->image_url ?? null,
+                        'user_image' => $user->image ? url('storage/' . $user->image) : 'https://example.com/default_user.jpg',
                         'user_name' => $user->name ?? '',
                         'plan_status' => 'inactive',
                         'previous_wallet_balance' => (string) $previouswalletamount,
                         'wallet_balance' => (string) $walletBalance,
                         'banner' => $banner,
                         'plan_details' => (object) [],
+                        'milk_config_time' => '',
                         'customer_id' =>  $user->prefix ?? '',
                     ]
                 ]);
@@ -297,16 +298,7 @@ class MilkHomeAPIController extends Controller
                 ? $start_date->copy()->addMonthsNoOverflow(2)
                 : $start_date->copy()->addDays($dayCount)->subDay();
 
-            if ($request->filled('custom_days')) {
-                $amount =  round((float)$subscription->plan_amount, 2);
-            } else {
-                $totalDays = $start_date->diffInDays($end_date) + 1;
-                $totalDays = $totalDays > 0 ? $totalDays : 1;
-                $totalAmount = (float)$subscription->plan_amount;
-                $perDay = $totalAmount / $totalDays;
-                $amount = round($perDay, 2);
-            }
-
+                $amount = round((float)$subscription->plan_amount, 2);
             $valid_date = $end_date->copy()->addDays((int)$subscription->plan_duration);
             // --- Auth User ---
             $user = $request->user();
@@ -447,6 +439,7 @@ class MilkHomeAPIController extends Controller
                 'account_number'      => $validated['account_details']['account_number'],
                 'ifsc_code'           => $validated['account_details']['ifsc_code'],
                 'branch'              => $validated['account_details']['branch'],
+                'upi'               => $validated['account_details']['upi_id'] ?? null,
             ]);
             $get_user = User::where('id', $request['user_id'])->first();
 

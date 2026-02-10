@@ -72,19 +72,7 @@ class GenerateDailyDeliveries implements ShouldQueue
 
     private function calculatePerDayAmount($plan, $sub)
     {
-        if (strtolower($plan->plan_type) === 'customize') {
-            return round((float)$plan->plan_amount, 2);
-        }
-
-        $startDate = Carbon::parse($sub->start_date);
-        $endDate   = Carbon::parse($sub->end_date);
-        $totalDays = $startDate->diffInDays($endDate) + 1;
-        $totalDays = $totalDays > 0 ? $totalDays : 1;
-
-        $totalAmount = (float)$plan->plan_amount;
-        $perDay = $totalAmount / $totalDays;
-
-        return round($perDay, 2);
+        return round((float)$plan->plan_amount, 2);
     }
 
     private function getMappedDeliveryPartner($user)

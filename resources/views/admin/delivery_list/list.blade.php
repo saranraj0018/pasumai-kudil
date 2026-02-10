@@ -101,13 +101,13 @@
                             <td class="px-4 py-3">{{ $list->get_user->name ?? '' }}</td>
                             <td class="px-4 py-3">
                                 @php
-                                    $orders = $list->get_order
+                                    $orders = !empty($list->get_order) ? $list->get_order
                                         ->where('user_id', $list->user_id)
                                         ->where('shipped_at', $list->delivery_date)
-                                        ->get();
+                                        ->get() : [];
                                 @endphp
 
-                                @if ($orders->count())
+                                @if (!empty($orders))
                                     <div class="flex flex-wrap gap-2">
                                         @foreach ($orders as $order)
                                         @php

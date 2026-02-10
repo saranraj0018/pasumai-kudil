@@ -15,7 +15,7 @@ use App\Models\DeliveryPartner;
 use App\Models\UserSubscription;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Jobs\GenerateDailyDeliveries;
 use Illuminate\Support\Facades\Validator;
@@ -92,10 +92,12 @@ class UserlistController extends Controller
         $this->data['delivery'] = $this->data['getuserSubscription']?->id
             ? DailyDelivery::with('get_delivery_partner')
             ->where('user_id', $request->id)
-            ->where('subscription_id', $this->data['getuserSubscription']->id)
-            ->paginate(10)   // <<< add pagination (10 per page)
+            ->where('subscription_id', $this->data['getuserSubscription']->id)->get()
             : collect();
         $this->data['delivery_boy'] = DeliveryPartner::get();
+        $this->data['user_current_blalnce'] = Wallet::with('user_subscription')->whereHas('user_subscription', function ($query) {
+            $query->where('status', 1);
+        })->first();
         return view('admin.users.users_view')->with($this->data);
     }
 
@@ -240,11 +242,8 @@ class UserlistController extends Controller
             if ($request->filled('custom_days')) {
                 $amount =  round((float)$subscription->plan_amount, 2);
             }else{
-                $totalDays = $start_date->diffInDays($end_date) + 1;
-                $totalDays = $totalDays > 0 ? $totalDays : 1;
                 $totalAmount = (float)$subscription->plan_amount;
-                $perDay = $totalAmount / $totalDays;
-                $amount = round($perDay, 2);
+                $amount = $totalAmount;
             }
 
             $validdaycount = (int) ($subscription->plan_duration ?? 0);
@@ -321,6 +320,29 @@ class UserlistController extends Controller
                     $chunk->toArray()
                 );
             }
+            if (!empty($subscription->delivery_days)) {
+                $plan_amount = $subscription->plan_amount ?? 0;
+                $days = $subscription->plan_duration;
+                $total_amounts = $plan_amount * $days;
+            } else {
+                $days = $startDate->diffInDays($endDate) + 1;
+                $plan_amount = $subscription->plan_amount ?? 0;
+                $total_amounts = $plan_amount * $days;
+            }
+
+            $wallet = new Wallet();
+            $wallet->user_id = $user->id;
+            $wallet->subscription_id = $user_subscription->id;
+            $wallet->balance  = $total_amounts;
+            $wallet->save();
+
+            $transaction = new Transaction();
+            $transaction->wallet_id = $wallet->id;
+            $transaction->user_id = $user->id;
+            $transaction->type = 'credit';
+            $transaction->amount  = $total_amounts;
+            $transaction->balance_amount  = $total_amounts;
+            $transaction->save();
 
             return response()->json([
                 'success' => true,
@@ -336,6 +358,56 @@ class UserlistController extends Controller
             ], 500);
         }
     }
+
+
+    public function updateUser(Request $request)
+    {
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'edit_user_id' => 'required|exists:users,id',
+                'prefix_id' => 'required|unique:users,prefix,' . $request->edit_user_id . ',id',
+                'user_name' => 'required|string|max:255',
+                'user_email' => 'nullable|email|unique:users,email,' . $request->edit_user_id . ',id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors(),
+                    'message' => $validator->errors()->first(),
+                ], 422);
+            }
+
+            $user = User::findOrFail($request->edit_user_id);
+
+            $user->update([
+                'name'      => $request->user_name,
+                'email'     => $request->user_email,
+                'prefix'    => $request->prefix_id,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully!',
+            ]);
+
+        } catch (\Throwable $e) {
+
+            // Log actual error (VERY important for debugging)
+            Log::error('User update failed', [
+                'error' => $e->getMessage(),
+                'line'  => $e->getLine(),
+                'file'  => $e->getFile(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong. Please try again.',
+            ], 500);
+        }
+    }
+
 
     public function getCustomSubscription(Request $request)
     {

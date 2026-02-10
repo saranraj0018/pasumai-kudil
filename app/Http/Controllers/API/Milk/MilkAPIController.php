@@ -105,7 +105,7 @@ class MilkAPIController extends Controller
                 'quantity',
                 'pack',
                 'delivery_days',
-            )->get();
+            )->where('is_show_mobile',1)->get();
 
             // Format plan details
             $planDetails = $plans->map(function ($plan) {

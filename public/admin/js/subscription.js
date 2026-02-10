@@ -33,6 +33,10 @@ $(document).ready(function () {
         let isValid = true;
         let planType = $("#plan_type").val();
         let planName = $("#plan_name").val();
+        let planPack = $("#pack").val();
+        let quantity = $("#quantity").val();
+        let delivery = $("#delivery_days_list").text().trim();
+
 
         if (planType === "") {
             showFieldError("#plan_type", "Plan type is required");
@@ -72,6 +76,21 @@ $(document).ready(function () {
 
         if (planName === "") {
             showFieldError("#plan_name", "Plan name is required");
+            isValid = false;
+        }
+
+        if (planPack === "") {
+            showFieldError("#pack", "Plan Pack is required");
+            isValid = false;
+        }
+
+        if (quantity === "") {
+            showFieldError("#quantity", "Quantity is required");
+            isValid = false;
+        }
+
+        if (planType === "Customize" && delivery === "") {
+            showFieldError("#delivery_days_input", "Delivery days is required");
             isValid = false;
         }
 
@@ -263,9 +282,9 @@ $(document).ready(function () {
     function updateCustomizeAmountList() {
         if ($("#plan_type").val() !== "Customize") return;
         let perDayAmount = parseFloat($("#plan_amount").val()) || 0;
-        let totalAmount = 0;
         $("#customize_amount_list").empty();
         deliveryDaysWithAmount = [];
+        let totalAmount = 0;
         if (!deliveryDayList.length) return;
         let uniqueDays = [...new Set(deliveryDayList)];
         uniqueDays.forEach(function (days, index) {
@@ -275,22 +294,24 @@ $(document).ready(function () {
                 days: days,
                 amount: dayAmount,
             });
-            // Create display span
-            let $customizeAmountSpan = $(`
+            let $customizeAmountSpan;
+            if (typeof days === 'object' && days !== null) {
+                const total = days.days * perDayAmount;
+                $customizeAmountSpan = $(`
+            <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
+                ${days.days} × ${perDayAmount} = ₹${total}
+            </span>
+        `);
+            } else {
+                $customizeAmountSpan = $(`
             <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
                 ${days} × ${perDayAmount} = ₹${dayAmount}
             </span>
         `);
+            }
+
             $("#customize_amount_list").append($customizeAmountSpan);
         });
-
-        $("#customize_amount_list").append(`
-        <div class="mt-2 font-semibold text-blue-600">
-            Total Plan Amount: ₹${totalAmount}
-        </div>
-    `);
-
-        console.log("deliveryDaysWithAmount:", deliveryDaysWithAmount);
     }
 
     // When per-day amount changes

@@ -110,7 +110,7 @@ class DeliveryListController extends Controller
         }
 
         $request->validate($rules);
- 
+
         try {
             $delivery = DailyDelivery::findOrFail($request->delivery_id);
             $wallet   = Wallet::where(['user_id' => $delivery->user_id,'subscription_id' => $delivery->subscription_id])->first();

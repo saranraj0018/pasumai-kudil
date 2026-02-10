@@ -46,9 +46,9 @@ private function getOrderStatusText($status)
         return match ((int) $status) {
             1 => 'Ordered',
             2 => 'On Hold',
-            3 => 'Shipped',
-            4 => 'Delivered',
-            5 => 'Cancelled',
+            3 => 'Order Shipped',
+            4 => 'Order Delivered',
+            5 => 'Order Cancelled',
             default => 'Unknown',
         };
     }
@@ -99,8 +99,7 @@ private function getOrderStatusText($status)
             'data'   => [
                 'orderId'        => $order->order_id,
                 'orderDate'      => Carbon::parse($order->created_at)->format('Y-m-d'),
-                'order_status'   => $order->status == 1 ? 'Ordered' : ($order->status == 2 ? 'On-Hold' :
-                    ($order->status == 3 ? 'Order Shipped' : ($order->status == 4 ? 'Order Delivery' : 'Cancelled'))),
+                'order_status'   => $this->getOrderStatusText($order->status),
                 'orderAmount'    => number_format($order->gross_amount, 1),
                 'orderItems'     => $elements,
                 'product_names'  => $product_names,
