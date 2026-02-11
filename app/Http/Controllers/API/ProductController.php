@@ -12,6 +12,10 @@ class ProductController extends Controller {
         $cartQuantities = getCartQuantities();
         $featuredProducts = Product::with('details')
             ->orderBy('id', 'desc')
+            ->where(function ($query) {
+                $query->whereDate('expiry_date', '>=', now())
+                    ->orWhereNull('expiry_date');
+            })
             ->get()
             ->map(function ($product) use ($cartQuantities) {
                 $details = $product->details;
@@ -44,6 +48,10 @@ class ProductController extends Controller {
         $cartQuantities = getCartQuantities();
         $bestSellerProducts = Product::with('details')
             ->orderBy('id', 'desc')
+            ->where(function ($query) {
+                $query->whereDate('expiry_date', '>=', now())
+                    ->orWhereNull('expiry_date');
+            })
             ->get()
             ->map(function ($product) use ($cartQuantities) {
                 $details = $product->details;
@@ -84,7 +92,10 @@ class ProductController extends Controller {
             $query = Product::query()->with('details');
             $query->where('name', 'like', '%' . $request->product_name . '%');
             $query->where('status', 1);
-            $products = $query->get();
+            $products = $query->where(function ($query) {
+                $query->whereDate('expiry_date', '>=', now())
+                    ->orWhereNull('expiry_date');
+            })->get();
 
             $user = auth('api')->user();
             $likedProducts = (array) json_decode($user?->likedProducts ?? '[]');
@@ -128,7 +139,10 @@ class ProductController extends Controller {
                 throw new \Exception($validator->errors()->first(), 419);
             }
 
-            $product = Product::with('variants')->find($request->product_id);
+            $product = Product::with('variants')->where(function ($query) {
+                $query->whereDate('expiry_date', '>=', now())
+                    ->orWhereNull('expiry_date');
+            })->find($request->product_id);
 
             if (!$product) {
                 throw new \Exception('Product Not found', 404);
@@ -144,7 +158,6 @@ class ProductController extends Controller {
             }
 
             $details = $product->details;
-
             $user = auth('api')->user();
             $likedStatus = false;
             if ($user) {

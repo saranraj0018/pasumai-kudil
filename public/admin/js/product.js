@@ -12,7 +12,7 @@ $(function () {
                 let parser = new DOMParser();
                 let doc = parser.parseFromString(html, "text/html");
                 let newContent = doc.querySelector(
-                    "#productTableWrapper"
+                    "#productTableWrapper",
                 ).innerHTML;
                 document.getElementById("productTableWrapper").innerHTML =
                     newContent;
@@ -75,7 +75,7 @@ $(function () {
             $("#image").addClass("border-red-500 ring-1 ring-red-500");
             if (errorEl.length === 0) {
                 $("#image").after(
-                    `<div class="error-message text-red-500 text-sm mt-1">Please select Image</div>`
+                    `<div class="error-message text-red-500 text-sm mt-1">Please select Image</div>`,
                 );
             }
             isValid = false;
@@ -84,10 +84,10 @@ $(function () {
             if (errorEl.length) errorEl.remove();
         }
         if (!isValid) return;
-         $saveBtn
-             .prop("disabled", true)
-             .removeClass("opacity-50 cursor-not-allowed")
-             .text("Save");
+        $saveBtn
+            .prop("disabled", true)
+            .removeClass("opacity-50 cursor-not-allowed")
+            .text("Save");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -100,7 +100,7 @@ $(function () {
                     showToast("Product saved successfully!", "success", 2000);
                     setTimeout(() => {
                         let modalScope = document.querySelector(
-                            "#productCreateModal"
+                            "#productCreateModal",
                         ).__x.$data;
                         if (modalScope.hasOwnProperty("open")) {
                             modalScope.open = false; // close modal
@@ -117,10 +117,10 @@ $(function () {
                 } else {
                     showToast(res.message, "error", 2000);
                 }
-                 $saveBtn
-                     .prop("disabled", false)
-                     .removeClass("opacity-50 cursor-not-allowed")
-                     .text("Save");
+                $saveBtn
+                    .prop("disabled", false)
+                    .removeClass("opacity-50 cursor-not-allowed")
+                    .text("Save");
             },
             function (err) {
                 hideLoader();
@@ -133,11 +133,11 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
-                 $saveBtn
-                     .prop("disabled", false)
-                     .removeClass("opacity-50 cursor-not-allowed")
-                     .text("Save");
-            }
+                $saveBtn
+                    .prop("disabled", false)
+                    .removeClass("opacity-50 cursor-not-allowed")
+                    .text("Save");
+            },
         );
     });
 
@@ -158,6 +158,7 @@ $(function () {
             tax_percentage: $(this).data("tax_percentage"),
             is_featured: $(this).data("is_featured"),
             image: $(this).data("image"),
+            expiry_date: $(this).data("expiry_date"),
         };
         // Show modal
         $("#productCreateModal").css("display", "flex");
@@ -181,6 +182,7 @@ $(function () {
         alpine.form.tax_type = product.tax_type || "";
         alpine.form.tax_percentage = product.tax_percentage || "";
         alpine.form.is_featured_product = product.is_featured || "";
+        alpine.form.expiry_date = product.expiry_date || "";
         alpine.existing_image = product.image || "";
         alpine.previewUrl = product.image || "";
         $("#variantContainer").empty();
@@ -198,26 +200,26 @@ $(function () {
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Sale Price</label>
                                 <input type="number" step="0.01" class="salePrice salePriceInput border border-gray-300 rounded-lg w-full p-2" name="variants[${index}][sale_price]" value="${
-                            variant.sale_price ?? ""
-                        }">
+                                    variant.sale_price ?? ""
+                                }">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Regular Price<span class="text-red-500">*</span></label>
                                 <input type="number" step="0.01" name="variants[${index}][regular_price]" class="regularPrice regularPriceInput border border-gray-300 rounded-lg w-full p-2" value="${
-                            variant.regular_price ?? ""
-                        }" required>
+                                    variant.regular_price ?? ""
+                                }" required>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Purchase Price<span class="text-red-500">*</span></label>
                                 <input type="number" step="0.01" name="variants[${index}][purchase_price]" class="purchasePrice purchasePriceInput border border-gray-300 rounded-lg w-full p-2" value="${
-                            variant.purchase_price ?? ""
-                        }" required>
+                                    variant.purchase_price ?? ""
+                                }" required>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Weight</label>
                                 <input type="number" class="weight weightInput border border-gray-300 rounded-lg w-full p-2" name="variants[${index}][weight]" value="${
-                            variant.weight ?? ""
-                        }">
+                                    variant.weight ?? ""
+                                }">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Weight Unit</label>
@@ -273,14 +275,14 @@ $(function () {
                             }">
                                 <label class="block text-sm font-medium text-gray-700">Tax Percentage</label>
                                 <input name="variants[${index}][tax_percentage]" type="number" step="0.01" class="taxPercentage taxPercentageInput border border-gray-300 rounded-lg w-full p-2" value="${
-                            variant.tax_percentage ?? ""
-                        }">
+                                    variant.tax_percentage ?? ""
+                                }">
                             </div>
                             <div>
                              <label class="block text-sm font-medium text-gray-700">Stock<span class="text-red-500">*</span></label>
                              <input name="variants[${index}][stock]" type="number" step="0.01" class="stock border border-gray-300 rounded-lg w-full p-2" value="${
-                            variant.stock ?? ""
-                        }">
+                                 variant.stock ?? ""
+                             }">
                             </div>
                             </div>
                             <div class="flex justify-end mt-3">
@@ -320,17 +322,15 @@ $(function () {
                 } else {
                     showToast(res.message, "error", 2000);
                 }
-                document.querySelector(
-                    "#deleteProductModal"
-                ).__x.$data.open = false;
+                document.querySelector("#deleteProductModal").__x.$data.open =
+                    false;
             },
             function (err) {
                 hideLoader();
                 showToast(err.message || "Delete failed", "error", 2000);
-                document.querySelector(
-                    "#deleteProductModal"
-                ).__x.$data.open = false;
-            }
+                document.querySelector("#deleteProductModal").__x.$data.open =
+                    false;
+            },
         );
     };
 
@@ -457,13 +457,13 @@ $(function () {
                     renderVariantReview();
                 }
             }, 200);
-        }
+        },
     );
 
     function renderVariantReview() {
         if (variantList.length === 0) {
             $("#viewVariantProducts").html(
-                `<p class="text-gray-500 italic">No variant details available.</p>`
+                `<p class="text-gray-500 italic">No variant details available.</p>`,
             );
             return;
         }

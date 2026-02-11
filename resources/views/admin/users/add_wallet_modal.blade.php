@@ -57,7 +57,7 @@
                             class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
                             Cancel
                         </button>
-                        <button type="submit" class="bg-[#ab5f00] text-white px-4 py-2 rounded-lg hover:bg-amber-500">
+                        <button type="submit" class="bg-[#ab5f00] text-white px-4 py-2 rounded-lg hover:bg-amber-500" id="save_wallet">
                             Save
                         </button>
                     </div>
@@ -156,7 +156,7 @@
                             class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
                             Cancel
                         </button>
-                        <button type="submit" x-text="buttonText" :disabled="accountMismatch"
+                        <button type="submit" x-text="buttonText" :disabled="accountMismatch" id="save_account"
                             class="bg-[#ab5f00] text-white px-4 py-2 rounded-lg hover:bg-amber-500 disabled:opacity-60 disabled:cursor-not-allowed">
                             Save
                         </button>
@@ -213,8 +213,7 @@
 
                     <!-- Buttons -->
                     <div class="flex items-center justify-end gap-3 pt-2">
-                        <button type="button" @click="closeModal()"
-                            class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
+                        <button type="button" @click="closeModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
                             Cancel
                         </button>
                         <button type="submit" id="save_subscription"

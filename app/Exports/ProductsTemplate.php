@@ -26,6 +26,7 @@ class ProductsTemplate implements FromArray, WithHeadings,WithTitle
             'Tax Type',
             'Tax Percentage',
             'Stock',
+            'Expiry Date'
         ];
     }
 

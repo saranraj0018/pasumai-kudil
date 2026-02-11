@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->text('description')->nullable();
             $table->text('benefits')->nullable();
+            $table->date('expiry_date')->nullable();
             $table->timestamps();
         });
     }
@@ -24,8 +25,5 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-        
-    }
+    public function down(): void {}
 };

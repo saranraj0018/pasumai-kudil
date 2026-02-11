@@ -25,6 +25,7 @@ class ProductsSampleSheet implements FromArray, WithTitle
                 'Tax Type',
                 'Tax Percentage',
                 'Stock',
+                'Expiry Date'
             ],
             [
                 1,
@@ -41,6 +42,7 @@ class ProductsSampleSheet implements FromArray, WithTitle
                 1,
                 5,
                 50,
+                2026-05-01
             ],
             [
                 2,
@@ -57,6 +59,7 @@ class ProductsSampleSheet implements FromArray, WithTitle
                 0,
                 0,
                 100,
+                2026 - 06 - 01
             ],
         ];
     }

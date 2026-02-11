@@ -78,21 +78,22 @@
             <table id="products" class="w-full text-sm text-left text-gray-700 border-collapse">
                 <thead>
                     <tr class="bg-[#ab5f00] text-white text-sm uppercase tracking-wider">
-                        <th class="px-3 py-2">S.No</th>
-                        <th class="px-3 py-2">Name</th>
-                        <th class="px-3 py-2">Image</th>
-                        <th class="px-3 py-2">Description</th>
-                        <th class="px-3 py-2">Benefits</th>
-                        <th class="px-3 py-2 text-center">Actions</th>
+                        <th class="px-2 py-2">S.No</th>
+                        <th class="px-2 py-2">Name</th>
+                        <th class="px-2 py-2">Image</th>
+                        <th class="px-2 py-2">Description</th>
+                        <th class="px-2 py-2">Benefits</th>
+                        <th class="px-2 py-2">Expiry Date</th>
+                        <th class="px-2 py-2 text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="productTableBody" class="divide-y divide-gray-200">
                     @if ($products->isNotEmpty())
                         @foreach ($products as $product)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-3">{{ $product->name ?? '' }}</td>
-                                <td class="px-4 py-3">
+                                <td class="px-2 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
+                                <td class="px-2 py-3">{{ $product->name ?? '' }}</td>
+                                <td class="px-2 py-3">
                                     @if ($product->image)
                                         <img src="{{ asset('storage/' . $product->image) }}"
                                             class="h-10 w-10 object-cover rounded-lg shadow-sm border" />
@@ -100,13 +101,16 @@
                                         <span class="text-gray-400 italic">No Image</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-2 py-3">
                                     {{ $product->description ?? '' }}
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-2 py-3">
                                     {{ $product->benefits ?? '' }}
                                 </td>
-                                <td class="px-4 py-3 flex justify-center gap-4">
+                                <td class="px-2 py-3">
+                                    {{ $product->expiry_date ?? '' }}
+                                </td>
+                                <td class="px-2 py-3 flex justify-center gap-4">
                                     <!-- Edit -->
                                     @can('edit_products')
                                         <button class="text-blue-600 hover:text-blue-800 transition editProduct"
@@ -123,6 +127,7 @@
                                             data-tax_type="{{ $product->details->tax_type ?? '' }}"
                                             data-tax_percentage="{{ $product->details->tax_percentage ?? '' }}"
                                             data-is_featured="{{ $product->details->is_featured_product ?? '' }}"
+                                            data-expiry_date="{{ $product->expiry_date ?? '' }}"
                                             data-image="{{ $product->image ? asset('storage/' . $product->image) : '' }}">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>

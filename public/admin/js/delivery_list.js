@@ -41,7 +41,8 @@ $(document).on("submit", "#deliverystatusChangeForm", function (e) {
  $saveBtn
      .prop("disabled", true)
      .removeClass("opacity-50 cursor-not-allowed")
-     .text("Save");
+     .text("Saving....");
+     
      let formData = new FormData(this);
      showLoader();
      sendRequest(

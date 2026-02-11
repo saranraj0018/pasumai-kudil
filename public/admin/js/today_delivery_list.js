@@ -25,7 +25,7 @@ $(function () {
             $saveBtn
                 .prop("disabled", true)
                 .removeClass("opacity-50 cursor-not-allowed")
-                .text("Save");
+                .text("Saving....");
         showLoader();
         sendRequest(
             "/admin/today_delivery/stock-maintain-save",

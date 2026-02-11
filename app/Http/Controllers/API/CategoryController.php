@@ -41,9 +41,12 @@ class CategoryController extends Controller {
             $validator = Validator::make($request->all(), [
                 'category_id' => 'required|integer',
             ]);
-
+            
             if ($validator->fails()) {
-                throw new ValidationException($validator->errors()->first(), 419);
+                return response()->json([
+                    'status'  => 419,
+                    'message' => $validator->errors()->first(),
+                ], 409);
             }
 
           $categoryId = $request->category_id;
@@ -55,6 +58,10 @@ class CategoryController extends Controller {
                 $q->where('category_id', $categoryId);
             })
             ->with('details')
+            ->where(function ($query) {
+                $query->whereDate('expiry_date', '>=', now())
+                    ->orWhereNull('expiry_date');
+             })
             ->get()
                 ->map(function ($product) use ($cartQuantities, $likedProducts) {
                      $details = $product->details;

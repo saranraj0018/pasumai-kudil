@@ -111,6 +111,10 @@ class ProfileController extends Controller
             'status' => 200,
             'message' => 'Wish List',
             "data" => Product::whereIn('id', (array)json_decode($user->likedProducts) ?: [])
+                ->where(function ($query) {
+                    $query->whereDate('expiry_date', '>=', now())
+                        ->orWhereNull('expiry_date');
+                })
                 ->get()->map(function ($product) use ($user) {
                     return [
                         'product_id' => $product->id,
@@ -197,7 +201,6 @@ class ProfileController extends Controller
                 'message' => $validator->errors()->first(),
             ], 409);
         }
-
-
+        
     }
 }

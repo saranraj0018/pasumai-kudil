@@ -198,7 +198,7 @@ $(document).ready(function () {
 $saveBtn
     .prop("disabled", true)
     .removeClass("opacity-50 cursor-not-allowed")
-    .text("Save");
+    .text("Saving....");
         let formData = new FormData(this);
         showLoader();
         formData.append("_token", $("input[name=_token]").val());
@@ -399,7 +399,7 @@ $saveBtn
   $saveBtn
       .prop("disabled", true)
       .removeClass("opacity-50 cursor-not-allowed")
-      .text("Save");
+      .text("Saving....");
         let formData = new FormData(this);
         showLoader();
         sendRequest(

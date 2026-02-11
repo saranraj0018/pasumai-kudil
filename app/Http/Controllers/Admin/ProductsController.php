@@ -59,6 +59,7 @@ class ProductsController extends Controller
             $product->name = $request['product_name'];
             $product->description = $request['description'];
             $product->benefits = $request['benefits'] ?? null;
+            $product->expiry_date = $request['expiry_date'] ?? null;
 
             if ($request->hasFile('image')) {
                 $img_name = time() . '_' . $request->file('image')->getClientOriginalName();

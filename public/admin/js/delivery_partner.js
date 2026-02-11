@@ -18,7 +18,7 @@ $(function () {
                 id: "#mobile_number",
                 condition: (val) => val === "",
                 message: "Mobile Number is required",
-            }
+            },
         ];
 
         fields.forEach((field) => {
@@ -26,10 +26,10 @@ $(function () {
         });
 
         if (!isValid) return;
- $saveBtn
-     .prop("disabled", true)
-     .removeClass("opacity-50 cursor-not-allowed")
-     .text("Save");
+        $saveBtn
+            .prop("disabled", true)
+            .removeClass("opacity-50 cursor-not-allowed")
+            .text("Saving....");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -39,25 +39,31 @@ $(function () {
             function (res) {
                 hideLoader();
                 if (res.success) {
-                    showToast("Delivery Partner saved successfully!", "success", 2000);
+                    showToast(
+                        "Delivery Partner saved successfully!",
+                        "success",
+                        2000,
+                    );
                     setTimeout(() => {
                         let modalScope = document.querySelector(
-                            "#deliveryPartnerCreateModal"
+                            "#deliveryPartnerCreateModal",
                         ).__x.$data;
                         if (modalScope.hasOwnProperty("open")) {
                             modalScope.open = false; // close modal
                         }
                         // Reset form
-                        document.getElementById("deliveryPartnerAddForm").reset();
-                         reloadDeliveryPartnerList();
+                        document
+                            .getElementById("deliveryPartnerAddForm")
+                            .reset();
+                        reloadDeliveryPartnerList();
                     }, 500);
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
-                 $saveBtn
-                     .prop("disabled", false)
-                     .removeClass("opacity-50 cursor-not-allowed")
-                     .text("Save");
+                $saveBtn
+                    .prop("disabled", false)
+                    .removeClass("opacity-50 cursor-not-allowed")
+                    .text("Save");
             },
             function (err) {
                 hideLoader();
@@ -70,89 +76,88 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
-                 $saveBtn
-                     .prop("disabled", false)
-                     .removeClass("opacity-50 cursor-not-allowed")
-                     .text("Save");
-            }
+                $saveBtn
+                    .prop("disabled", false)
+                    .removeClass("opacity-50 cursor-not-allowed")
+                    .text("Save");
+            },
         );
     });
 
-     $(document).on("click", ".add_delivery_partner", function (e) {
-         $("#deliveryPartnerCreateModal").css("display", "flex");
-         let modal = document.getElementById("deliveryPartnerCreateModal");
-         let alpine = modal.__x.$data;
-         alpine.open = true;
-         alpine.modalTitle = "Add Delivery Partner";
-         alpine.buttonText = "Save";
-     });
+    $(document).on("click", ".add_delivery_partner", function (e) {
+        $("#deliveryPartnerCreateModal").css("display", "flex");
+        let modal = document.getElementById("deliveryPartnerCreateModal");
+        let alpine = modal.__x.$data;
+        alpine.open = true;
+        alpine.modalTitle = "Add Delivery Partner";
+        alpine.buttonText = "Save";
+    });
 
     $(document).on("click", ".editDeliveryPartner", function () {
-          let delivery_partner = {
-              id: $(this).data("id"),
-              name: $(this).data("name"),
-              hub_id: $(this).data("hub_id"),
-              mobile_number: $(this).data("mobile_number"),
-          };
-          // Show modal
-          $("#deliveryPartnerCreateModal").css("display", "flex");
-          let modal = document.getElementById("deliveryPartnerCreateModal");
-          let alpine = modal.__x.$data;
-          alpine.open = true;
-          console.log(delivery_partner);
-          alpine.modalTitle = "Edit Delivery Partner";
-          alpine.buttonText = "Update";
-          alpine.form.delivery_partner_id = delivery_partner.id || "";
-          alpine.form.name = delivery_partner.name || "";
-          alpine.form.hub_id = delivery_partner.hub_id || "";
-          alpine.form.mobile_number = delivery_partner.mobile_number || "";
+        let delivery_partner = {
+            id: $(this).data("id"),
+            name: $(this).data("name"),
+            hub_id: $(this).data("hub_id"),
+            mobile_number: $(this).data("mobile_number"),
+        };
+        // Show modal
+        $("#deliveryPartnerCreateModal").css("display", "flex");
+        let modal = document.getElementById("deliveryPartnerCreateModal");
+        let alpine = modal.__x.$data;
+        alpine.open = true;
+        console.log(delivery_partner);
+        alpine.modalTitle = "Edit Delivery Partner";
+        alpine.buttonText = "Update";
+        alpine.form.delivery_partner_id = delivery_partner.id || "";
+        alpine.form.name = delivery_partner.name || "";
+        alpine.form.hub_id = delivery_partner.hub_id || "";
+        alpine.form.mobile_number = delivery_partner.mobile_number || "";
     });
 
     $(document).on("click", ".deleteDeliveryPartner", function () {
-           let id = $(this).data("id");
-           let modalScope = document.querySelector("#deleteDeliveryPartnerModal").__x
-               .$data;
-           modalScope.deleteId = id;
-           modalScope.open = true;
+        let id = $(this).data("id");
+        let modalScope = document.querySelector("#deleteDeliveryPartnerModal")
+            .__x.$data;
+        modalScope.deleteId = id;
+        modalScope.open = true;
     });
 
     window.deleteDeliveryPartner = function (id) {
-         showLoader();
-           sendRequest(
-               "/admin/delivery_partner/delete-delivery-partner",
-               { id: id },
-               "POST",
-               function (res) {
-                 hideLoader();
-                   if (res.success) {
-                       showToast(
-                           "Delivery Partner deleted successfully!",
-                           "success",
-                           2000
-                       );
-                       reloadDeliveryPartnerList();
-                   } else {
-                       showToast(res.message, "error", 2000);
-                   }
-                   document.querySelector(
-                       "#deleteDeliveryPartnerModal"
-                   ).__x.$data.open = false;
-               },
-               function (err) {
-                 hideLoader();
-                   showToast(err.message || "Delete failed", "error", 2000);
-                   document.querySelector(
-                       "#deleteDeliveryPartnerModal"
-                   ).__x.$data.open = false;
-               }
-           );
-       };
-       // ===== Helpers =====
+        showLoader();
+        sendRequest(
+            "/admin/delivery_partner/delete-delivery-partner",
+            { id: id },
+            "POST",
+            function (res) {
+                hideLoader();
+                if (res.success) {
+                    showToast(
+                        "Delivery Partner deleted successfully!",
+                        "success",
+                        2000,
+                    );
+                    reloadDeliveryPartnerList();
+                } else {
+                    showToast(res.message, "error", 2000);
+                }
+                document.querySelector(
+                    "#deleteDeliveryPartnerModal",
+                ).__x.$data.open = false;
+            },
+            function (err) {
+                hideLoader();
+                showToast(err.message || "Delete failed", "error", 2000);
+                document.querySelector(
+                    "#deleteDeliveryPartnerModal",
+                ).__x.$data.open = false;
+            },
+        );
+    };
+    // ===== Helpers =====
     function reloadDeliveryPartnerList() {
-           $.get("/admin/delivery_partner/delivery-partner", function (html) {
-               let $tbody = $(html).find("#deliveryPartnerTableBody").html();
-               $("#deliveryPartnerTableBody").html($tbody);
-           });
+        $.get("/admin/delivery_partner/delivery-partner", function (html) {
+            let $tbody = $(html).find("#deliveryPartnerTableBody").html();
+            $("#deliveryPartnerTableBody").html($tbody);
+        });
     }
 });
-

@@ -113,11 +113,13 @@ class CartController extends Controller
         $isInside = Cache::get($cacheKey);
 
         foreach ($cart_list as $item) {
-            $product = Product::with('details')->find($item['product_id']);
+            $product = Product::with('details')->where(function ($query) {
+                $query->whereDate('expiry_date', '>=', now())
+                    ->orWhereNull('expiry_date');
+            })->find($item['product_id']);
 
             if (!empty($product) && !empty($product->details?->id)) {
                 $variant = $product->details;
-
                 $originalPrice = $variant['regular_price'] ?? 0;
                 $discountedPrice = $variant['sale_price'] ?? $originalPrice;
                 $subtotal += $discountedPrice * $item['quantity'];
@@ -128,8 +130,6 @@ class CartController extends Controller
                 // Weight Calculation Logic
                 $weightValue = isset($variant['weight']) ? floatval($variant['weight']) : 0;
                 $weightUnit = isset($variant['weight_unit']) ? strtolower($variant['weight_unit']) : '';
-
-
 
                 if ($weightUnit === "g" && $weightValue >= 1000) {
                     $weight = ($weightValue / 1000) . "kg"; // Convert grams to kg
@@ -344,7 +344,6 @@ class CartController extends Controller
 
     public function saveOrder(Request $request)
     {
-
         try {
             $validator = Validator::make($request->all(), [
                 "transactionId" => "required",

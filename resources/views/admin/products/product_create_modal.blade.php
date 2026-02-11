@@ -18,6 +18,7 @@
         tax_percentage: null,
         is_featured_product: false,
         existing_image: '',
+        expiry_date: ''
     },
     closeModal() {
         this.open = false;
@@ -36,7 +37,8 @@
             weight_unit: 'kg',
             tax_type: '',
             tax_percentage: null,
-            is_featured_product: false
+            is_featured_product: false,
+            expiry_date: null
         };
     },
     nextStep() { if (this.stepNumber < this.steps.length - 1) this.stepNumber++ },
@@ -44,12 +46,8 @@
 }" x-cloak>
     <template x-if="open">
         <div x-show="open" class="fixed inset-0 flex items-center justify-center z-50">
-            <!-- Backdrop -->
             <div class="absolute inset-0 bg-black/40" @click="closeModal()"></div>
-
-            <!-- Modal Box -->
             <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-[90%] relative z-50">
-
                 <h2 class="text-2xl font-bold mb-6 text-gray-800" x-text="modalTitle" id="product_label">Add Product</h2>
                 <form id="productAddForm" enctype="multipart/form-data" novalidate
                     class="flex flex-col justify-start items-start w-full  h-[75vh] overflow-y-scroll">
@@ -104,10 +102,14 @@
                                             class="w-full max-h-[30vh] rounded-lg border border-gray-300 shadow-md object-cover" />
                                     </div>
                                 </div>
-                                <div class="flex items-center space-x-2 col-span-2">
+                                <div class="flex items-center space-x-2">
                                     <input type="checkbox" value="1" name="is_featured"
                                         x-model="form.is_featured_product" class="h-4 w-4" />
                                     <x-label class="block text-sm font-medium">Is Featured Product</x-label>
+                                </div>
+                                <div>
+                                    <x-label>Expiry Date</x-label>
+                                     <x-input type="date" x-model="form.expiry_date" name="expiry_date" id="expiry_date"/>
                                 </div>
                             </div>
                         </div>
@@ -210,10 +212,14 @@
                                             <p class="text-gray-500" x-show="!form.image">No image uploaded</p>
                                         </div>
                                     </div>
-                                     <div>
+                                    <div>
                                         <input type="checkbox" disabled class="h-4 w-4"
                                             :checked="form.is_featured_product" />
                                         <span class="font-semibold">Is Featured Product</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold">Expiry Date:</span>
+                                        <p class="text-gray-700" x-text="form.expiry_date || '-'"></p>
                                     </div>
                                 </div>
                             </div>

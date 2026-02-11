@@ -2,12 +2,14 @@
 
 namespace App\Imports;
 
+use Carbon\Carbon;
 use App\Models\Product;
 use App\Models\ProductDetail;
 use App\Models\Category;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Maatwebsite\Excel\Concerns\{
     ToCollection,
     WithHeadingRow,
@@ -32,7 +34,7 @@ class ProductsImportSheet implements
 
     /**
      * Handle Excel rows
-     */
+    */
     public function collection(Collection $rows)
     {
         if ($rows->isEmpty()) {
@@ -113,13 +115,27 @@ class ProductsImportSheet implements
             $product->description = $row['description'] ?? null;
             $product->benefits = $row['benefits'] ?? null;
             $product->image = null;
+            $product->expiry_date = $this->transformDate($row['expiry_date'] ?? null);
             $product->save();
-
         }
 
         return $product;
     }
 
+    private function transformDate($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return Carbon::instance(
+                Date::excelToDateTimeObject($value)
+            )->format('Y-m-d');
+        }
+
+        return Carbon::parse($value)->format('Y-m-d');
+    }
     /**
      * Excel validation rules
      */
@@ -137,6 +153,7 @@ class ProductsImportSheet implements
             '*.tax_percentage' => ['nullable', 'numeric', 'min:0'],
             '*.stock'          => ['required', 'integer', 'min:0'],
             '*.is_featured'    => ['nullable', 'in:0,1'],
+            '*.expiry_date'    => ['nullable'],
         ];
     }
 

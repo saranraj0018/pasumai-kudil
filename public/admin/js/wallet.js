@@ -2,6 +2,7 @@ $(function () {
     $(document).on("submit", "#walletAddForm", function (e) {
         e.preventDefault();
         let isValid = true;
+        let $saveBtn = $("#save_wallet");
 
         const fields = [
             {
@@ -21,7 +22,10 @@ $(function () {
         });
 
         if (!isValid) return;
-
+  $saveBtn
+      .prop("disabled", true)
+      .removeClass("opacity-50 cursor-not-allowed")
+      .text("Saving....");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -47,6 +51,10 @@ $(function () {
                 } else {
                     showToast(res.message, "error", 2000);
                 }
+                  $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             },
             function (err) {
                  hideLoader();
@@ -59,6 +67,10 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                $saveBtn
+                      .prop("disabled", false)
+                      .removeClass("opacity-50 cursor-not-allowed")
+                      .text("Save");
             }
         );
     });
@@ -66,6 +78,7 @@ $(function () {
     $(document).on("submit", "#accountAddForm", function (e) {
         e.preventDefault();
         let isValid = true;
+        let $saveBtn = $("#save_account");
 
         const fields = [
             {
@@ -100,7 +113,10 @@ $(function () {
         });
 
         if (!isValid) return;
-
+        $saveBtn
+         .prop("disabled", true)
+         .removeClass("opacity-50 cursor-not-allowed")
+         .text("Saving....");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -124,6 +140,10 @@ $(function () {
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
+                $saveBtn
+                           .prop("disabled", false)
+                           .removeClass("opacity-50 cursor-not-allowed")
+                           .text("Save");
             },
             function (err) {
                  hideLoader();
@@ -136,6 +156,10 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                $saveBtn
+                       .prop("disabled", false)
+                       .removeClass("opacity-50 cursor-not-allowed")
+                       .text("Save");
             }
         );
     });
@@ -177,6 +201,7 @@ $(function () {
     $(document).on("submit", "#subscriptionCancelForm", function (e) {
         e.preventDefault();
         let isValid = true;
+        let $saveBtn = $("#save_subscription");
 
         const fields = [
             {
@@ -196,7 +221,7 @@ $(function () {
         });
 
         if (!isValid) return;
-
+     $saveBtn.prop("disabled", true).removeClass("opacity-50 cursor-not-allowed").text("Saving....");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -221,6 +246,10 @@ $(function () {
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
+            $saveBtn
+                .prop("disabled", false)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .text("Save");
             },
             function (err) {
                  hideLoader();
@@ -234,13 +263,21 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                $saveBtn
+                .prop("disabled", false)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .text("Save");
             }
         );
     });
 
     $(document).on("submit", "#revokeForm", function (e) {
         e.preventDefault();
-
+        let $saveBtn = $("#revoke_form");
+        $saveBtn
+                .prop("disabled", true)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .text("Saving....");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -257,6 +294,10 @@ $(function () {
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
+                $saveBtn
+                     .prop("disabled", false)
+                     .removeClass("opacity-50 cursor-not-allowed")
+                     .text("Save");
             },
             function (err) {
                  hideLoader();
@@ -270,6 +311,10 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                 $saveBtn
+                     .prop("disabled", false)
+                     .removeClass("opacity-50 cursor-not-allowed")
+                     .text("Save");
             }
         );
     });
@@ -278,7 +323,7 @@ $(function () {
     $(document).on("submit", "#modifySubscriptionForm", function (e) {
         e.preventDefault();
         let isValid = true;
-
+        let $saveBtn = $("#save_modify");
         const fields = [
             {
                 id: "#date_range",
@@ -297,7 +342,10 @@ $(function () {
         });
 
         if (!isValid) return;
-
+ $saveBtn
+     .prop("disabled", true)
+     .removeClass("opacity-50 cursor-not-allowed")
+     .text("Saving....");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -341,6 +389,10 @@ $(function () {
                         window.location.reload();
                     }, 500);
                 }
+                   $saveBtn
+                       .prop("disabled", false)
+                       .removeClass("opacity-50 cursor-not-allowed")
+                       .text("Save");
             },
             function (err) {
                  hideLoader();
@@ -354,6 +406,10 @@ $(function () {
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
+                $saveBtn
+                       .prop("disabled", false)
+                       .removeClass("opacity-50 cursor-not-allowed")
+                       .text("Save");
             }
         );
     });

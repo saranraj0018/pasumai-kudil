@@ -20,6 +20,7 @@ class ProductsInstructionsSheet implements FromArray, WithTitle
             ['6. is_featured must be 0 (No) or 1 (Yes)'],
             ['7. Leave optional fields blank if not applicable.'],
             ['8. Only one row per product-variant combination.'],
+            ['9. Expiry Date formate should be (YYYY-MM-DD) 2026-01-01.'],
         ];
     }
 
