@@ -108,7 +108,7 @@ $(function () {
      .prop("disabled", true)
      .removeClass("opacity-50 cursor-not-allowed")
      .text("Saving....");
-     
+
         let formData = new FormData(this);
         showLoader();
         sendRequest(
