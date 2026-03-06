@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Payment;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\Coupon;
@@ -9,6 +10,7 @@ use App\Models\Address;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Shipping;
+use App\Models\UserSubscription;
 use Illuminate\Http\Request;
 use App\Models\ProductDetail;
 use App\Events\NewNotification;
@@ -156,7 +158,6 @@ class CartController extends Controller
                 ];
             }
         }
-
         $coupon_id = !empty($request['coupon_id']) ? $request['coupon_id'] : Cache::get('coupon_id_' . Auth::id(), null);
 
         if (empty($coupon_id)) {
@@ -246,8 +247,10 @@ class CartController extends Controller
         $discount_value = $coupon->discount_value;
 
         if ($coupon->apply_for == 1 && in_array($coupon->discount_type, [1, 2])) {
+
             $min_price = $coupon->min_price;
             $max_price = $coupon->max_price;
+
             if ((!empty($min_price) && !empty($max_price) &&   $total_amount >= $min_price) && ($total_amount <= $max_price)) {
 
                 return ($coupon->discount_type == 1)
@@ -281,7 +284,6 @@ class CartController extends Controller
             $user_used_today = Order::where('coupon_id', $coupon->id)
                 ->where('user_id', Auth::id())
                 ->whereDate('created_at', $today)
-                ->where('status', 4)
                 ->exists();
 
             if ($user_used_today) {
@@ -319,27 +321,97 @@ class CartController extends Controller
 
     public function createOrder(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            "orderAmount" => 'required|numeric',
-            "paymentMode" => 'required|string',
-            "addressId" => 'required|string',
+        $request->validate([
+            'grant_total' => 'required',
+            'address_id' => 'required',
         ]);
 
-        #check if successful
-        if ($validator->fails())
-            return response()->json([
-                'status' => 500,
-                'message' => $validator->errors()->first(),
-            ], 500);
-        $razorPayOrder = razorPay()->createOrder($request['orderAmount']);
-        Cache::put('order_id_' . Auth::id(), $razorPayOrder->id, now()->addMinutes(30));
+        $user = Auth::user();
 
-        Cache::put('address_id_' . Auth::id(), $request['addressId'], now()->addMinutes(30));
+        $orderId = 'order_' . time();
+
+        $baseUrl = env('CASHFREE_ENV') === 'sandbox'
+            ? 'https://sandbox.cashfree.com'
+            : 'https://api.cashfree.com';
+
+        $headers = [
+            "Content-Type: application/json",
+            "x-api-version: 2023-08-01",
+            "x-client-id: " . env('CASHFREE_APP_ID'),
+            "x-client-secret: " . env('CASHFREE_SECRET_KEY'),
+        ];
+
+        $amount = (float) preg_replace('/[^\d.]/', '', $request->grant_total);
+
+        $orderPayload = [
+            "order_id" => $orderId,
+            "order_amount" => $amount,
+            "order_currency" => "INR",
+            "customer_details" => [
+                "customer_id" => (string) $user->id,
+                "customer_name" => $user->name,
+                "customer_email" => $user->email,
+                "customer_phone" => $user->mobile_number,
+            ],
+            "order_meta" => [
+                "notify_url" => url('/api/user/cashfree/webhook'),
+            ]
+        ];
+
+        $ch = curl_init("$baseUrl/pg/orders");
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_POSTFIELDS => json_encode($orderPayload),
+        ]);
+
+        $orderResponse = json_decode(curl_exec($ch), true);
+        curl_close($ch);
+
+        if (!isset($orderResponse['payment_session_id'])) {
+            return response()->json($orderResponse, 500);
+        }
+
+        $payment = new Payment();
+        $payment->user_id = $user->id;
+        $payment->address_id = $request['address_id'];
+        $payment->order_id = $orderId;
+        $payment->amount = $amount;
+        $payment->status = 'PENDING';
+        $payment->save();
+
+
         return response()->json([
             'status' => 200,
-            'message' => 'Order created successfully!',
-            'orderId' => $razorPayOrder->id,
-        ], 200);
+            'message' => 'Payment successful',
+            'order_id' => $orderResponse['order_id'],
+            'payment_session_id' => $orderResponse['payment_session_id'],
+        ]);
+
+    }
+
+
+    public function verifyPayment(Request $request)
+    {
+        $order_id = $request->order_id;
+
+        $client = new \GuzzleHttp\Client();
+
+        $response = $client->get(
+            "https://sandbox.cashfree.com/pg/orders/$order_id/payments",
+            [
+                'headers' => [
+                    'x-client-id' => env('CASHFREE_APP_ID'),
+                    'x-client-secret' => env('CASHFREE_SECRET_KEY'),
+                    'x-api-version' => '2023-08-01'
+                ]
+            ]
+        );
+
+        $data = json_decode($response->getBody(), true);
+
+        return response()->json($data[0]);
     }
 
     public function saveOrder(Request $request)
@@ -356,15 +428,16 @@ class CartController extends Controller
                     'message' => $validator->errors()->first(),
                 ], 422);
             DB::beginTransaction();
-            if ($request['orderId'] != Cache::get('order_id_' . Auth::id()))
-                throw new \Exception('Order Not found', 404);
+//            if ($request['orderId'] != Cache::get('order_id_' . Auth::id()))
+//                throw new \Exception('Order Not found', 404);
 
             $address_id = Address::where('created_by', Auth::id())->where('is_default', 1)->first()->id;
-            if ($address_id != Cache::get('address_id_' . Auth::id()))
-                throw new \Exception('Address Not found', 404);
+
             $coupon_amount = 0;
+
             if (!empty($request['coupon_id']) && !empty($request['total_amount'])) {
                 $coupon = Coupon::find($request['coupon_id']);
+
                 $coupon_amount = self::getCouponDetails($coupon, $request['total_amount']);
             }
             $shipping = 0;
@@ -407,7 +480,7 @@ class CartController extends Controller
             $order = \App\Models\Order::create([
                 'order_id' => $request['orderId'],
                 'user_id' => auth()->id(),
-                'address_id' => Cache::get('address_id_' . Auth::id()),
+                'address_id' => $address_id,
                 'phone' => auth()->user()->mobile_number,
                 'email' => auth()->user()->email,
                 'status' => 1,
@@ -431,18 +504,16 @@ class CartController extends Controller
 
             DB::commit();
 
-            $order->payment()->create([
-                "razorpay_payment_id" => $request->transactionId,
-                "amount" => $order->gross_amount,
-                "currency" => "INR",
-                "method" => "UPI",
-                "email" => auth()->user()->email,
-                "phone" => auth()->user()->mobile_number
-            ]);
+                $payment = Payment::where('order_id', $request['orderId'])->first();
+                $payment->status = "PAID";
+                $payment->other = $request->others ?? null;
+                $payment->save();
 
-            $userId = auth()->id();
-            Cache::forget("cart_{$userId}");
-            Cache::forget("coupon_id_{$userId}");
+            if ($request['coupon_id']){
+                 Setting::where('data_key', 'temp_coupon_' . Auth::id())->where('data_value', $request['coupon_id'])->delete();
+            }
+            Cache::forget("cart_". Auth::id());
+            Cache::forget("coupon_id_" . Auth::id());
             Cache::forget('address_id_' . Auth::id());
             Cache::forget('order_id_' . Auth::id());
 
