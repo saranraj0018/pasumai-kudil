@@ -4,7 +4,7 @@
 
     <ul class="flex flex-col gap-3 mt-4 text-sm font-medium text-[#e4c094] ">
         @can('view_dashboard')
-         <x-menu.item route="admin.dashboard" name="Dashboard" icon="fa-home" />
+         <x-menu.item route="dashboard" name="Dashboard" icon="fa-home" />
         @endcan
 
         @can('view_grocery')

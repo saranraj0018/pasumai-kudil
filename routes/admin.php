@@ -34,7 +34,8 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::middleware('auth:admin')->group(function () {
-        Route::get('/dashboard', [Dashboard::class, 'index'])->name('admin.dashboard');
+        Route::get('/dashboard', [Dashboard::class, 'index'])->name('dashboard');
+        Route::get('/dashboard-data', [Dashboard::class, 'dashboardData']);
         //categories
         Route::prefix('category')->controller(CategoryController::class)->group(function () {
             Route::get('/list', 'view')->name('view.category');
@@ -155,5 +156,4 @@ Route::prefix('admin')->group(function () {
         Route::post('/product-upload', [ProductImportExportController::class, 'uploadProduct'])
             ->name('product_upload');
     });
-
 });

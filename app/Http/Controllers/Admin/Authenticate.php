@@ -47,7 +47,7 @@ class Authenticate extends Controller
                 ->withInput($request->only('email'));
         }
 
-        return redirect()->route('admin.dashboard');
+        return redirect()->route('dashboard');
     }
 
     public function logout(): \Illuminate\Http\RedirectResponse
@@ -100,6 +100,6 @@ class Authenticate extends Controller
         $admin->save();
 
         Auth::guard('admin')->login($admin);
-        return redirect()->route('admin.dashboard');
+        return redirect()->route('dashboard');
     }
 }

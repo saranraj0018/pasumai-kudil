@@ -16,7 +16,20 @@ class Category extends Model
         return $this->hasMany(ProductDetail::class, 'category_id', 'id');
     }
 
-    public function admin() {
+    public function admin()
+    {
         return $this->hasOne(Admin::class, 'id', 'admin_id');
+    }
+
+    public function orderDetails()
+    {
+        return $this->hasManyThrough(
+            \App\Models\OrderDetail::class,
+            \App\Models\ProductDetail::class,
+            'category_id',
+            'product_id',
+            'id',
+            'id'
+        );
     }
 }
