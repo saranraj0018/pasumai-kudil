@@ -102,5 +102,7 @@ INSERT INTO `abilities` (`id`, `title`, `ability`, `menu_id`, `main_menu`, `rout
 (82, 'Add Roles & Permissions', 'add_roles_permissions', 81, 'n', ''),
 (83, 'Edit Roles & Permissions', 'edit_roles_permissions', 81, 'n', ''),
 (84, 'Delete Roles & Permissions', 'delete_roles_permissions', 81, 'n', ''),
-(85, 'View Roles & Permissions', 'view_roles_permissions', 81, 'n', '');
+(85, 'View Roles & Permissions', 'view_roles_permissions', 81, 'n', ''),
+
+(86, 'Reports', 'view_report', 0, 'y', '');
 
