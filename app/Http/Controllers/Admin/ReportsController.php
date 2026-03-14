@@ -28,7 +28,9 @@ class ReportsController extends Controller
 
         if ($type == 'grocery') {
             $data = OrderDetail::with('order.user', 'order', 'product')
-                ->when($user, fn($q) => $q->where('user_id', $user))
+                ->whereHas('order.user', function ($query) use ($user){
+                   $query ->when($user, fn($q) => $q->where('user_id', $user));
+                 })
                 ->when($from && $to, fn($q) => $q->whereBetween('created_at', [$from, $to]))
                 ->get();
         }

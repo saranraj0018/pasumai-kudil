@@ -53,7 +53,10 @@ class UserlistController extends Controller
     public function userLists(Request $request)
     {
         $search = $request->input('search');
-        $this->data['getuser'] = User::with('get_wallet')
+        $this->data['getuser'] = User::with('subscriptions', 'subscriptions.wallet')
+            ->whereHas('subscriptions', function ($q) {
+                $q->where('status', 1);
+            })
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
@@ -73,7 +76,10 @@ class UserlistController extends Controller
 
     public function userProfileView(Request $request)
     {
-        $this->data['user'] = User::with('get_wallet')->where('id', $request->id)->first();
+        $this->data['user'] = User::with('subscriptions', 'subscriptions.wallet')
+            ->whereHas('subscriptions', function ($q) {
+                $q->where('status', 1);
+            })->where('id', $request->id)->first();
         $this->data['getuserSubscription'] = UserSubscription::where(['user_id' => $request->id, 'status' => 1])->first();
         if (!$this->data['getuserSubscription']) {
             $cancelled = []; // No cancelled deliveries
@@ -103,7 +109,7 @@ class UserlistController extends Controller
             ->where('subscription_id', $this->data['getuserSubscription']->id)->get()
             : collect();
         $this->data['delivery_boy'] = DeliveryPartner::get();
-        $this->data['user_current_blalnce'] = Wallet::with('user_subscription')->whereHas('user_subscription', function ($query) {
+        $this->data['user_current_blalnce'] = Wallet::where('user_id', $request->id)->with('user_subscription')->whereHas('user_subscription', function ($query) {
             $query->where('status', 1);
         })->first();
         return view('admin.users.users_view')->with($this->data);

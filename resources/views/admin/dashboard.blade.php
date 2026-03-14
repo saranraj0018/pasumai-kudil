@@ -35,7 +35,7 @@
     <br>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="card shadow-lg rounded-xl">
-            <div class="card-header bg-[#936639] text-white font-semibold p-2">
+            <div class="card-header bg-[#936639] text-black font-semibold p-2">
                 Category Wise Sales
             </div>
             <div class="card-body p-4">
@@ -43,7 +43,7 @@
             </div>
         </div>
         <div class="card shadow-lg rounded-xl">
-            <div class="card-header bg-[#a68a64] text-white font-semibold p-2">
+            <div class="card-header bg-[#a68a64] text-black font-semibold p-2">
                 Order Status Wise
             </div>
             <div>
@@ -103,7 +103,7 @@
 
         </div>
         <div class="card shadow-lg rounded-xl">
-            <div class="card-header bg-[#7f4f24] text-white font-semibold p-2">
+            <div class="card-header bg-[#7f4f24] text-black font-semibold p-2">
                 Monthly Revenue
             </div>
             <div class="card-body p-4">
@@ -133,7 +133,7 @@
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
         <div class="card shadow-lg rounded-xl">
-            <div class="card-header bg-[#7f4f24] text-white font-semibold p-2">
+            <div class="card-header bg-[#7f4f24] text-black font-semibold p-2">
                 Subscription Plans
             </div>
             <div class="card-body p-4">
@@ -155,7 +155,7 @@
             </div>
         </div>
         <div class="card shadow-lg rounded-xl">
-            <div class="card-header bg-[#936639] text-white font-semibold p-2">
+            <div class="card-header bg-[#936639] text-black font-semibold p-2">
                 Ticket Status Wise
             </div>
             <div class="card-body p-4">

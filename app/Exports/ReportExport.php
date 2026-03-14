@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
@@ -20,22 +21,22 @@ class ReportExport implements FromCollection, WithHeadings
     {
         if ($this->type == 'grocery') {
             return collect($this->data)->map(function ($order) {
-            if($order->order->status == 1){
-                $status = 'Ordered';
-            }else if($order->order->status == 2){
-                $status = 'On Hold';
-            } else if ($order->order->status == 3) {
-                $status = 'Shipped';
-            } else if ($order->order->status == 4) {
-                $status = 'Delivered';
-            } else if ($order->order->status == 5) {
-                $status = 'Cancelled';
-            } else if ($order->order->status == 6) {
-                $status = 'Refunded';
-            }else{
-                $status = '';
-            }
-                 return [
+                if ($order->order->status == 1) {
+                    $status = 'Ordered';
+                } else if ($order->order->status == 2) {
+                    $status = 'On Hold';
+                } else if ($order->order->status == 3) {
+                    $status = 'Shipped';
+                } else if ($order->order->status == 4) {
+                    $status = 'Delivered';
+                } else if ($order->order->status == 5) {
+                    $status = 'Cancelled';
+                } else if ($order->order->status == 6) {
+                    $status = 'Refunded';
+                } else {
+                    $status = '';
+                }
+                return [
                     'Order ID' => $order->order->order_id,
                     'User Name' => $order->order->user->name ?? '',
                     'Net Amount' => $order->net_amount ?? '',
@@ -43,11 +44,21 @@ class ReportExport implements FromCollection, WithHeadings
                     'GST Amount' => $order->order->gst_amount ?? '',
                     'Total Amount' => $order->order->gross_amount ?? '',
                     'Status' => $status ?? '',
-                    'Order Date' => $order->order->created_at ? $order->order->created_at->format('d-m-Y') : '',
-                    'Shipped Date' => $order->order->shipped_at ? $order->order->shipped_at->format('d-m-Y') : '',
-                    'Delivered Date' => $order->order->delivered_at ? $order->order->delivered_at->format('d-m-Y') : '',
-                    'Cancelled Date' => $order->order->cancelled_at ? $order->order->cancelled_at->format('d-m-Y') : '',
-                    'Refunded Date' => $order->order->refunded_at ? $order->order->refunded_at->format('d-m-Y') : '',
+                    'Order Date' => !empty($order->order->created_at)
+                        ? Carbon::parse($order->order->created_at)->format('d-m-Y')
+                        : '',
+                    'Shipped Date' => !empty($order->order->shipped_at)
+                        ? Carbon::parse($order->order->shipped_at)->format('d-m-Y')
+                        : '',
+                    'Delivered Date' =>  !empty($order->order->delivered_at)
+                        ? Carbon::parse($order->order->delivered_at)->format('d-m-Y')
+                        : '',
+                    'Cancelled Date' => !empty($order->order->cancelled_at)
+                        ? Carbon::parse($order->order->cancelled_at)->format('d-m-Y')
+                        : '',
+                    'Refunded Date' =>  !empty($order->order->refunded_at)
+                        ? Carbon::parse($order->order->refunded_at)->format('d-m-Y')
+                        : '',
                 ];
             });
         }
@@ -58,10 +69,13 @@ class ReportExport implements FromCollection, WithHeadings
                     'Subscription Plan Name' => $delivery->get_user_subscription->get_subscription->plan_name,
                     'User Name' => $delivery->get_user->name ?? '',
                     'Delivery Partner Name' => $delivery->get_user->name ?? '',
-                    'Delivery Date' => $delivery->delivery_date,
+                    'Delivery Date' => !empty($delivery->delivery_date)
+                        ? Carbon::parse($delivery->delivery_date)->format('d-m-Y')
+                        : '',
                     'Delivery Status' => $delivery->delivery_status ?? '',
                     'Pack' => $delivery->pack ?? '',
-                    'Quantity' => $delivery->quantity,
+                    'Quantity' => $delivery->quantity ?? '',
+                    'Price' => $delivery->amount ?? '',
                 ];
             });
         }
@@ -95,6 +109,7 @@ class ReportExport implements FromCollection, WithHeadings
                 'Delivery Status',
                 'Pack',
                 'Quantity',
+                'Price',
             ];
         }
         return [];

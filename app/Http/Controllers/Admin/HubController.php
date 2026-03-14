@@ -26,8 +26,8 @@ class HubController extends Controller
            'type' => [
                'required',
                'in:1,2',
-               function ($attribute, $value, $fail) {
-                   if ($value == 1 && \App\Models\Hub::where('type', 1)->exists()) {
+               function ($attribute, $value, $fail) use ($request){
+                   if (empty($request['hub_id']) && $value == 1 && \App\Models\Hub::where('type', 1)->exists()) {
                        $fail('Only one record with type = 1 is allowed.');
                    }
                },
