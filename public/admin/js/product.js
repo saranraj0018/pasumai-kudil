@@ -159,6 +159,7 @@ $(function () {
             is_featured: $(this).data("is_featured"),
             image: $(this).data("image"),
             expiry_date: $(this).data("expiry_date"),
+            existing_image: $(this).data("existing_image"),
         };
         // Show modal
         $("#productCreateModal").css("display", "flex");
@@ -183,7 +184,7 @@ $(function () {
         alpine.form.tax_percentage = product.tax_percentage || "";
         alpine.form.is_featured_product = product.is_featured || "";
         alpine.form.expiry_date = product.expiry_date || "";
-        alpine.existing_image = product.image || "";
+        alpine.existing_image = product.existing_image || "";
         alpine.previewUrl = product.image || "";
         $("#variantContainer").empty();
         $.ajax({
