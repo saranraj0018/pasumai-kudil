@@ -32,7 +32,7 @@
                                 <td class="px-4 py-3">{{ $user->name ?? ''}}</td>
                                 <td class="px-4 py-3">{{ $user->mobile_number ?? '' }}</td>
                                 <td class="px-4 py-3">{{ $user->address ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $user->get_wallet->balance ?? 0 }}</td>
+                                <td class="px-4 py-3">{{ $user->subscriptions?->wallet?->balance ?? 0 }}</td>
                                 <td class="px-4 py-3 flex justify-center gap-4">
                                     <!-- View -->
 

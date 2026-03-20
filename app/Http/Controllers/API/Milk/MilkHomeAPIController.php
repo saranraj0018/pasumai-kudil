@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API\Milk;
 
+use App\Models\Payment;
 use Exception;
 use Carbon\Carbon;
 use App\Models\User;
@@ -133,8 +134,6 @@ class MilkHomeAPIController extends Controller
     {
         $validator = Validator::make($request->all(), [
             "order_amount" => 'required|numeric',
-            //            "paymentMode" => 'required|string', need to change
-            //            "addressId" => 'required|string',
         ]);
 
         #check if successful
@@ -156,9 +155,11 @@ class MilkHomeAPIController extends Controller
             ], 400);
         }
 
-        $useraddresscheck = User::where('id', $user->id)->first();
+        $user_address = User::where('id', $user->id)->first();
 
-        if ($useraddresscheck->address == null && $useraddresscheck->address == '' || $useraddresscheck->latitude == '' && $useraddresscheck->latitude == null || $useraddresscheck->longitude == null && $useraddresscheck->longitude == '' || $useraddresscheck->city == null && $useraddresscheck->city == '') {
+        if ($user_address->address == null && $user_address->address == '' ||
+            $user_address->latitude == '' && $user_address->latitude == null ||
+            $user_address->longitude == null && $user_address->longitude == '' || $user_address->city == null && $user_address->city == '') {
             return response()->json([
                 'status' => 404,
                 'message' => 'Address not found.Please enter your address!',
@@ -174,12 +175,63 @@ class MilkHomeAPIController extends Controller
             ], 404);
         }
 
-        $razorPayOrder = razorPay()->createOrder($request['order_amount']);
+        $orderId = 'order_' . time();
+
+        $baseUrl = env('CASHFREE_ENV') === 'sandbox'
+            ? 'https://sandbox.cashfree.com'
+            : 'https://api.cashfree.com';
+
+        $headers = [
+            "Content-Type: application/json",
+            "x-api-version: 2023-08-01",
+            "x-client-id: " . env('CASHFREE_APP_ID'),
+            "x-client-secret: " . env('CASHFREE_SECRET_KEY'),
+        ];
+
+        $amount = (float) preg_replace('/[^\d.]/', '', $request->order_amount);
+
+        $orderPayload = [
+            "order_id" => $orderId,
+            "order_amount" => $amount,
+            "order_currency" => "INR",
+            "customer_details" => [
+                "customer_id" => (string) $user->id,
+                "customer_name" => $user->name,
+                "customer_email" => $user->email,
+                "customer_phone" => $user->mobile_number,
+            ],
+        ];
+
+        $ch = curl_init("$baseUrl/pg/orders");
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_POSTFIELDS => json_encode($orderPayload),
+        ]);
+
+        $orderResponse = json_decode(curl_exec($ch), true);
+        curl_close($ch);
+
+        if (!isset($orderResponse['payment_session_id'])) {
+            return response()->json($orderResponse, 500);
+        }
+
+        $payment = new Payment();
+        $payment->user_id = $user->id;
+        $payment->address_id = $request['address_id'];
+        $payment->order_id = $orderId;
+        $payment->amount = $amount;
+        $payment->status = 'PENDING';
+        $payment->save();
+
+
         return response()->json([
             'status' => 200,
-            'message' => 'Subscription created successfully!',
-            'order_id' => $razorPayOrder->id,
-        ], 200);
+            'message' => 'Order Created successful',
+            'order_id' => $orderResponse['order_id'],
+            'payment_session_id' => $orderResponse['payment_session_id'],
+        ]);
     }
 
     private function getMappedDeliveryPartner($user)
@@ -367,6 +419,11 @@ class MilkHomeAPIController extends Controller
             // --- Update User with Active Subscription ---
             $user->subscription_id = $user_subscription->id;
             $user->save();
+
+            $payment = Payment::where('order_id', $request['order_id'])->first();
+            $payment->status = "PAID";
+            $payment->other = $request->others ?? null;
+            $payment->save();
             // $get_user = User::where('id', $request['user_id'])->first();
 
             event(new NewNotification($user->id, "Subscription Added", "  $user->name has added a new Subscription!", 2, 1));

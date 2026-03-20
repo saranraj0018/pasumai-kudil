@@ -24,6 +24,11 @@ class UserSubscription extends Model
         return $this->belongsTo(Subscription::class, 'subscription_id', 'id');
     }
 
+    public function wallet()
+    {
+        return $this->belongsTo(Wallet::class, 'id', 'subscription_id');
+    }
+
     public function getStatusAttribute($status)
     {
         return $status == 1

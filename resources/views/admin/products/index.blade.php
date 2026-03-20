@@ -128,6 +128,7 @@
                                             data-tax_percentage="{{ $product->details->tax_percentage ?? '' }}"
                                             data-is_featured="{{ $product->details->is_featured_product ?? '' }}"
                                             data-expiry_date="{{ $product->expiry_date ?? '' }}"
+                                            data-existing_image="{{ $product->image ?? '' }}"
                                             data-image="{{ $product->image ? asset('storage/' . $product->image) : '' }}">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>

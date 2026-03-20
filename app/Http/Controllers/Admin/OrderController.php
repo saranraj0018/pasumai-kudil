@@ -21,7 +21,9 @@ class OrderController extends Controller
 
     public function view(Request $request)
     {
-        $orders = Order::with('user', 'userAddress', 'orderDetails')
+        $orders = Order::with('user', 'userAddress', 'orderDetails', 'payment')->whereHas('payment', function ($q) {
+            $q->where('status', 'PAID');
+        })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('admin.orders.view', compact('orders'));
@@ -49,11 +51,11 @@ class OrderController extends Controller
         $status = (int) $request->status;
         $date   = $request->date;
 
-//        // Reset timestamps
-//        $order->shipped_at   = null;
-//        $order->delivered_at = null;
-//        $order->cancelled_at = null;
-//        $order->refunded_at  = null;
+        //        // Reset timestamps
+        //        $order->shipped_at   = null;
+        //        $order->delivered_at = null;
+        //        $order->cancelled_at = null;
+        //        $order->refunded_at  = null;
 
         switch ($status) {
             case 3:
@@ -121,7 +123,6 @@ class OrderController extends Controller
                     'type' => 1
                 ]
             );
-
         }
     }
 }
