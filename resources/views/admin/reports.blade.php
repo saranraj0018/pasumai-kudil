@@ -83,28 +83,28 @@
                             @endif
 
                             @if ($filters['report_type'] == 'detailed')
-                            @if($filters['type'] === 'grocery')
-                                <tr>
-                                    <th class="px-4 py-3 border">Order ID</th>
-                                    <th class="px-4 py-3 border text-left">User</th>
-                                    <th class="px-4 py-3 border text-left">User Name</th>
-                                    <th class="px-4 py-3 border text-left">Qty</th>
-                                    <th class="px-4 py-3 border text-left">Price</th>
-                                    <th class="px-4 py-3 border text-left">Total</th>
-                                    <th class="px-4 py-3 border">Date</th>
-                                </tr>
-                            @endif
-                            @if ($filters['type'] === 'milk')
-                            <tr>
-                                <th class="px-4 py-3 border text-left">User Name</th>
-                                <th class="px-4 py-3 border text-left">Name</th>
-                                <th class="px-4 py-3 border text-center">Qty</th>
-                                <th class="px-4 py-3 border text-left">Price</th>
-                                <th class="px-4 py-3 border text-left">Pack</th>
-                                <th class="px-4 py-3 border text-left">Delivery Status</th>
-                                <th class="px-4 py-3 border">Date</th>
-                            </tr>
-                            @endif
+                                @if ($filters['type'] === 'grocery')
+                                    <tr>
+                                        <th class="px-4 py-3 border">Order ID</th>
+                                        <th class="px-4 py-3 border text-left">User</th>
+                                        <th class="px-4 py-3 border text-left">User Name</th>
+                                        <th class="px-4 py-3 border text-left">Qty</th>
+                                        <th class="px-4 py-3 border text-left">Price</th>
+                                        <th class="px-4 py-3 border text-left">Total</th>
+                                        <th class="px-4 py-3 border">Date</th>
+                                    </tr>
+                                @endif
+                                @if ($filters['type'] === 'milk')
+                                    <tr>
+                                        <th class="px-4 py-3 border text-left">User Name</th>
+                                        <th class="px-4 py-3 border text-left">Name</th>
+                                        <th class="px-4 py-3 border text-center">Qty</th>
+                                        <th class="px-4 py-3 border text-left">Price</th>
+                                        <th class="px-4 py-3 border text-left">Pack</th>
+                                        <th class="px-4 py-3 border text-left">Delivery Status</th>
+                                        <th class="px-4 py-3 border">Date</th>
+                                    </tr>
+                                @endif
                             @endif
                         </thead>
 

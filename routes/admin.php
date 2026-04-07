@@ -22,6 +22,20 @@ use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserlistController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/clear-cache-all', function () {
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    Artisan::call('optimize:clear');
+
+    return response()->json([
+        'status' => true,
+        'message' => 'All caches cleared successfully!'
+    ]);
+});
 
 Route::prefix('admin')->group(function () {
 
