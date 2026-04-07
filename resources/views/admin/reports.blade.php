@@ -109,13 +109,13 @@
                         </thead>
 
                         <tbody class="text-gray-700 text-sm">
-                            @php
-                                $rows = new \App\Exports\ReportExport(
-                                    $data,
-                                    $filters['type'],
-                                    $filters['report_type'],
-                                )->collection();
-                            @endphp
+                                      @php
+    $rows = (new \App\Exports\ReportExport(
+        $data,
+        $filters['type'],
+        $filters['report_type']
+    ))->collection();
+@endphp
 
                             @foreach ($rows as $row)
                                 <tr class="hover:bg-gray-50 transition">
