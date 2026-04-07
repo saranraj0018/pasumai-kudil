@@ -16,8 +16,8 @@
                     @if ($ticket_list->isNotEmpty())
                         @foreach ($ticket_list as $list)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-3">
+                                <td class="px-2 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
+                                <td class="px-2 py-3">
                                     @if ($list->image)
                                         <img src="{{ asset('storage/' . $list->image) }}"
                                             class="h-10 w-10 object-cover rounded-lg" />
@@ -25,9 +25,9 @@
                                         <span class="text-gray-400 italic">No Image</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 font-medium text-gray-900">{{ $list->get_user->name ?? '' }}</td>
-                                <td class="px-3 py-3">{{ $list->description ?? '' }}</td>
-                                <td class="px-5 py-3">
+                                <td class="px-2 py-3 font-medium text-gray-900">{{ $list->get_user->name ?? '' }}</td>
+                                <td class="px-2 py-3 w-100">{{ $list->description ?? '' }}</td>
+                                <td class="px-2 py-3">
                                     @php
                                         $statusClass = '';
                                         $statusText = '';
@@ -45,11 +45,11 @@
                                             $statusText = 'Resolved';
                                         }
                                     @endphp
-                                    <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $statusClass }}">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusClass }}">
                                         {{ $statusText }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 flex justify-center">
+                                <td class="px-2 py-3 flex justify-center">
                                     @can('edit_ticket')
                                         <button class="text-blue-600 hover:text-blue-800 transition editstatusSave"
                                             data-id="{{ $list->id }}" data-status="{{ $list->status ?? '' }}"  data-image="{{ $list->image ? asset('storage/'.$list->image) : '' }}">

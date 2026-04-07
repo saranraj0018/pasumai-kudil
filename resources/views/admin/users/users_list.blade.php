@@ -60,7 +60,7 @@
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="6" class="text-center">No Users found</td>
+                            <td colspan="6" class="text-center py-5">No Users found</td>
                         </tr>
                     @endif
                 </tbody>

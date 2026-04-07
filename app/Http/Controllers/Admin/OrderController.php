@@ -77,7 +77,7 @@ class OrderController extends Controller
 
         // Notification should NEVER break business logic
         try {
-            if ($user->device_token) {
+            if ($user->fcm_token) {
                 match ($status) {
                     2 => $this->sendOrderNotification($user, $order, 'inprogress', 'Order In Progress'),
                     3 => $this->sendOrderNotification($user, $order, 'shipped', 'Order Shipped'),

@@ -101,10 +101,10 @@
                                         <span class="text-gray-400 italic">No Image</span>
                                     @endif
                                 </td>
-                                <td class="px-2 py-3">
+                                <td class="px-2 py-3 w-100">
                                     {{ $product->description ?? '' }}
                                 </td>
-                                <td class="px-2 py-3">
+                                <td class="px-2 py-3 w-50">
                                     {{ $product->benefits ?? '' }}
                                 </td>
                                 <td class="px-2 py-3">
