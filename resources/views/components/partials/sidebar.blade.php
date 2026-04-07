@@ -13,6 +13,9 @@
                     @can('view_category')
                         <x-menu.item route="view.category" name="Category" icon="fa-layer-group" />
                     @endcan
+                    @can('view_unit')
+                     <x-menu.item route="view.unit" name="Unit" icon="fa-wrench" />
+                    @endcan
                     @can('view_products')
                         <x-menu.item route="lists.products" name="Products" icon="fa-boxes" />
                     @endcan
@@ -86,11 +89,14 @@
                     <x-menu.item trigger name="Settings" icon="fa-diagram-project" />
                 </x-slot:trigger>
                 <x-slot:menus>
+                    @can('view_faq')
+                        <x-menu.item route="view.faq" name="FAQ" icon="fa-question-circle" />
+                    @endcan
                     @can('view_roles')
-                        <x-menu.item route="roles_list" name="Roles" icon="fa-image" />
+                        <x-menu.item route="roles_list" name="Roles" icon="fa-users" />
                     @endcan
                     @can('view_roles_permissions')
-                        <x-menu.item route="roles_and_permission" name="Role & Permissions" icon="fa-image" />
+                        <x-menu.item route="roles_and_permission" name="Role & Permissions" icon="fa-shield" />
                     @endcan
                 </x-slot:menus>
             </x-menu.list>

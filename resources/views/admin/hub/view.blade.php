@@ -15,7 +15,8 @@
                 <tr class="bg-[#ab5f00] text-white text-sm uppercase tracking-wider">
                     <th class="px-3 py-2">ID</th>
                     <th class="px-3 py-2">Name</th>
-                    <th class="px-3 py-2">Email</th>
+                    <th class="px-3 py-2">Type</th>
+                    <th class="px-3 py-2">Shop Contact Number</th>
                     <th class="px-3 py-2">Status</th>
                     <th class="px-3 py-2">Created At</th>
                     <th class="px-3 py-2 text-center">Actions</th>
@@ -24,9 +25,16 @@
                 <tbody id="hubTableBody" class="divide-y divide-gray-200">
                 @foreach($hub_list as $list)
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-4 py-3 font-medium text-gray-900">{{ $list->id }}</td>
+                        <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
                         <td class="px-4 py-3">{{ $list->name }}</td>
-                        <td class="px-4 py-3">{{ $list->user?->email ?? '-' }}</td>
+                        <td class="px-4 py-3">
+                            @if ($list->type == 1)
+                              <span class="bg-green-100 text-green-700 px-3 py-1 text-xs font-semibold rounded-full">Grocery</span>
+                            @else
+                              <span class="bg-yellow-100 text-yellow-700 px-3 py-1 text-xs font-semibold rounded-full">Milk</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3">{{ $list->shop_contact_number ?? '' }}</td>
                         <td class="px-4 py-3">
                             <span class="px-3 py-1 text-xs font-semibold rounded-full
                                 {{ $list->status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
@@ -44,6 +52,7 @@
                                 data-latitude="{{ $list->latitude }}"
                                 data-longitude="{{ $list->longitude }}"
                                 data-type="{{ $list->type }}"
+                                data-shop_contact_number="{{ $list->shop_contact_number }}"
                                 data-status="{{ $list->status }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>

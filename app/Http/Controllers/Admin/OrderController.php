@@ -79,6 +79,7 @@ class OrderController extends Controller
         try {
             if ($user->device_token) {
                 match ($status) {
+                    2 => $this->sendOrderNotification($user, $order, 'inprogress', 'Order In Progress'),
                     3 => $this->sendOrderNotification($user, $order, 'shipped', 'Order Shipped'),
                     4 => $this->sendOrderNotification($user, $order, 'delivered', 'Order Delivered'),
                     5 => $this->sendOrderNotification($user, $order, 'cancelled', 'Order Cancelled'),

@@ -1,23 +1,24 @@
 <?php
 
-use App\Http\Controllers\API\OrderController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\AddressController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
-use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\CategoryController;
-use App\Http\Controllers\API\ProductController;
-use App\Http\Controllers\API\ProfileController;
 use App\Http\Controllers\API\CouponController;
-use App\Http\Controllers\API\AddressController;
+use App\Http\Controllers\API\FaqController;
 use App\Http\Controllers\API\FCMController;
 use App\Http\Controllers\API\Grocery\GroceryLocationFindController;
+use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\Milk\ManageDeliveriesController;
 use App\Http\Controllers\API\Milk\MilkAPIController;
 use App\Http\Controllers\API\Milk\MilkHomeAPIController;
 use App\Http\Controllers\API\Milk\MilkOrderAPIController;
 use App\Http\Controllers\API\Milk\UserAddressController;
+use App\Http\Controllers\API\OrderController;
+use App\Http\Controllers\API\ProductController;
+use App\Http\Controllers\API\ProfileController;
 use App\Http\Controllers\API\Ticket\TicketController;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'user'], function () {
     Route::post('/register', [AuthController::class, 'userRegister']);
@@ -110,6 +111,9 @@ Route::group(['prefix' => 'user'], function () {
 
         //grocery-api
         Route::post('/grocery-location-find', [GroceryLocationFindController::class, 'GroceryLocationFind']);
+
+        // faq
+        Route::get('/faqs', [FaqController::class, 'view']);
 
     });
 });

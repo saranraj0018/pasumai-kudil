@@ -26,33 +26,35 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 font-medium text-gray-900">{{ $list->get_user->name ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $list->description ?? '' }}</td>
-                                <td class="px-4 py-3">
+                                <td class="px-3 py-3">{{ $list->description ?? '' }}</td>
+                                <td class="px-5 py-3">
                                     @php
                                         $statusClass = '';
                                         $statusText = '';
-
                                         if ($list->status == 1) {
-                                            $statusClass = 'bg-green-100 text-green-700';
-                                            $statusText = 'Open';
+                                            $statusClass = 'bg-gray-100 text-gray-700';
+                                            $statusText = 'Pending';
                                         } elseif ($list->status == 2) {
-                                            $statusClass = 'bg-yellow-100 text-yellow-700';
-                                            $statusText = 'Closed';
+                                            $statusClass = 'bg-blue-100 text-blue-700';
+                                            $statusText = 'In Progress';
                                         } elseif ($list->status == 3) {
-                                            $statusClass = 'bg-red-100 text-red-700';
-                                            $statusText = 'Rejected';
+                                            $statusClass = 'bg-orange-100 text-orange-700';
+                                            $statusText = 'On Hold';
+                                        } else {
+                                            $statusClass = 'bg-green-100 text-green-700';
+                                            $statusText = 'Resolved';
                                         }
                                     @endphp
-
                                     <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $statusClass }}">
                                         {{ $statusText }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 flex justify-center">
                                     @can('edit_ticket')
-                                    <button class="text-blue-600 hover:text-blue-800 transition editstatusSave" data-id="{{ $list->id }}" data-status="{{ $list->status ?? '' }}">
-                                       <i class="fa-solid fa-pen-to-square"></i>
-                                   </button>
+                                        <button class="text-blue-600 hover:text-blue-800 transition editstatusSave"
+                                            data-id="{{ $list->id }}" data-status="{{ $list->status ?? '' }}"  data-image="{{ $list->image ? asset('storage/'.$list->image) : '' }}">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
                                     @endcan
                                 </td>
                             </tr>

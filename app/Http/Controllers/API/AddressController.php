@@ -36,6 +36,7 @@ class AddressController extends Controller
         'is_default' => 'nullable|boolean',
         'latitude' => 'nullable|numeric',
         'longitude' => 'nullable|numeric',
+        'alt_mobile_number' => 'required|string',
     ]);
 
     if ($validator->fails()) {
@@ -58,6 +59,7 @@ class AddressController extends Controller
     $address->is_default = $data['is_default'] ?? false;
     $address->latitude = $data['latitude'] ?? null;
     $address->longitude = $data['longitude'] ?? null;
+    $address->alt_mobile_number = $data['alt_mobile_number'];
     $address->created_by = Auth::id();
 
     $address->save();
@@ -83,6 +85,7 @@ public function update(Request $request)
             'is_default' => 'nullable|boolean',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'alt_mobile_number' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -114,6 +117,7 @@ public function update(Request $request)
         $address->address_type = $data['address_type'];
         $address->latitude = $data['latitude'] ?? null;
         $address->longitude = $data['longitude'] ?? null;
+        $address->alt_mobile_number = $data['alt_mobile_number'];
         $address->updated_by = Auth::id();
 
         $address->save();
@@ -196,6 +200,4 @@ public function setDefaultAddress(Request $request) {
         ], $th->getCode() ?: 500);
     }
 }
-
-
 }

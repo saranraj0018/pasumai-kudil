@@ -31,6 +31,7 @@ $(function () {
                 });
             });
     }
+
     attachPaginationEvents();
 
     $(document).on("submit", "#productAddForm", function (e) {
@@ -62,6 +63,21 @@ $(function () {
                 id: ".stock",
                 condition: (val) => val === "",
                 message: "Stock is required",
+            },
+            {
+                id: "#expiry_date",
+                condition: (val) => val === "",
+                message: "Expiry Date is required",
+            },
+            {
+                id: ".weight",
+                condition: (val) => val === "",
+                message: "Weight is required",
+            },
+            {
+                id: ".weightUnit",
+                condition: (val) => val === "",
+                message: "Weight Unit is required",
             },
         ];
 
@@ -140,6 +156,20 @@ $(function () {
             },
         );
     });
+
+    function getUnitOptions(selected = "") {
+        let options = `<option value="">Select Unit</option>`;
+
+        units.forEach((unit) => {
+            options += `
+                <option value="${unit.id}" ${selected == unit.id ? "selected" : ""}>
+                    ${unit.name}
+                </option>
+            `;
+        });
+
+        return options;
+    }
 
     $(document).on("click", ".editProduct", function () {
         let product = {
@@ -222,32 +252,12 @@ $(function () {
                                     variant.weight ?? ""
                                 }">
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Weight Unit</label>
-                                <select name="variants[${index}][weight_unit]" class="weightUnit weightUnitSelect border border-gray-300 rounded-lg w-full p-2">
-                                    <option value="">Select Unit</option>
-                                    <option value="kg" ${
-                                        variant.weight_unit === "kg"
-                                            ? "selected"
-                                            : ""
-                                    }>kg</option>
-                                     <option value="g" ${
-                                         variant.weight_unit === "g"
-                                             ? "selected"
-                                             : ""
-                                     }>g</option>
-                                     <option value="ml" ${
-                                         variant.weight_unit === "ml"
-                                             ? "selected"
-                                             : ""
-                                     }>ml</option>
-                                    <option value="l" ${
-                                        variant.weight_unit === "l"
-                                            ? "selected"
-                                            : ""
-                                    }>l</option>
-                                </select>
-                            </div>
+                           <div>
+    <label class="block text-sm font-medium text-gray-700">Weight Unit</label>
+    <select name="variants[${index}][weight_unit]" class="weightUnit weightUnitSelect border border-gray-300 rounded-lg w-full p-2">
+        ${getUnitOptions(variant.weight_unit)}
+    </select>
+</div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Tax Type</label>
                                 <select name="variants[${index}][tax_type]" class="taxType taxTypeSelect border border-gray-300 rounded-lg w-full p-2">
@@ -350,37 +360,28 @@ $(function () {
         let variantRow = `
     <div class="variantRow border rounded-xl p-4 mb-4 bg-gray-50 shadow-sm" data-index="${variantIndex}">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-
             <div>
                 <label class="block text-sm font-medium text-gray-700">Sale Price</label>
                 <input type="number" step="0.01" name="variants[${variantIndex}][sale_price]" class="salePrice mt-1 block w-full border rounded-md p-2"/>
             </div>
-
             <div>
                 <label class="block text-sm font-medium text-gray-700">Regular Price<span class="text-red-500">*</span></label>
                 <input type="number" step="0.01" name="variants[${variantIndex}][regular_price]" class="regularPrice regularPriceInput mt-1 block w-full border rounded-md p-2" required/>
             </div>
-
             <div>
                 <label class="block text-sm font-medium text-gray-700">Purchase Price<span class="text-red-500">*</span></label>
                 <input type="number" step="0.01" name="variants[${variantIndex}][purchase_price]" class="purchasePrice purchasePriceInput mt-1 block w-full border rounded-md p-2" required/>
             </div>
-
             <div>
                 <label class="block text-sm font-medium text-gray-700">Weight</label>
                 <input type="number" step="0.01" name="variants[${variantIndex}][weight]" class="weight mt-1 block w-full border rounded-md p-2"/>
             </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Weight Unit</label>
-                <select name="variants[${variantIndex}][weight_unit]" class="weightUnit mt-1 block w-full border rounded-md p-2">
-                    <option value="kg">kg</option>
-                    <option value="g">g</option>
-                    <option value="ml">ml</option>
-                    <option value="l">l</option>
-                </select>
+             <div>
+                    <label class="block text-sm font-medium text-gray-700">Weight Unit</label>
+                    <select name="variants[${variantIndex}][weight_unit]" class="weightUnit mt-1 block w-full border rounded-md p-2">
+                        ${getUnitOptions()}
+                    </select>
             </div>
-
             <div>
                 <label class="block text-sm font-medium text-gray-700">Tax Type</label>
                 <select name="variants[${variantIndex}][tax_type]" class="taxType taxTypeSelect mt-1 block w-full border rounded-md p-2">
@@ -390,19 +391,15 @@ $(function () {
                     <option value="2">Exclusive</option>
                 </select>
             </div>
-
             <div class="taxPercentageDiv" style="display:none;">
                 <label class="block text-sm font-medium text-gray-700">Tax Percentage (%)</label>
                 <input type="number" step="0.01" name="variants[${variantIndex}][tax_percentage]" class="taxPercentage taxPercentageInput mt-1 block w-full border rounded-md p-2"/>
             </div>
-
             <div>
                 <label class="block text-sm font-medium text-gray-700">Stock<span class="text-red-500">*</span></label>
                 <input type="number" step="1" name="variants[${variantIndex}][stock]" class="stock mt-1 block w-full border rounded-md p-2"/>
             </div>
-
         </div>
-
         <div class="flex justify-end mt-3">
             <button type="button" class="removeVariantBtn text-red-600 hover:text-red-800">Remove Variant</button>
         </div>
@@ -414,7 +411,6 @@ $(function () {
 
     $(document).on("click", ".removeVariantBtn", function () {
         $(this).closest(".variantRow").remove();
-
         if ($(".variantRow").length === 0) {
             $("#noVariantMsg").show();
         }

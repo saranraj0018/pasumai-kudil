@@ -20,7 +20,7 @@
                 <tbody id="roleTableBody" class="divide-y divide-gray-200">
                 @foreach($roles as $role)
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-4 py-3 font-medium text-gray-900">{{ $role->id }}</td>
+                        <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
                         <td class="px-4 py-3">{{ $role->name ?? '' }}</td>
                         <td class="px-4 py-3 flex justify-center gap-4">
                             @can('edit_category')

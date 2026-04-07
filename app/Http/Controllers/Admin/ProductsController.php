@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductDetail;
+use App\Models\Unit;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +26,7 @@ class ProductsController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         $this->data['category'] = Category::where('status', 1)->get();
+        $this->data['units'] = Unit::where('status', 1)->get();
         $this->data['search'] = $search;
         return view('admin.products.index')->with($this->data);
     }
@@ -108,7 +110,7 @@ class ProductsController extends Controller
                         $product_details->regular_price = $variantData['regular_price'] ?? 0;
                         $product_details->purchase_price = $variantData['purchase_price'] ?? 0;
                         $product_details->weight  = $variantData['weight'] ?? 0;
-                        $product_details->weight_unit  = $variantData['weight_unit'] ?? 0;
+                        $product_details->weight_unit  = $variantData['weight_unit'] ?? '';
                         $product_details->tax_type   = $variantData['tax_type'] ?? 0;
                         $product_details->tax_percentage   = $variantData['tax_percentage'] ?? 0;
                         $product_details->stock   = $variantData['stock'] ?? 0;

@@ -50,19 +50,16 @@
                 <canvas id="orderChart" width="300" height="300"></canvas>
             </div>
         </div>
-        <div class="bg-white rounded-xl shadow-md">
-
+        {{-- <div class="bg-white rounded-xl shadow-md">
             <div class="border-b px-4 py-3 font-semibold text-gray-700 flex items-center justify-between">
-                <span>Product Summary</span>
+                <span>Product Stock Summary</span>
                 <i class="fa-solid fa-chart-line text-indigo-500"></i>
             </div>
-
             <div class="p-6 space-y-6">
-
                 <!-- TOTAL PRODUCTS -->
                 <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
                     <div>
-                        <p class="text-gray-500 text-sm">Total Products</p>
+                        <p class="text-gray-500 text-sm">Total Products Stock</p>
                         <h2 class="text-2xl font-bold text-gray-800" id="products_stocks_count">0</h2>
                     </div>
 
@@ -70,7 +67,6 @@
                         <i class="fa-solid fa-box text-indigo-600 text-lg"></i>
                     </div>
                 </div>
-
                 <!-- SOLD PERCENT -->
                 <div>
                     <div class="flex justify-between mb-1">
@@ -84,7 +80,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- REMAINING STOCK -->
                 <div>
                     <div class="flex justify-between mb-1">
@@ -98,10 +93,8 @@
                         </div>
                     </div>
                 </div>
-
             </div>
-
-        </div>
+        </div> --}}
         <div class="card shadow-lg rounded-xl">
             <div class="card-header bg-[#7f4f24] text-black font-semibold p-2">
                 Monthly Revenue
@@ -182,19 +175,6 @@
                 month: month
             },
             success: function(res) {
-                $("#products_stocks_count").text(res.totalStock);
-
-                let soldPercent = res.percentage;
-
-                $("#sold_percent").text(soldPercent + "%");
-
-                $("#sold_progress").css("width", soldPercent + "%");
-
-                let remaining = 100 - soldPercent;
-
-                $("#remaining_percent").text(remaining + "%");
-
-                $("#remaining_progress").css("width", remaining + "%");
                 $("#total_products").text(res.total_products);
                 $("#total_orders").text(res.total_orders);
                 $("#total_users").text(res.total_users);

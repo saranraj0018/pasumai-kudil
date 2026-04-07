@@ -21,7 +21,7 @@
                 <tbody id="orderTableBody" class="divide-y divide-gray-200">
                     @foreach ($orders as $order)
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-4 py-3">{{ $order->id }}</td>
+                            <td class="px-4 py-3">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3 font-mono">{{ $order->order_id }}</td>
                             <td class="px-4 py-3">{{ $order->user->name ?? 'Guest' }}</td>
                             <td class="px-4 py-3">{{ $order->phone }}</td>

@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('no action');
             $table->string('description');
             $table->string('image')->nullable();
-            $table->enum('status', ['1', '2','3'])
+            $table->enum('status', ['1', '2','3','4'])
                 ->default('1')
-                ->comment('1:open, 2:closed, 3:rejected');
+                ->comment('1:Pending, 2:In Progress, 3:On Hold , 4: Resolved');
             $table->timestamps();
         });
     }

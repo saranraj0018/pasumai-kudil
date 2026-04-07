@@ -2,11 +2,13 @@
     open: false,
     form: {
         status: '',
+        previewUrl: '',
     },
     closeModal() {
         this.open = false;
         this.form = {
-            status: ''
+            status: '',
+            previewUrl: '',
         };
     }
 }" x-cloak>
@@ -15,7 +17,7 @@
             <div class="absolute inset-0 bg-black/40" @click="closeModal()"></div>
             <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-[50%] relative z-50">
                 <h2 class="text-2xl font-bold text-gray-800">Ticket Status Change</h2>
-                <form id="ticketstatusChangeForm" enctype="multipart/form-data" novalidate class="flex flex-col justify-start items-start w-full  h-[25vh]">
+                <form id="ticketstatusChangeForm" enctype="multipart/form-data" novalidate class="flex flex-col justify-start items-start w-full h-full">
                     @csrf
                     <input type="hidden" name="ticket_id" x-model="form.ticket_id" id="ticket_id" />
                     <div class="p-5 space-y-3">
@@ -25,13 +27,19 @@
                                 <x-label>Status</x-label>
                                 <x-select x-model="form.status" name="status" id="status" required>
                                     <option value="" selected disabled>Please Select Status</option>
-                                    <option value="2">Closed</option>
-                                    <option value="3">Rejected</option>
+                                    <option value="2">In Progress</option>
+                                    <option value="3">On Hold</option>
+                                    <option value="4">Resolved</option>
                                 </x-select>
                             </div>
+                       <div class="col-span-2">
+                        <div class="mt-4 flex justify-center">
+                        <img :src="previewUrl" x-show="previewUrl"
+                             class="w-full max-h-[50vh] rounded-lg border border-gray-300 shadow-md object-cover" />
                         </div>
+                       </div>
                     </div>
-                    <!-- Buttons -->
+                    </div>
                     <!-- Buttons -->
                     <div class="flex items-center justify-end gap-3 pt-4 w-full">
                         <button type="button" @click="closeModal()"

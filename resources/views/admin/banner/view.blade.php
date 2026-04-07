@@ -21,7 +21,7 @@
                 <tbody id="bannerTableBody" class="divide-y divide-gray-200">
                     @foreach ($banners as $banner)
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-4 py-3">{{ $banner->id }}</td>
+                            <td class="px-4 py-3">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3">
                                 <span
                                     class="px-3 py-1 text-xs font-semibold rounded-full

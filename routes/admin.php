@@ -1,25 +1,27 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\Dashboard;
 use App\Http\Controllers\Admin\Authenticate;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\UserlistController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\Dashboard;
 use App\Http\Controllers\Admin\DeliveryListController;
 use App\Http\Controllers\Admin\DeliveryPartnerController;
-use App\Http\Controllers\Admin\ProductsController;
-use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\ShippingController;
+use App\Http\Controllers\Admin\FAQController;
 use App\Http\Controllers\Admin\HubController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductImportExportController;
+use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\Settings\RolesAndPermissionsController;
+use App\Http\Controllers\Admin\ShippingController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TodayDeliveryController;
+use App\Http\Controllers\Admin\UnitController;
+use App\Http\Controllers\Admin\UserlistController;
 use App\Http\Controllers\NotificationController;
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->group(function () {
 
@@ -156,5 +158,19 @@ Route::prefix('admin')->group(function () {
         // Reports
         Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
         Route::post('/reports-export', [ReportsController::class, 'export'])->name('export_report');
+
+        // Unit
+        Route::prefix('unit')->controller(UnitController::class)->group(function () {
+            Route::get('/list', 'view')->name('view.unit');
+            Route::post('/save', 'save')->name('save.unit');
+            Route::post('/delete', 'destroy')->name('delete.unit');
+        });
+
+        // FAQ
+        Route::prefix('faq')->controller(FAQController::class)->group(function () {
+            Route::get('/list', 'view')->name('view.faq');
+            Route::post('/save', 'save')->name('save.faq');
+            Route::post('/delete', 'destroy')->name('delete.faq');
+        });
     });
 });

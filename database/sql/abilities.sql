@@ -104,5 +104,26 @@ INSERT INTO `abilities` (`id`, `title`, `ability`, `menu_id`, `main_menu`, `rout
 (84, 'Delete Roles & Permissions', 'delete_roles_permissions', 81, 'n', ''),
 (85, 'View Roles & Permissions', 'view_roles_permissions', 81, 'n', ''),
 
-(86, 'Reports', 'view_report', 0, 'y', '');
+(86, 'Reports', 'view_report', 0, 'y', ''),
+
+(87, 'Unit', 'unit', 2, 'n', ''),
+(88, 'Add Unit', 'add_unit', 87, 'n', ''),
+(89, 'Edit Unit', 'edit_unit', 87, 'n', ''),
+(90, 'Delete Unit', 'delete_unit', 87, 'n', ''),
+(91, 'View Unit', 'view_unit', 87, 'n', ''),
+
+(92, 'Roles', 'roles',80, 'n', 'roles'),
+(93, 'Add Roles', 'add_roles', 92, 'n', ''),
+(94, 'Edit Roles', 'edit_roles', 92, 'n', ''),
+(95, 'Delete Roles', 'delete_roles', 92, 'n', ''),
+(96, 'View Roles', 'view_roles', 92, 'n', ''),  
+
+(97, 'Faq', 'faq',80, 'n', 'faq'),
+(98, 'Add Faq', 'add_faq', 97   , 'n', ''),
+(99, 'Edit Faq', 'edit_faq', 97   , 'n', ''),
+(100, 'Delete Faq', 'delete_faq', 97   , 'n', ''),
+(101, 'View Faq', 'view_faq', 97   , 'n', '');
+
+
+
 

@@ -132,34 +132,8 @@ class Dashboard extends Controller
         $products = ProductDetail::when($month, function ($q) use ($month) {
             $q->whereMonth('created_at', $month);
         })->get();
-        $totalStock = 0;
-        foreach ($products as $product) {
-            if (!empty($product->variants['options'])) {
-                foreach ($product->variants['options'] as $option) {
-                    $totalStock += $option['stock'] ?? 0;
-                }
-            } else {
-                $totalStock += $product->stock ?? 0;
-            }
-        }
-        $soldProducts = OrderDetail::with('order.payment')
-            ->whereHas('order.payment', function ($q) {
-                $q->where('status', 'PAID');
-            })
-            ->whereHas('order', function ($q) {
-                $q->where('status', 4);
-            })
-            ->when($month, function ($q) use ($month) {
-                $q->whereMonth('created_at', $month);
-            })->sum('quantity');
 
-        $percentage = $totalStock > 0
-            ? round(($soldProducts / $totalStock) * 100)
-            : 0;
 
-        $subscriptionPlan = Subscription::when($month, function ($q) use ($month) {
-            $q->whereMonth('created_at', $month);
-        })->get();
         $plans = UserSubscription::with('get_subscription')
             ->select('subscription_id', DB::raw('COUNT(user_id) as users_count'))
             ->when($month, function ($q) use ($month) {
@@ -193,9 +167,6 @@ class Dashboard extends Controller
             'ticket_data'   => $ticketData,
             'ordered_amount' => $deliveredAmount,
             'monthlyRevenue' => $monthlyRevenue,
-            'totalStock' => $totalStock,
-            'soldProducts' => $soldProducts,
-            'percentage' =>  $percentage,
             'subscriptionPlan' => $subscriptionPlans,
             'delivery_partner' => $delivery_partner
         ]);

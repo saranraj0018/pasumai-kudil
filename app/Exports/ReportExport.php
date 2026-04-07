@@ -2,116 +2,146 @@
 
 namespace App\Exports;
 
-use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class ReportExport implements FromCollection, WithHeadings
 {
-    protected $data;
-    protected $type;
+    protected $data, $type, $reportType;
 
-    public function __construct($data, $type)
+    public function __construct($data, $type, $reportType)
     {
         $this->data = $data;
         $this->type = $type;
+        $this->reportType = $reportType;
     }
 
+    // ================= COLLECTION =================
     public function collection()
     {
-        if ($this->type == 'grocery') {
-            return collect($this->data)->map(function ($order) {
-                if ($order->order->status == 1) {
-                    $status = 'Ordered';
-                } else if ($order->order->status == 2) {
-                    $status = 'On Hold';
-                } else if ($order->order->status == 3) {
-                    $status = 'Shipped';
-                } else if ($order->order->status == 4) {
-                    $status = 'Delivered';
-                } else if ($order->order->status == 5) {
-                    $status = 'Cancelled';
-                } else if ($order->order->status == 6) {
-                    $status = 'Refunded';
-                } else {
-                    $status = '';
-                }
-                return [
-                    'Order ID' => $order->order->order_id,
-                    'User Name' => $order->order->user->name ?? '',
-                    'Net Amount' => $order->net_amount ?? '',
-                    'Shipping Amount' => $order->order->shipping_amount ?? '',
-                    'GST Amount' => $order->order->gst_amount ?? '',
-                    'Total Amount' => $order->order->gross_amount ?? '',
-                    'Status' => $status ?? '',
-                    'Order Date' => !empty($order->order->created_at)
-                        ? Carbon::parse($order->order->created_at)->format('d-m-Y')
-                        : '',
-                    'Shipped Date' => !empty($order->order->shipped_at)
-                        ? Carbon::parse($order->order->shipped_at)->format('d-m-Y')
-                        : '',
-                    'Delivered Date' =>  !empty($order->order->delivered_at)
-                        ? Carbon::parse($order->order->delivered_at)->format('d-m-Y')
-                        : '',
-                    'Cancelled Date' => !empty($order->order->cancelled_at)
-                        ? Carbon::parse($order->order->cancelled_at)->format('d-m-Y')
-                        : '',
-                    'Refunded Date' =>  !empty($order->order->refunded_at)
-                        ? Carbon::parse($order->order->refunded_at)->format('d-m-Y')
-                        : '',
-                ];
-            });
-        }
-
-        if ($this->type == 'milk') {
-            return collect($this->data)->map(function ($delivery) {
-                return [
-                    'Subscription Plan Name' => $delivery->get_user_subscription->get_subscription->plan_name,
-                    'User Name' => $delivery->get_user->name ?? '',
-                    'Delivery Partner Name' => $delivery->get_user->name ?? '',
-                    'Delivery Date' => !empty($delivery->delivery_date)
-                        ? Carbon::parse($delivery->delivery_date)->format('d-m-Y')
-                        : '',
-                    'Delivery Status' => $delivery->delivery_status ?? '',
-                    'Pack' => $delivery->pack ?? '',
-                    'Quantity' => $delivery->quantity ?? '',
-                    'Price' => $delivery->amount ?? '',
-                ];
-            });
-        }
+        return $this->type === 'grocery'
+            ? $this->groceryReport()
+            : $this->milkReport();
     }
 
+    // ================= HEADINGS =================
     public function headings(): array
     {
-        if ($this->type == 'grocery') {
-            return [
-                'Order ID',
-                'User Name',
-                'Net Amount',
-                'Shipping Amount',
-                'GST Amount',
-                'Total Amount',
-                'Status',
-                'Order Date',
-                'Shipped Date',
-                'Delivered Date',
-                'Cancelled Date',
-                'Refunded Date'
-            ];
+        if ($this->reportType === 'summary') {
+            return ['Name', 'Total Quantity', 'Total Amount'];
         }
 
-        if ($this->type == 'milk') {
-            return [
-                'Subscription Plan Name',
-                'User Name',
-                'Delivery Partner Name',
-                'Delivery Date',
-                'Delivery Status',
-                'Pack',
-                'Quantity',
-                'Price',
-            ];
+        if ($this->reportType === 'daily') {
+            return ['Date', 'Total Quantity', 'Total Amount'];
         }
+
+        if ($this->reportType === 'detailed') {
+
+            if ($this->type === 'grocery') {
+                return ['Order ID', 'User', 'Product', 'Quantity', 'Price', 'Total', 'Date'];
+            }
+
+            if ($this->type === 'milk') {
+                return ['User', 'Subscription Name', 'Quantity', 'Price', 'Pack','Delivery Status','Date'];
+            }
+        }
+
         return [];
+    }
+
+    // ================= GROCERY =================
+    private function groceryReport()
+    {
+        $rows = collect();
+        if ($this->reportType === 'detailed') {
+            foreach ($this->data as $item) {
+                $rows->push([
+                    $item->order_id ?? '',
+                    $item->order->user->name ?? '',
+                    $item->product->name ?? '',
+                    $item->quantity ?? 0,
+                    $item->net_amount ?? 0,
+                    $item->order->gross_amount ?? 0,
+                    optional($item->order->created_at)->format('Y-m-d'),
+                ]);
+            }
+        }
+
+        elseif ($this->reportType === 'summary') {
+            $group = $this->data->groupBy('product_id');
+            foreach ($group as $items) {
+                $rows->push([
+                    optional($items->first()->product)->name ?? '',
+                    $items->sum('quantity'),
+                    $items->sum(fn($i) => $i->order->gross_amount ?? 0)
+                ]);
+            }
+        }
+
+        elseif ($this->reportType === 'daily') {
+            $group = $this->data->groupBy(
+                fn($i) =>
+                optional($i->order->created_at)->format('Y-m-d')
+            );
+
+            foreach ($group as $date => $items) {
+                $rows->push([
+                    $date,
+                    $items->sum('quantity'),
+                    $items->sum(fn($i) => $i->order->gross_amount ?? 0),
+                ]);
+            }
+        }
+
+        return $rows;
+    }
+
+    // ================= MILK =================
+    private function milkReport()
+    {
+        $rows = collect();
+        if ($this->reportType === 'detailed') {
+            foreach ($this->data as $item) {
+                $rows->push([
+                    $item->get_user->name ?? '',
+                    optional($item->get_user_subscription->get_subscription)->name ?? 'Milk',
+                    $item->quantity ?? 1,
+                    $item->amount ?? 0,
+                    $item->pack ?? 0,
+                    $item->delivery_status ?? '',
+                    $item->delivery_date ?? '',
+                ]);
+            }
+        }
+
+        // -------- SUMMARY --------
+        elseif ($this->reportType === 'summary') {
+            $group = $this->data->groupBy(
+                fn($i) =>
+                optional($i->get_user_subscription->get_subscription)->name ?? 'Milk'
+            );
+            foreach ($group as $name => $items) {
+                $rows->push([
+                    $name,
+                    $items->sum('quantity'),
+                    $items->sum(fn($i) => $i->amount ?? 0)
+                ]);
+            }
+        }
+
+        // -------- DAILY --------
+        elseif ($this->reportType === 'daily') {
+            $group = $this->data->groupBy('delivery_date');
+            foreach ($group as $date => $items) {
+                $rows->push([
+                    $date,
+                    $items->sum('quantity'),
+                    $items->sum(fn($i) => $i->amount ?? 0),
+                ]);
+            }
+        }
+
+        return $rows;
     }
 }

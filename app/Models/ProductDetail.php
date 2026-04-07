@@ -15,4 +15,9 @@ class ProductDetail extends Model
     {
         return $this->belongsTo(Category::class, 'category_id', 'id');
     }
+
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'weight_unit', 'id');
+    }
 }

@@ -109,7 +109,8 @@
                                 </div>
                                 <div>
                                     <x-label>Expiry Date</x-label>
-                                     <x-input type="date" x-model="form.expiry_date" name="expiry_date" id="expiry_date"/>
+                                    <x-input type="date" x-model="form.expiry_date" name="expiry_date"
+                                        id="expiry_date" />
                                 </div>
                             </div>
                         </div>
@@ -126,25 +127,28 @@
                                 </div>
                                 <div>
                                     <x-label>Regular Price<span class="text-red-500">*</span></x-label>
-                                    <x-input type="number" step="0.01" class="regularPriceInput" id="regular_price" x-model="form.regular_price"
-                                        name="variants[0][regular_price]" required/>
+                                    <x-input type="number" step="0.01" class="regularPriceInput" id="regular_price"
+                                        x-model="form.regular_price" name="variants[0][regular_price]" required />
                                 </div>
                                 <div>
                                     <x-label>Purchase Price<span class="text-red-500">*</span></x-label>
-                                    <x-input type="number" step="0.01" class="purchasePriceInput" id="purchase_price" x-model="form.purchase_price"
-                                        name="variants[0][purchase_price]" required/>
+                                    <x-input type="number" step="0.01" class="purchasePriceInput"
+                                        id="purchase_price" x-model="form.purchase_price"
+                                        name="variants[0][purchase_price]" required />
                                 </div>
                                 <div>
                                     <x-label>Weight</x-label>
-                                    <x-input type="number" step="0.01" x-model="form.weight" name="variants[0][weight]" />
+                                    <x-input type="number" step="0.01" x-model="form.weight" class="weight"
+                                        name="variants[0][weight]" />
                                 </div>
                                 <div>
                                     <x-label>Weight Unit</x-label>
-                                    <x-select x-model="form.weight_unit" name="variants[0][weight_unit]">
-                                        <option value="kg">kg</option>
-                                        <option value="g">g</option>
-                                        <option value="ml">ml</option>
-                                        <option value="l">l</option>
+                                    <x-select x-model="form.weight_unit" name="variants[0][weight_unit]"
+                                        class="weightUnit">
+                                        <option value="">Select Unit</option>
+                                        @foreach ($units as $unit)
+                                            <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                        @endforeach
                                     </x-select>
                                 </div>
                                 <div>
@@ -159,12 +163,12 @@
                                 <div x-show="form.tax_type != '0' && form.tax_type != ''">
                                     <x-label>Tax Percentage(%)</x-label>
                                     <x-input type="number" step="0.01" x-model="form.tax_percentage"
-                                        name="variants[0][tax_percentage]"/>
+                                        name="variants[0][tax_percentage]" />
                                 </div>
                                 <div>
                                     <x-label>Stock<span class="text-red-500">*</span></x-label>
                                     <x-input type="number" step="1" class="stock" x-model="form.stock"
-                                        name="variants[0][stock]" required/>
+                                        name="variants[0][stock]" required />
                                 </div>
                             </div>
 
@@ -177,7 +181,7 @@
                                         Add Variant
                                     </button>
                                 </div>
-                                  <div id="variantContainer"></div>
+                                <div id="variantContainer"></div>
                             </div>
                         </div>
                         {{-- Step 3: Review & Save --}}
@@ -261,8 +265,8 @@
                                 </div>
 
                                 <div class="mt-6">
-                                <div id="viewVariantProducts"></div>
-                            </div>
+                                    <div id="viewVariantProducts"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -306,6 +310,3 @@
         </div>
     </template>
 </div>
-
-
-

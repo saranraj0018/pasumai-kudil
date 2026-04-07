@@ -115,7 +115,7 @@ class CartController extends Controller
         $isInside = Cache::get($cacheKey);
 
         foreach ($cart_list as $item) {
-            $product = Product::with('details')->where(function ($query) {
+            $product = Product::with('details', 'details.unit')->where(function ($query) {
                 $query->whereDate('expiry_date', '>=', now())
                     ->orWhereNull('expiry_date');
             })->find($item['product_id']);
@@ -131,14 +131,48 @@ class CartController extends Controller
                 $total_tax += !empty($product->details->tax_type == 2) && !empty($product->details->tax_percentage) ? $subtotal * $product->details->tax_percentage / 100 : 0;
                 // Weight Calculation Logic
                 $weightValue = isset($variant['weight']) ? floatval($variant['weight']) : 0;
-                $weightUnit = isset($variant['weight_unit']) ? strtolower($variant['weight_unit']) : '';
+                $weightUnit = isset($variant['weight_unit']) ? strtolower(trim($variant['weight_unit'])) : '';
 
-                if ($weightUnit === "g" && $weightValue >= 1000) {
-                    $weight = ($weightValue / 1000) . "kg"; // Convert grams to kg
-                } elseif ($weightUnit === "ml" && $weightValue >= 1000) {
-                    $weight = ($weightValue / 1000) . "L"; // Convert ml to liters
+                if ($weightValue <= 0) {
+                    $weight = '0';
+                } elseif ($weightUnit === 'mg') {
+                    if ($weightValue >= 1000000) {
+                        $weight = self::cleanNumber($weightValue / 1000000) . ' kg';
+                    } elseif ($weightValue >= 1000) {
+                        $weight = self::cleanNumber($weightValue / 1000) . ' g';
+                    } else {
+                        $weight = self::cleanNumber($weightValue) . ' mg';
+                    }
+                } elseif ($weightUnit === 'g') {
+                    if ($weightValue >= 1000) {
+                        $weight = self::cleanNumber($weightValue / 1000) . ' kg';
+                    } else {
+                        $weight = self::cleanNumber($weightValue) . ' g';
+                    }
+                } elseif ($weightUnit === 'kg') {
+                    $weight = self::cleanNumber($weightValue) . ' kg';
+                } elseif ($weightUnit === 'ml') {
+                    if ($weightValue >= 1000) {
+                        $weight = self::cleanNumber($weightValue / 1000) . ' L';
+                    } else {
+                        $weight = self::cleanNumber($weightValue) . ' ml';
+                    }
+                } elseif ($weightUnit === 'l') {
+                    $weight = self::cleanNumber($weightValue) . ' L';
+                } elseif ($weightUnit === 'pc') {
+                    $weight = self::cleanNumber($weightValue) . ' pc';
+                } elseif ($weightUnit === 'dozen') {
+                    $weight = self::cleanNumber($weightValue) . ' dozen';
+                } elseif ($weightUnit === 'pkt') {
+                    $weight = self::cleanNumber($weightValue) . ' pkt';
+                } elseif ($weightUnit === 'btl') {
+                    $weight = self::cleanNumber($weightValue) . ' btl';
+                } elseif ($weightUnit === 'box') {
+                    $weight = self::cleanNumber($weightValue) . ' box';
+                } elseif ($weightUnit === 'pack') {
+                    $weight = self::cleanNumber($weightValue) . ' pack';
                 } else {
-                    $weight = $weightValue . ' ' . $weightUnit; // Keep other units unchanged
+                    $weight = self::cleanNumber($weightValue) . ' ' . $weightUnit;
                 }
 
                 $productData[] = [
@@ -150,11 +184,11 @@ class CartController extends Controller
                     "variation" => $variant ? [
                         "id" => $variant['id'] ?? 0,
                         "value" => $variant['weight'] ?? 0,
-                        "unit" => $variant['weight_unit'] ?? '0',
+                        "unit" => (string) ($variant['unit']->name ?? ''),
                         "price" => $variant['sale_price'] * $item['quantity'],
-                        "weight" => $weight,
+                        "weight" => (string) $weight,
                     ] : null,
-                    "quantity" => intValue($item['quantity']),
+                    "quantity" => (int) $item['quantity'],
                 ];
             }
         }
@@ -210,7 +244,7 @@ class CartController extends Controller
         $finalDeliveryCharge = 0;
 
         if (!empty($address_id)) {
-            $finalDeliveryCharge = self::calculateShipping($address_id);
+            $finalDeliveryCharge = max(0, self::calculateShipping($address_id));
         }
 
 
@@ -317,6 +351,11 @@ class CartController extends Controller
         }
 
         return $discount;
+    }
+
+    public static function cleanNumber($number)
+    {
+        return rtrim(rtrim(number_format($number, 2, '.', ''), '0'), '.');
     }
 
     public function createOrder(Request $request)
@@ -541,29 +580,25 @@ class CartController extends Controller
             return 0;
         }
 
-        // Get vendor details (assuming one vendor for now)
         $vendor = Shipping::where('status', 1)->first();
         if (empty($vendor)) {
             return 0;
         }
 
-        $vendor_lat = $vendor->latitude;
-        $vendor_long = $vendor->longitude;
-        $address_lat = $address_details->latitude;
-        $address_long = $address_details->longitude;
+        $distance = self::getDistanceFromGoogleMaps(
+            $vendor->latitude,
+            $vendor->longitude,
+            $address_details->latitude,
+            $address_details->longitude
+        );
+
         $free_shipping = $vendor->free_shipping ?? 0;
         $extra_charge = $vendor->extra_km ?? 0;
 
-        $distance = self::getDistanceFromGoogleMaps($vendor_lat, $vendor_long, $address_lat, $address_long);
+        $extra_distance = max(0, $distance - $free_shipping);
+        $shipping_cost = $extra_distance * $extra_charge;
 
-        if ($distance > 0 && $distance <= $free_shipping) {
-            $shipping_cost = 0; // free within 3 km
-        } else {
-            $extra_distance = $distance - $free_shipping;
-            $shipping_cost = $extra_distance * $extra_charge; // ₹50 per km after 3 km
-        }
-
-        return round($shipping_cost, 2);
+        return max(0, round($shipping_cost, 2));
     }
 
     private static function getDistanceFromGoogleMaps($lat1, $lon1, $lat2, $lon2)

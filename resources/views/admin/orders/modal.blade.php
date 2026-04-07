@@ -1,8 +1,10 @@
-<div id="orderModal" class="fixed inset-0 flex items-center justify-center z-50 overflow-auto bg-black/40 p-4" style="display:none;">
+<div id="orderModal" class="fixed inset-0 flex items-center justify-center z-50 overflow-auto bg-black/40 p-4"
+    style="display:none;">
 
     <!-- Modal -->
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[900px] mx-4 sm:mx-6 lg:mx-0 overflow-hidden flex flex-col max-h-[90vh]">
- <input type="hidden" id="idSet">
+    <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-[900px] mx-4 sm:mx-6 lg:mx-0 overflow-hidden flex flex-col max-h-[90vh]">
+        <input type="hidden" id="idSet">
         <!-- Header -->
         <div class="flex justify-between items-center p-5 border-b">
             <h2 class="text-2xl sm:text-3xl font-bold text-gray-800" id="orderModalTitle">Order #</h2>
@@ -54,7 +56,8 @@
                 <div class="flex justify-between mb-1"><span>Subtotal:</span> <span id="orderSubtotal">₹0</span></div>
                 <div class="flex justify-between mb-1"><span>GST:</span> <span id="orderGST">₹0</span></div>
                 <div class="flex justify-between mb-1"><span>Shipping:</span> <span id="orderShipping">₹0</span></div>
-                <div class="flex justify-between mb-1"><span>Coupon Discount:</span> <span id="orderCoupon">-₹0</span></div>
+                <div class="flex justify-between mb-1"><span>Coupon Discount:</span> <span id="orderCoupon">-₹0</span>
+                </div>
                 <div class="flex justify-between font-bold text-lg border-t border-gray-300 pt-2 mt-2">
                     <span>Grand Total:</span> <span id="orderGrandTotal">₹0</span>
                 </div>
@@ -63,9 +66,11 @@
             <!-- Status Update -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Order Status<span class="text-red-500">*</span></label>
+                    <label class="block font-medium text-gray-700 mb-1">Order Status<span
+                            class="text-red-500">*</span></label>
                     <select id="status" class="w-full border p-2 sm:p-3 rounded-lg text-gray-900">
                         <option value="1">Pending</option>
+                        <option value="2">In Progress</option>
                         <option value="3">Shipped</option>
                         <option value="4">Delivered</option>
                         <option value="5">Cancelled</option>
@@ -74,7 +79,7 @@
                 </div>
                 <div>
                     <label class="block font-medium text-gray-700 mb-1">Date<span class="text-red-500">*</span></label>
-                    <input type="date" id="statusDate" class="w-full border p-2 sm:p-3 rounded-lg text-gray-900"/>
+                    <input type="date" id="statusDate" class="w-full border p-2 sm:p-3 rounded-lg text-gray-900" />
                 </div>
             </div>
         </div>
@@ -82,7 +87,8 @@
         <!-- Footer Buttons -->
         <div class="flex justify-end gap-3 p-5 border-t">
             <button id="cancelModalBtn" class="px-5 py-2 border rounded-lg hover:bg-gray-100">Cancel</button>
-            <button id="saveStatusBtn" class="bg-[#ab5f00] text-white px-5 py-2 rounded-lg hover:bg-[#9c5200]">Save</button>
+            <button id="saveStatusBtn"
+                class="bg-[#ab5f00] text-white px-5 py-2 rounded-lg hover:bg-[#9c5200]">Save</button>
         </div>
     </div>
 </div>

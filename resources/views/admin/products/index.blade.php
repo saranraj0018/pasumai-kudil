@@ -162,5 +162,6 @@
 </x-layouts.app>
 <script>
   SEARCH_URL = "{{ route('lists.products') }}";
+  let units = @json($units);
 </script>
 <script src="{{ asset('admin/js/product.js') }}?v={{ time() }}"></script>

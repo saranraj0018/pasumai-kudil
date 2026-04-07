@@ -1,4 +1,5 @@
 $(function () {
+
     $(document).on("click", "#create_hub", function () {
         openModal()
     });
@@ -85,19 +86,32 @@ $(function () {
         });
 
     }
+
     function updateLatLng(location) {
         document.getElementById('latitude').value = location.lat();
         document.getElementById('longitude').value = location.lng();
     }
-
 
     $(document).on("submit", "#hub_form", function (e) {
         e.preventDefault();
         let $saveBtn = $("#save_hub");
         // Fields to validate
         let fields = [
-            { id: "#hub_name", condition: (val) => val === "", message: "City Name is required" },
-            { id: "#type", condition: (val) => val === "", message: "Type is required" },
+            {
+                id: "#hub_name",
+                condition: (val) => val === "",
+                message: "City Name is required",
+            },
+            {
+                id: "#type",
+                condition: (val) => val === "",
+                message: "Type is required",
+            },
+            {
+                id: "#shop_contact_number",
+                condition: (val) => val === "",
+                message: "Shop Contact Number is required",
+            },
         ];
 
         let isValid = true;
@@ -168,12 +182,14 @@ $(function () {
         $("#status").val(btn.data("status"));
         $("#latitude").val(btn.data("latitude"));
         $("#longitude").val(btn.data("longitude"));
+        $("#shop_contact_number").val(btn.data("shop_contact_number"));
         initializeGoogleMap()
         setTimeout(() => {
             $('#hub_name').focus();
         }, 500);
 
     });
+
     let delete_id = 0;
     $(document).on("click", ".deleteHubBtn", function () {
         delete_id = $(this).data("id");
@@ -215,6 +231,7 @@ $(function () {
             }
         );
     });
+
     function reloadList() {
         $.get("/admin/hub/list", function (html) {
             let $tbody = $(html).find("#hubTableBody").html();

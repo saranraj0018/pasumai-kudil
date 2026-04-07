@@ -2,7 +2,8 @@ $(function () {
     $(document).on("click", ".editstatusSave", function () {
         let ticketlist = {
             id: $(this).data("id"),
-            status: $(this).data("status")
+            status: $(this).data("status"),
+            image: $(this).data("image")
         };
         // Show modal
         $("#editTicketStatusModal").css("display", "flex");
@@ -11,6 +12,8 @@ $(function () {
         alpine.open = true;
         alpine.form.ticket_id = ticketlist.id || "";
         alpine.form.status = ticketlist.status || "";
+        alpine.previewUrl = ticketlist.image || "";
+
     });
 
     $(document).on("submit", "#ticketstatusChangeForm", function (e) {

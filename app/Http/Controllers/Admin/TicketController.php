@@ -41,9 +41,11 @@ class TicketController extends Controller
             $ticket = Ticket::where('id', $request->ticket_id)->first();
             $user = User::where('id', $ticket->user_id)->first();
             if($request->status == 2){
-               $status = 'Rejected';
+               $status = 'In Progress';
             }else if($request->status == 3){
-                $status = 'Closed';
+                $status = 'On Hold';
+            }else if($request->status == 4){
+                $status = 'Resolved';
             }
 
             if ($user->fcm_token) {

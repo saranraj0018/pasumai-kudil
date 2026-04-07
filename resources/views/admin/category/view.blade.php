@@ -26,7 +26,7 @@
                 <tbody id="categoryTableBody" class="divide-y divide-gray-200">
                 @foreach($categories as $cat)
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-4 py-3 font-medium text-gray-900">{{ $cat->id }}</td>
+                        <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
                         <td class="px-4 py-3">{{ $cat->name }}</td>
                         <td class="px-4 py-3">
                             @if($cat->image)
