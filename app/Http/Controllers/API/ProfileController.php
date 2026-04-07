@@ -3,22 +3,24 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Hub;
+use App\Models\Product;
+use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Models\User;
-use Illuminate\Support\Facades\Cache;
 
 class ProfileController extends Controller
 {
-     public function show(Request $request)
+    public function show(Request $request)
     {
         try {
             $user = User::find(auth('api')->id());
             $cacheKey = "inside_grocery_zone:user:{$user->id}";
+            $shop_number = Hub::where('type', 1)->first();
             $isInside = Cache::get($cacheKey);
             if (!$user) {
                 throw new \Exception('User not found', 404);
@@ -34,11 +36,11 @@ class ProfileController extends Controller
                         "mobile_number"   => $user->mobile_number,
                         "user_email"    => $user->email,
                     ]
-                    ],
+                ],
                 "inside_grocery_zone" =>  (bool) $isInside,
-                'customer_id' =>  $user->prefix ?? '',
+                "customer_id" =>  $user->prefix ?? '',
+                "shop_number" => $shop_number?->shop_contact_number ?? '',
             ], 200);
-
         } catch (\Throwable $th) {
             return response()->json([
                 "status" => $th->getCode() ?: 500,
@@ -92,7 +94,6 @@ class ProfileController extends Controller
                 "status" => 200,
                 "msg"    => "profile update successfully",
             ], 200);
-
         } catch (\Throwable $th) {
             return response()->json([
                 "status" => $th->getCode() ?: 500,
@@ -101,7 +102,7 @@ class ProfileController extends Controller
         }
     }
 
-     public function index(Request $request)
+    public function index(Request $request)
     {
         $user = auth('api')->user();
         $cacheKey = "inside_grocery_zone:user:{$user->id}";
@@ -142,43 +143,42 @@ class ProfileController extends Controller
                 'status' => 'required'
             ]);
 
-           if ($validator->fails()) {
-          return response()->json([
-          'status' => 419,
-          'message' => $validator->errors()->first(),
-          ], 419);
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 419,
+                    'message' => $validator->errors()->first(),
+                ], 419);
             }
 
             $product = Product::find($request->product_id);
-           if (!$product) {
-              throw new ModelNotFoundException('Product Not Found', 404);
-          }
+            if (!$product) {
+                throw new ModelNotFoundException('Product Not Found', 404);
+            }
 
-        $user = User::find(auth("api")->user()->id);
-        if (!$user) {
-            throw new \Exception('User not authenticated', 401);
-        }
+            $user = User::find(auth("api")->user()->id);
+            if (!$user) {
+                throw new \Exception('User not authenticated', 401);
+            }
 
-         $likedProducts = (array) json_decode($user->likedProducts ?? '[]');
+            $likedProducts = (array) json_decode($user->likedProducts ?? '[]');
 
-         $like = $request->status;
+            $like = $request->status;
 
             if (!empty($like) && !in_array($request->product_id, $likedProducts)) {
                 $likedProducts[] = $request->product_id;
                 $message = "Wishlist Added Successfully";
             } else {
-            $likedProducts = array_filter($likedProducts, fn($id) => $id != $product->id);
-            $likedProducts = array_values($likedProducts);
-             $message = "Wishlist Removed Successfully";
-        }
+                $likedProducts = array_filter($likedProducts, fn($id) => $id != $product->id);
+                $likedProducts = array_values($likedProducts);
+                $message = "Wishlist Removed Successfully";
+            }
 
-        $user->update(['likedProducts' => json_encode($likedProducts)]);
+            $user->update(['likedProducts' => json_encode($likedProducts)]);
 
             return response()->json([
                 'status' => 200,
                 'msg' => $message,
             ], 200);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => $th->getCode() ?: 500,
@@ -201,6 +201,5 @@ class ProfileController extends Controller
                 'message' => $validator->errors()->first(),
             ], 409);
         }
-        
     }
 }
