@@ -19,7 +19,6 @@ class CategoryController extends Controller
     public function save(Request $request)
     {
         try {
-
             $rules = [
                 'category_name' => [
                     'required',
@@ -30,9 +29,9 @@ class CategoryController extends Controller
             ];
 
             if (empty($request['category_id']) && !$request->has('existing_image')) {
-                $rules['category_image'] = 'required|image|mimes:jpeg,png,jpg';
+                $rules['category_image'] = 'required|image|mimes:jpeg,png,jpg||max:2048';
             } elseif ($request->hasFile('category_image')) {
-                $rules['category_image'] = 'image|mimes:jpeg,png,jpg';
+                $rules['category_image'] = 'image|mimes:jpeg,png,jpg||max:2048';
             }
 
             $request->validate($rules);

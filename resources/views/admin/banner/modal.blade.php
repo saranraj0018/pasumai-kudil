@@ -1,4 +1,28 @@
-<div id="bannerModal" x-data="{ previewUrl: null, existing_image: '', form: { type: 'main', banner_id: 0 } }" class="fixed inset-0 hidden items-center justify-center z-50">
+<div id="bannerModal" x-data="{ previewUrl: null, existing_image: '', form: { type: 'main', banner_id: 0 },handleImageChange(event) {
+             const file = event.target.files[0];
+             if (!file) return;
+
+             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+             const maxSize = 2 * 1024 * 1024;
+
+             if (!allowedTypes.includes(file.type)) {
+                 showToast('Only JPG, JPEG, and PNG files are allowed.', 'error', 2000);
+                 event.target.value = '';
+                 this.previewUrl = null;
+                 return;
+             }
+
+             if (file.size > maxSize) {
+                 showToast('File size must not exceed 2MB.', 'error', 2000);
+                 event.target.value = '';
+                 this.previewUrl = null;
+                 return;
+             }
+
+             const reader = new FileReader();
+             reader.onload = e => { this.previewUrl = e.target.result; };
+             reader.readAsDataURL(file);
+         } }" class="fixed inset-0 hidden items-center justify-center z-50">
 
     <div class="absolute inset-0 bg-black/40" @click="$('#bannerModal').hide()"></div>
 
@@ -23,17 +47,8 @@
                 <div>
                     <label class="block text-gray-700 font-medium mb-2">Banner Image</label>
                     <input type="file" name="banner_image" id="banner_image" accept=".png, .jpg, .jpeg"
-                        x-ref="fileInput"
-                        @change="
-                               const file = $refs.fileInput.files[0];
-                               if (file) {
-                                   const reader = new FileReader();
-                                   reader.onload = e => { previewUrl = e.target.result }
-                                   reader.readAsDataURL(file);
-                               }
-                           "
+                        x-ref="fileInput"  @change="handleImageChange($event)"
                         class="form-input w-full border border-gray-300 rounded-lg p-2 cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ab5f00] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#ab5f00] file:text-white hover:file:bg-[#ab5f00]">
-
                     <div class="mt-4 flex justify-center overflow-hidden">
                         <img :src="previewUrl" x-show="previewUrl"
                             class="w-full max-h-[30vh] rounded-lg border border-gray-300 shadow-md object-cover" />

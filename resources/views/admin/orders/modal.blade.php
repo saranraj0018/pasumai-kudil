@@ -5,6 +5,7 @@
     <div
         class="bg-white rounded-2xl shadow-2xl w-full max-w-[900px] mx-4 sm:mx-6 lg:mx-0 overflow-hidden flex flex-col max-h-[90vh]">
         <input type="hidden" id="idSet">
+        <input type="hidden" name="exiting_image" x-model="exiting_image" id="exiting_image" />
         <!-- Header -->
         <div class="flex justify-between items-center p-5 border-b">
             <h2 class="text-2xl sm:text-3xl font-bold text-gray-800" id="orderModalTitle">Order #</h2>
@@ -13,7 +14,6 @@
 
         <!-- Content -->
         <div class="p-5 overflow-y-auto flex-1 space-y-6">
-
             <!-- Customer Details -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-gray-50 p-4 rounded-lg">
@@ -81,6 +81,27 @@
                     <label class="block font-medium text-gray-700 mb-1">Date<span class="text-red-500">*</span></label>
                     <input type="date" id="statusDate" class="w-full border p-2 sm:p-3 rounded-lg text-gray-900" />
                 </div>
+            </div>
+
+            <!-- Refund Fields (shown only when status = Refunded) -->
+            <div id="refundFields" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4" style="display:none;">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Refund Reference / Note <span
+                            class="text-red-500">*</span></label>
+                    <textarea id="refundNote" placeholder="Enter refund reference or note" rows="4"
+                        class="w-full border p-2 sm:p-3 rounded-lg text-gray-900 resize-none"></textarea>
+                </div>
+                <div>
+    <label class="block text-gray-700 font-medium mb-2">Refund Proof (Image) <span
+            class="text-red-500">*</span></label>
+    <input type="file" name="refund_image" id="refundImage" accept=".png, .jpg, .jpeg"
+        class="form-input w-full border border-gray-300 rounded-lg p-2 cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ab5f00] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#ab5f00] file:text-white hover:file:bg-[#ab5f00]">
+
+    <div class="mt-4 flex justify-center overflow-hidden">
+        <img id="refundImagePreview" src=""
+            class="w-full max-h-[30vh] rounded-lg border border-gray-300 shadow-md object-cover hidden" />
+    </div>
+</div>
             </div>
         </div>
 
