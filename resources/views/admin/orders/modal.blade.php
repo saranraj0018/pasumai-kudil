@@ -96,7 +96,7 @@
             class="text-red-500">*</span></label>
     <input type="file" name="refund_image" id="refundImage" accept=".png, .jpg, .jpeg"
         class="form-input w-full border border-gray-300 rounded-lg p-2 cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ab5f00] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#ab5f00] file:text-white hover:file:bg-[#ab5f00]">
-
+ <span class="text-red-600 text-sm">Only JPG,JPEG,PNG files are allowed and File size must not exceed 2MB</span>
     <div class="mt-4 flex justify-center overflow-hidden">
         <img id="refundImagePreview" src=""
             class="w-full max-h-[30vh] rounded-lg border border-gray-300 shadow-md object-cover hidden" />
