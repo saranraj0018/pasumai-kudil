@@ -8,6 +8,9 @@ $(function () {
         $("#orderCustomerName").text(order.user?.name ?? "Guest");
         $("#orderCustomerEmail").text(order.user?.email ?? "—");
         $("#orderCustomerMobile").text(order.phone ?? "—");
+        // BEFORE
+        $("#status").val(order.status);
+        toggleRefundFields(order.status);
         $("#addressCustomerMobile").text(
             order.user_address?.phone_number ?? "—",
         );
@@ -25,7 +28,15 @@ $(function () {
         $("#orderShipping").text("₹" + (order.shipping_amount ?? 0));
         $("#orderCoupon").text("-₹" + (order.coupon_amount ?? 0));
         $("#orderGrandTotal").text("₹" + (order.gross_amount ?? 0));
-
+        // REPLACE with this
+        if (order.refund_image) {
+            $("#refundImagePreview")
+                .attr("src", "/storage/" + order.refund_image)
+                .removeClass("hidden");
+        } else {
+            $("#refundImagePreview").attr("src", "").addClass("hidden");
+        }
+        $("#refundNote").val(order.refund_note ?? "");
         // status & date
         let status = parseInt(order.status);
         var get_status = $("#status").val(order.status);
@@ -89,6 +100,51 @@ $(function () {
         $("#orderModal").fadeIn(200);
     });
 
+    function toggleRefundFields(statusVal) {
+        if (parseInt(statusVal) === 6) {
+            $("#refundFields").slideDown(200);
+        } else {
+            $("#refundFields").slideUp(200);
+            $("#refundNote").val("");
+            $("#refundImage").val("");
+            // clear preview too
+            $("#refundImagePreview").attr("src", "").addClass("hidden");
+        }
+    }
+
+   $(document).on("change", "#refundImage", function () {
+       const file = this.files[0];
+
+       if (file) {
+           const maxSize = 2 * 1024 * 1024; 
+           if (file.size > maxSize) {
+             showToast("Image size must be less than 2MB", "error", 2000);
+               $(this).val("");
+               $("#refundImagePreview").attr("src", "").addClass("hidden");
+               return;
+           }
+           if (!file.type.startsWith("image/")) {
+               showToast("Only image files are allowed", "error", 2000);
+               $(this).val("");
+               $("#refundImagePreview").attr("src", "").addClass("hidden");
+               return;
+           }
+           const reader = new FileReader();
+           reader.onload = function (e) {
+               $("#refundImagePreview")
+                   .attr("src", e.target.result)
+                   .removeClass("hidden");
+           };
+           reader.readAsDataURL(file);
+       } else {
+           $("#refundImagePreview").attr("src", "").addClass("hidden");
+       }
+   });
+
+    $(document).on("change", "#status", function () {
+        toggleRefundFields($(this).val());
+    });
+
     // ===== CLOSE MODAL =====
     $(document).on(
         "click",
@@ -106,22 +162,51 @@ $(function () {
         let Id = $("#idSet").val();
         let status = $("#status").val();
         let date = $("#statusDate").val();
+        let refundImage = $("#refundImage").val();
+        let refundNote = $("#refundNote").val();
         let $saveBtn = $("#saveStatusBtn");
 
         if (!status || !date) {
             showToast("Please select both status and date", "error", 2000);
             return;
         }
-        $saveBtn
-            .prop("disabled", true)
-            .removeClass("opacity-50 cursor-not-allowed")
-            .text("Saving....");
+
+        if (status == 6 && !refundImage) {
+            showToast("Please upload a refund image", "error", 2000);
+            return;
+        }
+
+        if (status == 6 && refundNote == "") {
+            showToast("Please enter a refund note", "error", 2000);
+            return;
+        }
+
+        // Declare formData FIRST before using it
         let formData = new FormData();
-        showLoader();
+
         formData.append("order_id", orderId);
         formData.append("status", status);
         formData.append("date", date);
         formData.append("id", Id);
+        formData.append("refund_note", refundNote);
+
+        // Handle file append AFTER formData is declared
+        const refundFile = $("#refundImage")[0].files[0];
+        if (refundFile) {
+            formData.append("refund_image", refundFile);
+        } else {
+            formData.append(
+                "existing_image",
+                $("#refundImagePreview").attr("src"),
+            );
+        }
+
+        $saveBtn
+            .prop("disabled", true)
+            .addClass("opacity-50 cursor-not-allowed")
+            .text("Saving....");
+
+        showLoader();
 
         sendRequest(
             "/admin/orders/update-status",
