@@ -34,6 +34,31 @@
         this.previewUrl = null;
         this.errors = {}; // clear errors on close
     },
+    handleImageChange(event) {
+             const file = event.target.files[0];
+             if (!file) return;
+
+             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+             const maxSize = 2 * 1024 * 1024;
+
+             if (!allowedTypes.includes(file.type)) {
+                 showToast('Only JPG, JPEG, and PNG files are allowed.', 'error', 2000);
+                 event.target.value = '';
+                 this.previewUrl = null;
+                 return;
+             }
+
+             if (file.size > maxSize) {
+                 showToast('File size must not exceed 2MB.', 'error', 2000);
+                 event.target.value = '';
+                 this.previewUrl = null;
+                 return;
+             }
+
+             const reader = new FileReader();
+             reader.onload = e => { this.previewUrl = e.target.result; };
+             reader.readAsDataURL(file);
+         },
 }" x-init="initMapAndAutocomplete()" x-cloak>
     <template x-if="open">
         <div x-show="open" class="fixed inset-0 flex items-center justify-center z-50">
@@ -89,24 +114,14 @@
                             <!-- Profile Image -->
                             <div class="col-span-2">
                                 <x-label>Profile Image</x-label>
-                                <input type="file" name="image" id="image" accept=".png, .jpg, .jpeg"
-                                    x-ref="fileInput"
-                                    @change="
-                                        const file = $refs.fileInput.files[0];
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onload = e => { previewUrl = e.target.result }
-                                            reader.readAsDataURL(file);
-                                        }
-                                    "
+                                <input type="file" name="image" id="image" accept=".png, .jpg, .jpeg" x-ref="fileInput" @change="handleImageChange($event)"
                                     class="form-input w-full border border-gray-300 rounded-lg p-2 cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ab5f00] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#ab5f00] file:text-white hover:file:bg-[#ab5f00]">
-
+                                <span class="text-red-600 text-sm">Only JPG,JPEG,PNG files are allowed and File size must not exceed 2MB</span>
                                 <div class="mt-4 flex justify-center overflow-hidden">
                                     <img :src="previewUrl" x-show="previewUrl"
                                         class="w-full max-h-[30vh] rounded-lg border border-gray-300 shadow-md object-cover" />
                                 </div>
                             </div>
-
                             <!-- City / Search -->
                             <div>
                                 <x-label class="block text-sm font-medium text-gray-700 mb-1">
@@ -119,13 +134,11 @@
                                     required />
                                 <p x-show="errors.city" x-text="errors.city" class="text-red-600 text-sm mt-1"></p>
                             </div>
-
                             <!-- Map -->
                             <div>
                                 <x-label class="block text-sm font-medium text-gray-700 mb-1">Map</x-label>
                                 <div id="map" class="w-full h-64 rounded-lg border border-gray-300"></div>
                             </div>
-
                         </div>
 
                         <!-- Buttons -->

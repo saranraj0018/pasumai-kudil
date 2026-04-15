@@ -14,7 +14,7 @@
         Grocery <i class="fa-solid fa-location-dot text-[#38b000]"></i> - <span
             class="text-[#38b000]">{{ $grocerry_location->name ?? '' }}</span>
     </h1>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-2">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
             <p class="text-gray-500 text-sm">Total Products</p>
             <h2 class="text-3xl font-bold text-[#804300]" id="total_products"></h2>
@@ -30,6 +30,10 @@
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
             <p class="text-gray-500 text-sm">Ordered Price</p>
             <h2 class="text-3xl font-bold text-[#804300]" id="ordered_price"></h2>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+            <p class="text-gray-500 text-sm">Total Profit</p>
+            <h2 class="text-3xl font-bold text-[#804300]" id="total_profit"></h2>
         </div>
     </div>
     <br>
@@ -180,6 +184,7 @@
                 $("#total_users").text(res.total_users);
                 $("#active_users").text(res.active_users);
                 $("#ordered_price").text(res.ordered_amount);
+                $("#total_profit").text(res.total_profit);
                 $("#delivery_partner").text(res.delivery_partner);
                 if (categoryChart) {
                     categoryChart.destroy();
