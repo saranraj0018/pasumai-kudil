@@ -120,15 +120,24 @@ class CartController extends Controller
                     ->orWhereNull('expiry_date');
             })->find($item['product_id']);
 
-            if (!empty($product) && !empty($product->details?->id)) {
-                $variant = $product->details;
+            if (!empty($product) && !empty($item['variant_id'])) {
+                $variants = data_get($product, 'details', []);
+
+                $variant = collect($variants)->firstWhere('id', $item['variant_id']);
+
+                if (!$variant || (int) ($variant['stock'] ?? 0) <= 0) {
+                    return response()->json([
+                        'status' => 409,
+                        'message' => 'Variant not available',
+                    ]);
+                }
                 $originalPrice = $variant['regular_price'] ?? 0;
                 $discountedPrice = $variant['sale_price'] ?? $originalPrice;
                 $subtotal += $discountedPrice * $item['quantity'];
                 $totalItems += $item['quantity'];
                 $total_weight += $variant['weight'] * $item['quantity'] ?? 0;
 
-                $total_tax += !empty($product->details->tax_type == 2) && !empty($product->details->tax_percentage) ? $subtotal * $product->details->tax_percentage / 100 : 0;
+                $total_tax += !empty($variant->tax_type == 2) && !empty($variant->tax_percentage) ? $subtotal * $variant->tax_percentage / 100 : 0;
                 // Weight Calculation Logic
                 $weightValue = isset($variant['weight']) ? floatval($variant['weight']) : 0;
                 $weightUnit = isset($variant['weight_unit']) ? strtolower(trim($variant['weight_unit'])) : '';
@@ -192,6 +201,7 @@ class CartController extends Controller
                 ];
             }
         }
+
         $coupon_id = !empty($request['coupon_id']) ? $request['coupon_id'] : Cache::get('coupon_id_' . Auth::id(), null);
 
         if (empty($coupon_id)) {
@@ -484,32 +494,36 @@ class CartController extends Controller
                 $shipping = self::calculateShipping($address_id);
             }
             $orderDetails = collect(Cache::get("cart_" . auth()->id(), []))->map(function ($item) use ($coupon_amount, $shipping) {
+
             $product  = Product::with('details')->find($item['product_id']);
-            $variant = $product->details;
-                if ($variant->id != intval($item['variant_id'])) {
+                $variant = collect($product->details)
+                    ->firstWhere('id', $item['variant_id']);
+
+                if ($variant['id'] != intval($item['variant_id'])) {
                     return response()->json([
                         'status' => 409,
                         'message' => 'Variant not found for this product',
                     ]);
                 }
                 $variant = ProductDetail::find($item['variant_id']);
+
                 if ($variant) {
                     $variant->stock = max(0, $variant->stock - intval($item['quantity']));
                     $variant->save();
                 }
                 return [
                     ...$item,
-                    'category_id' => $product->details->category_id,
+                    'category_id' => $variant['category_id'],
                     'product_name' => $product->name,
                     'product_id' => intval($item["product_id"]),
                     'net_amount' =>  !empty($variant->sale_price) ? intval($variant->sale_price) * intval($item['quantity']) :
                         intval($variant->regular_price) * intval($item['quantity']),
-                    'gst_type' => $product->details->tax_type,
-                    'gst_percentage' => $product->details->tax_percentage,
-                    'gst_amount' =>  !empty($product->details->sale_price) && $product->details->tax_type == 2 && !empty($product->details->tax_percentage)
-                        ? (($product->details->sale_price * $product->details->tax_percentage) / 100)  *  (intval($item['quantity']))
-                        : (!empty($product->details->regular_price) && $product->details->tax_type == 2 && !empty($product->details->tax_percentage)
-                            ? (($product->details->regular_price * $product->details->tax_percentage) / 100) *  (intval($item['quantity']))
+                    'gst_type' => $variant->tax_type,
+                    'gst_percentage' => $variant->tax_percentage,
+                    'gst_amount' =>  !empty($variant->sale_price) && $variant->tax_type == 2 && !empty($variant->tax_percentage)
+                        ? (($variant->sale_price * $variant->tax_percentage) / 100)  *  (intval($item['quantity']))
+                        : (!empty($variant->regular_price) && $variant->tax_type == 2 && !empty($variant->tax_percentage)
+                            ? (($variant->regular_price * $variant->tax_percentage) / 100) *  (intval($item['quantity']))
                             : 0),
                     'weight' => $variant->value * $item['quantity'],
                 ];

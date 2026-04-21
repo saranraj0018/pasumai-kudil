@@ -8,7 +8,7 @@ class Product extends Model
 {
     public function details()
     {
-        return $this->hasOne(ProductDetail::class, 'product_id', 'id');
+        return $this->hasMany(ProductDetail::class, 'product_id', 'id');
     }
 
     public function order_details()
