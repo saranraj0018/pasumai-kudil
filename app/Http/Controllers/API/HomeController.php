@@ -63,7 +63,8 @@ class HomeController extends Controller
             })
             ->get()
             ->map(function ($product) use ($likedProducts, $cartQuantities) {
-                $details = $product->details;
+                $details = $product->details->first();
+
                 return [
                     'product_id'   => $product->id,
                     'product_name' => $product->name,
@@ -89,7 +90,7 @@ class HomeController extends Controller
             })
             ->get()
             ->map(function ($product) use ($likedProducts, $cartQuantities) {
-                $details = $product->details;
+                $details = $product->details->first();
                 return [
                     'product_id'   => $product->id,
                     'product_name' => $product->name,
