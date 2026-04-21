@@ -132,8 +132,29 @@ class Dashboard extends Controller
         $products = ProductDetail::when($month, function ($q) use ($month) {
             $q->whereMonth('created_at', $month);
         })->get();
+        $deliveredOrderIds = Order::where('status', 4)
+            ->whereHas('payment', function ($q) {
+                $q->where('status', 'PAID');
+            })
+            ->when($month, function ($q) use ($month) {
+                $q->whereMonth('created_at', $month);
+            })
+            ->pluck('id');
 
+        $profitData = OrderDetail::whereIn('order_details.order_id', $deliveredOrderIds)
+            ->join('product_details', function ($join) {
+                $join->on(DB::raw('CAST(order_details.variant_id AS UNSIGNED)'), '=', 'product_details.id');
+            })
+            ->selectRaw('
+        SUM(product_details.sale_price * order_details.quantity) as total_revenue,
+        SUM(product_details.purchase_price * order_details.quantity) as total_cost,
+        SUM((product_details.sale_price - product_details.purchase_price) * order_details.quantity) as total_profit
+    ')
+            ->first();
 
+        $revenue    = round($profitData->total_revenue ?? 0, 2);
+        $cost       = round($profitData->total_cost ?? 0, 2);
+        $totalProfit = round($profitData->total_profit ?? 0, 2);
         $plans = UserSubscription::with('get_subscription')
             ->select('subscription_id', DB::raw('COUNT(user_id) as users_count'))
             ->when($month, function ($q) use ($month) {
@@ -168,7 +189,8 @@ class Dashboard extends Controller
             'ordered_amount' => $deliveredAmount,
             'monthlyRevenue' => $monthlyRevenue,
             'subscriptionPlan' => $subscriptionPlans,
-            'delivery_partner' => $delivery_partner
+            'delivery_partner' => $delivery_partner,
+            'total_profit' => $totalProfit
         ]);
     }
 }

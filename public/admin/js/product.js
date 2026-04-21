@@ -99,6 +99,41 @@ $(function () {
             $("#image").removeClass("border-red-500 ring-1 ring-red-500");
             if (errorEl.length) errorEl.remove();
         }
+        if ($("#product_name").val() == "") {
+            showToast("Product Name is required!", "error", 2000);
+            isValid = false;
+        }
+        if ($("#category_id").val() == "") {
+            showToast("Category is required!", "error", 2000);
+            isValid = false;
+        }
+        if ($(".regularPriceInput").val() == "") {
+            showToast("Regular Price is required!", "error", 2000);
+            isValid = false;
+        }
+        if ($(".purchasePriceInput").val() == "") {
+            showToast("Purchase Price is required!", "error", 2000);
+            isValid = false;
+        }
+        if ($(".stock").val() == "") {
+             showToast("Stock is required!", "error", 2000);
+             isValid = false;
+        }
+        if ($("#expiry_date").val() == "") {
+            showToast("Expiry Date is required!", "error", 2000);
+            isValid = false;
+        }
+
+        if ($(".weight").val() == "") {
+            showToast("Weight is required!", "error", 2000);
+            isValid = false;
+        }
+
+        if ($(".weightUnit").val() == "") {
+            showToast("Weight Unit is required!", "error", 2000);
+            isValid = false;
+        }
+
         if (!isValid) return;
         $saveBtn
             .prop("disabled", true)
@@ -178,6 +213,7 @@ $(function () {
             category: $(this).data("category"),
             description: $(this).data("description"),
             benefits: $(this).data("benefits"),
+            cooking_ideas: $(this).data("cooking_ideas"),
             sale_price: $(this).data("sale_price"),
             regular_price: $(this).data("regular_price"),
             purchase_price: $(this).data("purchase_price"),
@@ -204,6 +240,7 @@ $(function () {
         alpine.form.category_id = product.category || "";
         alpine.form.description = product.description || "";
         alpine.form.benefits = product.benefits || "";
+        alpine.form.cooking_ideas = product.cooking_ideas || "";
         alpine.form.sale_price = product.sale_price || "";
         alpine.form.regular_price = product.regular_price || "";
         alpine.form.purchase_price = product.purchase_price || "";

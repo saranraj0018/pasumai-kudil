@@ -514,8 +514,7 @@ class CartController extends Controller
                     'weight' => $variant->value * $item['quantity'],
                 ];
             });
-
-
+            
             $order = \App\Models\Order::create([
                 'order_id' => $request['orderId'],
                 'user_id' => auth()->id(),

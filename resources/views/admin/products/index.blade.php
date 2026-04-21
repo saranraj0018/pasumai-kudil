@@ -1,44 +1,45 @@
 <x-layouts.app>
     <div class="p-4" x-data="{ open: false }">
         {{ $search }}
-        <input type="text" name="search" id="searchInput" value="{{ $search ?? '' }}" placeholder="Search products..." class="bg-white border rounded px-3 py-2 focus:ring-2 focus:ring-green-500">
-       @if (session()->has('failures'))
-        <div class="text-red-700 alert alert-danger border border-danger shadow-sm mt-2">
-            <h5 class="mb-3 fw-bold">
-                <i class="fa fa-exclamation-triangle"></i> Import Errors
-            </h5>
-            <ul class="list-unstyled mb-0 mt-2">
-                @foreach (session('failures') as $failure)
-                    <li class="mb-3 p-3 bg-light border-start border-4 border-danger rounded">
-                        <div class="mb-1">
-                            <strong class="text-danger">
-                                Row #{{ $failure->row() }}
-                            </strong>
-                        </div>
-                        <div>
-                            <span class="badge bg-dark me-2">
-                                {{ $failure->attribute() }}
-                            </span>
-
-                            @foreach ($failure->errors() as $error)
-                                <span class="badge bg-danger me-1">
-                                    {{ $error }}
+        <input type="text" name="search" id="searchInput" value="{{ $search ?? '' }}" placeholder="Search products..."
+            class="bg-white border rounded px-3 py-2 focus:ring-2 focus:ring-green-500">
+        @if (session()->has('failures'))
+            <div class="text-red-700 alert alert-danger border border-danger shadow-sm mt-2">
+                <h5 class="mb-3 fw-bold">
+                    <i class="fa fa-exclamation-triangle"></i> Import Errors
+                </h5>
+                <ul class="list-unstyled mb-0 mt-2">
+                    @foreach (session('failures') as $failure)
+                        <li class="mb-3 p-3 bg-light border-start border-4 border-danger rounded">
+                            <div class="mb-1">
+                                <strong class="text-danger">
+                                    Row #{{ $failure->row() }}
+                                </strong>
+                            </div>
+                            <div>
+                                <span class="badge bg-dark me-2">
+                                    {{ $failure->attribute() }}
                                 </span>
-                            @endforeach
-                        </div>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
 
-    @if (session('success'))
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                showToast("{{ session('success') }}", "success");
-            });
-        </script>
-    @endif
+                                @foreach ($failure->errors() as $error)
+                                    <span class="badge bg-danger me-1">
+                                        {{ $error }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if (session('success'))
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    showToast("{{ session('success') }}", "success");
+                });
+            </script>
+        @endif
         <div class="flex flex-wrap justify-between items-center gap-3 mt-3">
             <h2 class="text-xl font-bold">Products</h2>
             <div class="flex flex-wrap items-center gap-3">
@@ -129,7 +130,8 @@
                                             data-is_featured="{{ $product->details->is_featured_product ?? '' }}"
                                             data-expiry_date="{{ $product->expiry_date ?? '' }}"
                                             data-existing_image="{{ $product->image ?? '' }}"
-                                            data-image="{{ $product->image ? asset('storage/' . $product->image) : '' }}">
+                                            data-image="{{ $product->image ? asset('storage/' . $product->image) : '' }}"
+                                            data-cooking_ideas="{{ $product->cooking_idea ?? '' }}">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
                                     @endcan
@@ -161,7 +163,7 @@
     </div>
 </x-layouts.app>
 <script>
-  SEARCH_URL = "{{ route('lists.products') }}";
-  let units = @json($units);
+    SEARCH_URL = "{{ route('lists.products') }}";
+    let units = @json($units);
 </script>
 <script src="{{ asset('admin/js/product.js') }}?v={{ time() }}"></script>

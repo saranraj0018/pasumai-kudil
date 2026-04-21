@@ -18,7 +18,8 @@
         tax_percentage: null,
         is_featured_product: false,
         existing_image: '',
-        expiry_date: ''
+        expiry_date: '',
+        cooking_ideas: '',
     },
     closeModal() {
         this.open = false;
@@ -38,9 +39,35 @@
             tax_type: '',
             tax_percentage: null,
             is_featured_product: false,
-            expiry_date: null
+            expiry_date: null,
+            cooking_ideas: '',
         };
     },
+    handleImageChange(event) {
+             const file = event.target.files[0];
+             if (!file) return;
+
+             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+             const maxSize = 2 * 1024 * 1024;
+
+             if (!allowedTypes.includes(file.type)) {
+                 showToast('Only JPG, JPEG, and PNG files are allowed.', 'error', 2000);
+                 event.target.value = '';
+                 this.previewUrl = null;
+                 return;
+             }
+
+             if (file.size > maxSize) {
+                 showToast('File size must not exceed 2MB.', 'error', 2000);
+                 event.target.value = '';
+                 this.previewUrl = null;
+                 return;
+             }
+
+             const reader = new FileReader();
+             reader.onload = e => { this.previewUrl = e.target.result; };
+             reader.readAsDataURL(file);
+         },
     nextStep() { if (this.stepNumber < this.steps.length - 1) this.stepNumber++ },
     prevStep() { if (this.stepNumber > 0) this.stepNumber-- },
 }" x-cloak>
@@ -83,20 +110,17 @@
                                     <x-label>Benefits</x-label>
                                     <x-textarea placeholder="Enter Benifits" name="benefits" x-model="form.benefits" />
                                 </div>
+                                <div>
+                                    <x-label>Cooking Ideas</x-label>
+                                    <x-textarea placeholder="Enter Cooking Ideas" name="cooking_ideas" x-model="form.cooking_ideas" />
+                                </div>
                                 <div class="col-span-2">
                                     <x-label>Image</x-label>
                                     <input type="file" name="image" id="image" accept=".png, .jpg, .jpeg"
                                         x-ref="fileInput"
-                                        @change="
-                               const file = $refs.fileInput.files[0];
-                               if (file) {
-                                   const reader = new FileReader();
-                                   reader.onload = e => { previewUrl = e.target.result }
-                                   reader.readAsDataURL(file);
-                               }
-                           "
+                                      @change="handleImageChange($event)"
                                         class="form-input w-full border border-gray-300 rounded-lg p-2 cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ab5f00] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#ab5f00] file:text-white hover:file:bg-[#ab5f00]">
-
+            <span class="text-red-600 text-sm">Only JPG,JPEG,PNG files are allowed and File size must not exceed 2MB</span>
                                     <div class="mt-4 flex justify-center overflow-hidden">
                                         <img :src="previewUrl" x-show="previewUrl"
                                             class="w-full max-h-[30vh] rounded-lg border border-gray-300 shadow-md object-cover" />
@@ -126,7 +150,7 @@
                                         name="variants[0][sale_price]" />
                                 </div>
                                 <div>
-                                    <x-label>Regular Price<span class="text-red-500">*</span></x-label>
+                                    <x-label>MRP<span class="text-red-500">*</span></x-label>
                                     <x-input type="number" step="0.01" class="regularPriceInput" id="regular_price"
                                         x-model="form.regular_price" name="variants[0][regular_price]" required />
                                 </div>
@@ -237,7 +261,7 @@
                                         </p>
                                     </div>
                                     <div>
-                                        <span class="font-semibold">Regular Price:</span>
+                                        <span class="font-semibold">MRP:</span>
                                         <p class="text-gray-700"
                                             x-text="form.regular_price ? '$'+form.regular_price : '-'"></p>
                                     </div>
