@@ -195,7 +195,9 @@ class ProductController extends Controller {
                         "product_size" => $productSizes,
                         "quantity" => $currentVariant ? intValue($cartQuantities[$currentVariant->id] ?? 0) : 0,
                         "image_text" => $product->description,
-                        "cooking_idea" => $product->benefits
+                        "cooking_idea" => $product->cooking_idea,
+                        "benefits" => $product->benefits,
+
                     ]
                 ]
             ], 200);

@@ -66,7 +66,8 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/address/delete', [AddressController::class, 'delete']);
 
         //orders
-        Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/all/orders', [OrderController::class, 'allOrders']);
+        Route::post('/orders', [OrderController::class, 'index']);
         Route::post('/get-single-order', [OrderController::class, 'getSingleOrder']);
 
         //Cart

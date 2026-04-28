@@ -115,13 +115,13 @@ class CartController extends Controller
         $isInside = Cache::get($cacheKey);
 
         foreach ($cart_list as $item) {
-            $product = Product::with('details', 'details.unit')->where(function ($query) {
+            $product = Product::with('product_details', 'product_details.unit')->where(function ($query) {
                 $query->whereDate('expiry_date', '>=', now())
                     ->orWhereNull('expiry_date');
             })->find($item['product_id']);
 
             if (!empty($product) && !empty($item['variant_id'])) {
-                $variants = data_get($product, 'details', []);
+                $variants = data_get($product, 'product_details', []);
 
                 $variant = collect($variants)->firstWhere('id', $item['variant_id']);
 
@@ -495,8 +495,8 @@ class CartController extends Controller
             }
             $orderDetails = collect(Cache::get("cart_" . auth()->id(), []))->map(function ($item) use ($coupon_amount, $shipping) {
 
-            $product  = Product::with('details')->find($item['product_id']);
-                $variant = collect($product->details)
+            $product  = Product::with('product_details')->find($item['product_id']);
+                $variant = collect($product->product_details)
                     ->firstWhere('id', $item['variant_id']);
 
                 if ($variant['id'] != intval($item['variant_id'])) {
@@ -528,7 +528,7 @@ class CartController extends Controller
                     'weight' => $variant->value * $item['quantity'],
                 ];
             });
-            
+
             $order = \App\Models\Order::create([
                 'order_id' => $request['orderId'],
                 'user_id' => auth()->id(),

@@ -12,11 +12,11 @@ use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $userId = Auth::id();
 
-        $orders = OrderDetail::with(['order', 'product'])
+        $orders = OrderDetail::with(['order', 'product'])->where('order_id', $request['order_id'])
             ->whereHas('order', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })
@@ -227,6 +227,48 @@ class OrderController extends Controller
                         'isDone'  => !empty($orderDetail->order->refunded_at)
                     ],
                 ],
+            ]
+        ]);
+    }
+
+
+    public function allOrders(Request $request)
+    {
+        $userId = Auth::id();
+
+        $orders = OrderDetail::with(['order', 'product'])
+            ->whereHas('order', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('order_id')
+            ->map(function ($items) {
+                $firstItem = $items->first();
+
+                return [
+                    'id'      => $firstItem->order->order_id,
+                    'order_id'      => $firstItem->order_id,
+                    'orderStatus'  => $this->getOrderStatusText($firstItem->order->status),
+                    'orderAmount'  => $firstItem->order->gross_amount,
+                    'orderDate'    => $firstItem->order->created_at,
+                    'product_name'  => $firstItem->product->name ?? '',
+                    // total products count in this order
+                    'productCount' => $items->count(),
+                    // all products in this order
+                    'products' => $items->map(function ($item) {
+                        return [
+                            'product_image' => ($item->product->image) ? url('/storage/' . ($item->product->image)): null,
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
+        return response()->json([
+            'status' => 200,
+            'data'   => [
+                'orderId' =>  $orders,
+
             ]
         ]);
     }

@@ -8,7 +8,7 @@ class Product extends Model
 {
     public function details()
     {
-        return $this->hasMany(ProductDetail::class, 'product_id', 'id');
+        return $this->hasOne(ProductDetail::class, 'product_id', 'id');
     }
 
     public function order_details()
@@ -22,6 +22,11 @@ class Product extends Model
     }
 
     public function variants()
+    {
+        return $this->hasMany(ProductDetail::class, 'product_id', 'id');
+    }
+
+    public function product_details()
     {
         return $this->hasMany(ProductDetail::class, 'product_id', 'id');
     }
