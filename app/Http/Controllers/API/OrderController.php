@@ -266,10 +266,7 @@ class OrderController extends Controller
             ->values();
         return response()->json([
             'status' => 200,
-            'data'   => [
-                'orderId' =>  $orders,
-
-            ]
+            'data'   => $orders
         ]);
     }
 }
