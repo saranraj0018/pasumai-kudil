@@ -158,6 +158,7 @@ class OrderController extends Controller
                 'product_image' => ($orderDetail->product->image) ? url('/storage/' . ($orderDetail->product->image)): null,
                 'originalPrice'   => number_format($orderDetail->variants->regular_price ?? 0, 2),
                 'discountedPrice' => number_format($orderDetail->variants->sale_price ?? 0, 2),
+                'net_amount' => number_format(($orderDetail->variants->sale_price ?? 0) * $orderDetail->quantity, 2),
                 'description'     => $orderDetail->product->description ?? $orderDetail->description ?? 'No description',
                 'quantity'        => $orderDetail->quantity ?? 0,
                 'variation'       => $orderDetail->variants ? [
