@@ -27,6 +27,7 @@ class SaveNotification
         $notification->title = $event->title;
         $notification->description = $event->description;
         $notification->type = $event->type;
+        $notification->role = $event->role;
         $notification->save();
     }
 }

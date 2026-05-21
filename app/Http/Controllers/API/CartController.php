@@ -552,7 +552,7 @@ class CartController extends Controller
             });
 
             $get_user = User::where('id', auth()->id())->first();
-            event(new NewNotification($get_user->id, "Support Ticket", "$get_user->name has created a Support Ticket!", 1, 1));
+            event(new NewNotification($get_user->id, "Order Create", "$get_user->name has created an Order!", 1, 1));
 
             DB::commit();
 
