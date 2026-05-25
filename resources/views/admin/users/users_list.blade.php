@@ -27,7 +27,7 @@
                     @if ($getuser->isNotEmpty())
                         @foreach ($getuser as $user)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
+                                <td class="px-4 py-3 font-medium text-gray-900">{{ ($getuser->currentPage() - 1) * $getuser->perPage() + $loop->iteration }}</td>
                                 <td class="px-4 py-3">{{ $user->prefix ?? '' }}</td>
                                 <td class="px-4 py-3">{{ $user->name ?? ''}}</td>
                                 <td class="px-4 py-3">{{ $user->mobile_number ?? '' }}</td>

@@ -26,7 +26,7 @@
                 <tbody id="couponTableBody" class="divide-y divide-gray-200">
                     @foreach ($coupons as $coupon)
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
+                            <td class="px-4 py-3 font-medium text-gray-900">{{ ($coupons->currentPage() - 1) * $coupons->perPage() + $loop->iteration }}</td>
                             <td class="px-4 py-3">{{ $coupon->coupon_code }}</td>
                             <td class="px-4 py-3">
                                 @if ($coupon->discount_type == 1)

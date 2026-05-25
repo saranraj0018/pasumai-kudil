@@ -60,8 +60,8 @@ $(function () {
         e.preventDefault();
         let $saveBtn = $("#save_coupon");
         let applyFor = $("#apply_for").val();
-        let min_price = $("#min_price").val();
-        let max_price = $("#max_price").val();
+        let min_price = parseFloat($("#min_price").val()) || 0;
+        let max_price = parseFloat($("#max_price").val()) || 0;
 
         // validation fields
         let fields = [
@@ -81,19 +81,19 @@ $(function () {
         });
     }
 
-        if (!isNaN(min_price) && !isNaN(max_price) && min_price > 0 && max_price > 0) {
-            fields.push(
-                {
-                    id: "#min_price",
-                    condition: () => min_price < max_price,
-                    message: "Min price cannot be greater than max price",
-                },
-                {
-                    id: "#max_price",
-                    condition: () => max_price > min_price,
-                    message: "Max price cannot be less than min price",
-                }
-            );
+        if (min_price > 0 && max_price > 0) {
+
+            fields.push({
+                id: "#min_price",
+                condition: () => min_price > max_price,
+                message: "Min price cannot be greater than max price",
+            });
+
+            fields.push({
+                id: "#max_price",
+                condition: () => max_price < min_price,
+                message: "Max price cannot be less than min price",
+            });
         }
 
         let isValid = true;

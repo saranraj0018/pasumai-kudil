@@ -43,7 +43,6 @@ class UserlistController extends Controller
                     ->orWhere('prefix', 'like', "%{$search}%")
                     ->orWhere('mobile_number', 'like', "%{$search}%");
             })
-            ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $this->data['search'] = $search;

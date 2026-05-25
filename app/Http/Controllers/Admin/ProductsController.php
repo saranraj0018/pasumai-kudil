@@ -17,13 +17,12 @@ class ProductsController extends Controller
     public function productLists(Request $request)
     {
         $search = $request->input('search');
-        $this->data['products'] = Product::with('details', 'order_details')
+        $this->data['products'] = Product::with('details.category', 'order_details')
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
                     ->orWhere('benefits', 'like', "%{$search}%");
             })
-            ->orderBy('created_at', 'desc')
             ->paginate(10);
         $this->data['category'] = Category::where('status', 1)->get();
         $this->data['units'] = Unit::where('status', 1)->get();

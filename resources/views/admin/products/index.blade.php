@@ -82,7 +82,7 @@
                         <th class="px-2 py-2">S.No</th>
                         <th class="px-2 py-2">Name</th>
                         <th class="px-2 py-2">Image</th>
-                        <th class="px-2 py-2">Description</th>
+                        <th class="px-2 py-2">Category Name</th>
                         <th class="px-2 py-2">Benefits</th>
                         <th class="px-2 py-2">Expiry Date</th>
                         <th class="px-2 py-2 text-center">Actions</th>
@@ -92,7 +92,8 @@
                     @if ($products->isNotEmpty())
                         @foreach ($products as $product)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-2 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
+                                <td class="px-2 py-3 font-medium text-gray-900">
+                                {{ ($products->currentPage() - 1) * $products->perPage() + $loop->iteration }}</td>
                                 <td class="px-2 py-3">{{ $product->name ?? '' }}</td>
                                 <td class="px-2 py-3">
                                     @if ($product->image)
@@ -103,7 +104,7 @@
                                     @endif
                                 </td>
                                 <td class="px-2 py-3 w-100">
-                                    {{ $product->description ?? '' }}
+                                    {{ $product->details?->category?->name ?? '' }}
                                 </td>
                                 <td class="px-2 py-3 w-50">
                                     {{ $product->benefits ?? '' }}
