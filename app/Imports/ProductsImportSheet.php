@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Product;
 use App\Models\ProductDetail;
 use App\Models\Category;
+use App\Models\Unit;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -32,49 +33,33 @@ class ProductsImportSheet implements
 {
     use Importable, SkipsFailures, SkipsErrors;
 
-    /**
-     * Handle Excel rows
-    */
     public function collection(Collection $rows)
     {
         if ($rows->isEmpty()) {
-            // Nothing to process
             return;
         }
-
         DB::beginTransaction();
-
         try {
             foreach ($rows as $row) {
-
-                // Skip completely empty rows
                 if ($row->filter()->isEmpty()) {
                     continue;
                 }
 
                 $categoryName = trim($row['category'] ?? '');
                 $productName  = trim($row['product_name'] ?? '');
+                $weightUnit   = trim($row['weight_unit'] ?? '');
 
-                if (!$categoryName || !$productName) {
-                    continue; // skip invalid row
+                if (!$categoryName || !$productName || !$weightUnit) {
+                    continue;
                 }
 
-                // ==============================
-                // CATEGORY
-                // ==============================
                 $category = Category::where('name', $categoryName)->first();
-                if (!$category) {
-                    continue; // skip row if invalid category
+                $units = Unit::where('short_name', $weightUnit)->first();
+                if (!$category || !$units) {
+                    continue;
                 }
 
-                // ==============================
-                // PRODUCT (create or update)
-                // ==============================
                 $product = $this->saveOrUpdateProduct($row->toArray());
-
-                // ==============================
-                // VARIANT (PRODUCT DETAILS)
-                // ==============================
                 $productDetail = new ProductDetail();
                 $productDetail->product_id          = $product->id;
                 $productDetail->category_id         = $category->id;
@@ -82,7 +67,7 @@ class ProductsImportSheet implements
                 $productDetail->purchase_price      = $row['purchase_price'] ?? 0;
                 $productDetail->sale_price          = $row['sale_price'] ?? 0;
                 $productDetail->weight              = $row['weight'] ?? 0;
-                $productDetail->weight_unit         = $row['weight_unit'] ?? null;
+                $productDetail->weight_unit         = $units->id ?? null;
                 $productDetail->tax_type            = $row['tax_type'] ?? 0;
                 $productDetail->tax_percentage      = $row['tax_percentage'] ?? 0;
                 $productDetail->stock               = $row['stock'] ?? 0;
@@ -97,9 +82,6 @@ class ProductsImportSheet implements
         }
     }
 
-    /**
-     * Save or update product based on name
-     */
     protected function saveOrUpdateProduct(array $row): Product
     {
         $productName = trim($row['product_name'] ?? '');
@@ -148,7 +130,7 @@ class ProductsImportSheet implements
             '*.purchase_price' => ['required', 'numeric', 'min:0'],
             '*.sale_price'     => ['nullable', 'numeric', 'min:0'],
             '*.weight'         => ['nullable', 'numeric', 'min:0'],
-            '*.weight_unit'    => ['nullable', 'in:kg,g,ml,l'],
+            '*.weight_unit'    => ['required', Rule::exists('units', 'short_name')],
             '*.tax_type'       => ['nullable', 'in:0,1,2'],
             '*.tax_percentage' => ['nullable', 'numeric', 'min:0'],
             '*.stock'          => ['required', 'integer', 'min:0'],
