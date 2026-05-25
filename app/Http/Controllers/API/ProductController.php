@@ -139,7 +139,7 @@ class ProductController extends Controller {
                 throw new \Exception($validator->errors()->first(), 419);
             }
 
-            $product = Product::with('variants')->where(function ($query) {
+            $product = Product::with('variants.unit')->where(function ($query) {
                 $query->whereDate('expiry_date', '>=', now())
                     ->orWhereNull('expiry_date');
             })->find($request->product_id);
@@ -157,7 +157,6 @@ class ProductController extends Controller {
                 ]);
             }
 
-            $details = $product->details;
             $user = auth('api')->user();
             $likedStatus = false;
             if ($user) {
@@ -170,12 +169,11 @@ class ProductController extends Controller {
             $productSizes = $product->variants->isNotEmpty()
                 ? $product->variants->map(fn($v) => [
                     'id' => $v->id,
-                    'size' => $v->weight . ' ' . $v->weight_unit,
+                    'size' => $v->weight . ' ' . $v->unit?->short_name,
                     'stock' => $v->stock,
                 ])->toArray()   : [];
-
-            $currentVariant = $details;
             $currentVariant = $product->variants->firstWhere('id', $request->variation_id) ?? $product->variants->first();
+
             return response()->json([
                 'status' => 200,
                 'msg' => 'success',
@@ -190,7 +188,7 @@ class ProductController extends Controller {
                         "stock_count"    => $currentVariant?->stock ?? 0,
                         "product_orginal_price" => $currentVariant?->regular_price ?? 0,
                         "product_offerprice" => $currentVariant?->sale_price ?? 0,
-                        'product_gram'  =>  $currentVariant ? ($currentVariant->weight . ' ' . $currentVariant->weight_unit) : null,
+                        'product_gram'  =>  $currentVariant ? ($currentVariant->weight . ' ' . $currentVariant->unit?->short_name) : null,
                         "liked_status" => $likedStatus,
                         "product_size" => $productSizes,
                         "quantity" => $currentVariant ? intValue($cartQuantities[$currentVariant->id] ?? 0) : 0,

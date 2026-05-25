@@ -297,13 +297,23 @@ class CartController extends Controller
 
             if ((!empty($min_price) && !empty($max_price) &&   $total_amount >= $min_price) && ($total_amount <= $max_price)) {
 
-                return ($coupon->discount_type == 1)
+                $final_amount = ($coupon->discount_type == 1)
                     ? ($total_amount * $discount_value / 100)
                     : (int)$discount_value;
+                // discount should not exceed total amount
+                return $total_amount > $final_amount
+                    ? $final_amount
+                    : 0;
+
             } elseif ((!empty($min_price) && empty($max_price) && $total_amount >= $min_price) || (!empty($max_price) && empty($min_price) && $total_amount <= $max_price)) {
-                return ($coupon->discount_type == 1)
+                $final_amount = ($coupon->discount_type == 1)
                     ? ($total_amount * $discount_value / 100)
                     : (int)$discount_value;
+
+                // discount should not exceed total amount
+                return $total_amount > $final_amount
+                    ? $final_amount
+                    : 0;
             }
         }
 
@@ -315,9 +325,12 @@ class CartController extends Controller
 
             $total = Order::where('status', 4)->count();
             if ($coupon->order_count == $total + 1) {
-                return ($coupon->discount_type == 1)
+                $final_amount = ($coupon->discount_type == 1)
                     ? ($total_amount * $discount_value / 100)
                     : (int)$discount_value;
+                return $total_amount > $final_amount
+                    ? $final_amount
+                    : 0;
             }
         }
 
@@ -350,13 +363,19 @@ class CartController extends Controller
 
             $order = $used_coupons + $applied_count;
             if (!empty($coupon->order_count) && $coupon->order_count > $order) {
-                return ($coupon->discount_type == 1)
+                $final_amount = ($coupon->discount_type == 1)
                     ? ($total_amount * $discount_value / 100)
                     : (int)$discount_value;
+                return $total_amount > $final_amount
+                    ? $final_amount
+                    : 0;
             } elseif ($order >= $coupon->order_count && !empty($user_count)) {
-                return ($coupon->discount_type == 1)
+                $final_amount = ($coupon->discount_type == 1)
                     ? ($total_amount * $discount_value / 100)
                     : (int)$discount_value;
+                return $total_amount > $final_amount
+                    ? $final_amount
+                    : 0;
             }
         }
 
