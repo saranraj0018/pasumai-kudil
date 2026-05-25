@@ -14,6 +14,7 @@ class ProductExportTemplate implements WithMultipleSheets
         return [
             'Product Upload Sheet'    => new ProductsTemplate(), // MAIN
             'Category' => new CategoryTemplate(),  // REFERENCE
+            'Weight Unit' => new WeightUnitTemplate(),  // REFERENCE
             'Import Instructions Sheet' => new ProductsInstructionsSheet(),
             'Products Sample Sheet' => new ProductsSampleSheet()
         ];
