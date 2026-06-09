@@ -55,7 +55,7 @@ class HomeController extends Controller
         $likedProducts = (array) json_decode($user->likedProducts ?? '[]');
         $cartQuantities = getCartQuantities();
 
-        $featuredProducts = Product::with('details')
+        $featuredProducts = Product::with(['details','variants.unit'])
             ->orderBy('id', 'desc')
             ->where(function ($query) {
                 $query->whereDate('expiry_date', '>=', now())
@@ -63,18 +63,19 @@ class HomeController extends Controller
             })
             ->get()
             ->map(function ($product) use ($likedProducts, $cartQuantities) {
-                $details = $product->details->first();
+                $details = $product->details;
+                $variants = $product->variants->first();
 
                 return [
                     'product_id'   => $product->id,
                     'product_name' => $product->name,
-                    'product_image' => url('/storage/' . $product->image),
+                    'product_image'=> url('/storage/' . $product->image),
                     'offer_price'  => $details ? $details->sale_price : 0,
                     'normal_price' => $details ? $details->regular_price : 0,
-                    "stock_count"    => $details ? $details->stock : 0,
-                    'liked_status'       => in_array($product->id, $likedProducts),
-                    'product_kg'  => $details ? ($details->weight . ' ' . $details->weight_unit) : null,
-                    'variation_id'  => $details ? $details->id : null,
+                    "stock_count"  => $details ? $details->stock : 0,
+                    'liked_status' => in_array($product->id, $likedProducts),
+                    'product_kg'   => $details ? ($details->weight . ' ' . $variants->unit?->short_name) : null,
+                    'variation_id' => $details ? $details->id : null,
                     'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                     'is_featured_product' => $details ? $details->is_featured_product : 0,
                 ];
@@ -82,7 +83,7 @@ class HomeController extends Controller
             ->values()
             ->toArray();
 
-        $bestSellerProducts = Product::with('details')
+        $bestSellerProducts = Product::with(['details','variants.unit'])
             ->orderBy('id', 'desc')
             ->where(function ($query) {
                 $query->whereDate('expiry_date', '>=', now())
@@ -90,7 +91,9 @@ class HomeController extends Controller
             })
             ->get()
             ->map(function ($product) use ($likedProducts, $cartQuantities) {
-                $details = $product->details->first();
+                $details = $product->details;
+                $variants = $product->variants->first();
+
                 return [
                     'product_id'   => $product->id,
                     'product_name' => $product->name,
@@ -99,7 +102,7 @@ class HomeController extends Controller
                     'normal_price' => $details ? $details->regular_price : 0,
                     'liked_status'       => in_array($product->id, $likedProducts),
                     "stock_count"    => $details ? $details->stock : 0,
-                    'product_kg'  =>  $details ? ($details->weight . ' ' . $details->weight_unit) : null,
+                    'product_kg'  =>  $details ? ($details->weight . ' ' . $variants->unit?->short_name) : null,
                     'variation_id'  => $details ? $details->id : null,
                     'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                     'is_featured_product' => $details ? $details->is_featured_product : 0,

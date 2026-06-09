@@ -70,7 +70,6 @@ $(function () {
             { id: "#discount_value", condition: (val) => val === "" || val <= 0, message: "Discount value is required" },
             { id: "#description", condition: (val) => val === "", message: "Description is required" },
             { id: "#apply_for", condition: (val) => val === "", message: "Please select apply for" },
-            { id: "#expires_at", condition: (val) => val === "", message: "Expiry date is required" },
             { id: "#status", condition: (val) => val === "", message: "Please select status" },
         ];
         if (applyFor === '2') {

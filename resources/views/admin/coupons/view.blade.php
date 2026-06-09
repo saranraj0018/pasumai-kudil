@@ -59,6 +59,7 @@
                             <td class="px-4 py-3 flex justify-center gap-4">
                                 <!-- Edit -->
                                 @can('edit_coupons')
+
                                 <button class="text-blue-600 hover:text-blue-800 transition editCouponBtn"
                                     data-id="{{ $coupon->id }}" data-code="{{ $coupon->coupon_code }}"
                                     data-type="{{ $coupon->discount_type }}"
@@ -71,6 +72,7 @@
                                     data-status="{{ $coupon->status }}">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
+
                                 @endcan
 
                                 <!-- Delete -->

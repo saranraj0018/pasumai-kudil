@@ -107,6 +107,7 @@ class ProfileController extends Controller
         $user = auth('api')->user();
         $cacheKey = "inside_grocery_zone:user:{$user->id}";
         $isInside = Cache::get($cacheKey);
+        $cartQuantities = getCartQuantities();
 
         return response()->json([
             'status' => 200,
@@ -116,7 +117,8 @@ class ProfileController extends Controller
                     $query->whereDate('expiry_date', '>=', now())
                         ->orWhereNull('expiry_date');
                 })
-                ->get()->map(function ($product) use ($user) {
+                ->get()->map(function ($product) use ($user,$cartQuantities) {
+                    $variants = $product->variants->first();
                     return [
                         'product_id' => $product->id,
                         'product_name' => $product->name,
@@ -124,9 +126,9 @@ class ProfileController extends Controller
                         'productorginalPrice' => $product->details->regular_price,
                         'NegotiationPrice' => $product->details->sale_price,
                         'liked_status' => in_array($product->id, (array) json_decode($user->likedProducts) ?? []),
-                        'product_kg' => $product?->details?->weight ? ($product->details->weight . ' ' . $product->details->weight_unit) : null,
+                        'product_kg' => $product?->details?->weight ? ($product->details->weight . ' ' . $variants->unit?->short_name) : null,
                         'stock_count' => $product->details->stock,
-                        'quantity' => $product->details->quantity ?? 0,
+                        'quantity' => $product->details->id ? intValue($cartQuantities[$product->details->id] ?? 0) : 0,
                         'isFeaturedProduct' => $product->details->is_featured_product ?? 0,
                         'variation_id' => $product->details?->id ?? null,
                     ];

@@ -140,7 +140,7 @@ class CartController extends Controller
                 $total_tax += !empty($variant->tax_type == 2) && !empty($variant->tax_percentage) ? $subtotal * $variant->tax_percentage / 100 : 0;
                 // Weight Calculation Logic
                 $weightValue = isset($variant['weight']) ? floatval($variant['weight']) : 0;
-                $weightUnit = isset($variant['weight_unit']) ? strtolower(trim($variant['weight_unit'])) : '';
+                $weightUnit = isset($variant->unit['short_name']) ? strtolower(trim($variant->unit['short_name'])) : '';
 
                 if ($weightValue <= 0) {
                     $weight = '0';
@@ -196,6 +196,7 @@ class CartController extends Controller
                         "unit" => (string) ($variant['unit']->name ?? ''),
                         "price" => $variant['sale_price'] * $item['quantity'],
                         "weight" => (string) $weight,
+                        "stock" => (int) ($variant['stock'] ?? 0),
                     ] : null,
                     "quantity" => (int) $item['quantity'],
                 ];

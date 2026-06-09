@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 class ProductController extends Controller {
     public function featuredProducts(Request $request) {
         $cartQuantities = getCartQuantities();
-        $featuredProducts = Product::with('details')
+        $featuredProducts = Product::with(['details','variants.unit'])
             ->orderBy('id', 'desc')
             ->where(function ($query) {
                 $query->whereDate('expiry_date', '>=', now())
@@ -19,6 +19,7 @@ class ProductController extends Controller {
             ->get()
             ->map(function ($product) use ($cartQuantities) {
                 $details = $product->details;
+                $variants = $product->variants->first();
                 return [
                     'product_id'   => $product->id,
                     'product_name' => $product->name,
@@ -27,7 +28,7 @@ class ProductController extends Controller {
                     'normal_price' => $details ? $details->regular_price : 0,
                     'liked_status'=> in_array($product->id, (array)json_decode(auth('api')->user()->likedProducts) ?? []),
                     "stock_count"    => $details ? $details->stock : 0,
-                    'product_kg'  => $details ? ($details->weight . ' ' . $details->weight_unit) : null,
+                    'product_kg'  => $details ? ($details->weight . ' ' .  $variants->unit?->short_name) : null,
                     'variation_id'  => $details ? $details->id : null,
                     'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                     'is_featured_product' => $details ? $details->is_featured_product : 0,
@@ -46,7 +47,7 @@ class ProductController extends Controller {
 
     public function bestSeller(Request $request) {
         $cartQuantities = getCartQuantities();
-        $bestSellerProducts = Product::with('details')
+        $bestSellerProducts = Product::with(['details','variants.unit'])
             ->orderBy('id', 'desc')
             ->where(function ($query) {
                 $query->whereDate('expiry_date', '>=', now())
@@ -55,6 +56,7 @@ class ProductController extends Controller {
             ->get()
             ->map(function ($product) use ($cartQuantities) {
                 $details = $product->details;
+                $variants = $product->variants->first();
                 return [
                     'product_id'   => $product->id,
                     'product_name' => $product->name,
@@ -63,7 +65,7 @@ class ProductController extends Controller {
                     'normal_price' => $details ? $details->regular_price : 0,
                     'liked_status'       => in_array($product->id, (array)json_decode(auth('api')->user()->likedProducts) ?? []),
                     "stock_count"    => $details ? $details->stock : 0,
-                    'product_kg'  =>  $details ? ($details->weight . ' ' . $details->weight_unit) : null,
+                    'product_kg'  =>  $details ? ($details->weight . ' ' .  $variants->unit?->short_name) : null,
                     'variation_id'  => $details ? $details->id : null,
                     'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                     'is_featured_product' => $details ? $details->is_featured_product : 0,
@@ -89,7 +91,7 @@ class ProductController extends Controller {
                 throw new \Exception($validator->errors()->first(), 419);
             }
 
-            $query = Product::query()->with('details');
+            $query = Product::query()->with(['details','variants.unit']);
             $query->where('name', 'like', '%' . $request->product_name . '%');
             $query->where('status', 1);
             $products = $query->where(function ($query) {
@@ -106,6 +108,7 @@ class ProductController extends Controller {
                 'mgs'    => $products->isEmpty() ? 'No products found' : 'Products fetched successfully',
                 "data"   => $products->map(function ($product) use ($likedProducts, $cartQuantities) {
                     $details = $product->details;
+                    $variants = $product->variants->first();
                     return [
                         "product_id"           => $product->id,
                         "product_image"        => $product->image ? url('/storage/' . $product->image) : null,
@@ -114,7 +117,7 @@ class ProductController extends Controller {
                        "normal_price" => $product->details?->regular_price ?? 0,
                         "stock_count"    => $details ? $details->stock : 0,
                         "liked_status"         => in_array($product->id, $likedProducts),
-                        'product_kg'  =>  $details ? ($details->weight . ' ' . $details->weight_unit) : null,
+                        'product_kg'  =>  $details ? ($details->weight . ' ' .  $variants->unit?->short_name) : null,
                         'variation_id'  => $details ? $details->id : null,
                         'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
                     ];

@@ -39,7 +39,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/search-grocery', [ProductController::class, 'searchGrocery']);
         Route::get('/featured-products', [ProductController::class, 'featuredProducts']);
         Route::get('/best-seller-products', [ProductController::class, 'bestSeller']);
-
+        Route::post('/product-details', [ProductController::class, 'productDetails']);
 
         //wishlist
         Route::get('/wishlist', [ProfileController::class, 'index']);
@@ -117,5 +117,5 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('/faqs', [FaqController::class, 'view']);
 
     });
-    Route::post('/product-details', [ProductController::class, 'productDetails']);
+
 });

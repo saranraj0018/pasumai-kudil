@@ -45,9 +45,9 @@ class CouponController extends Controller
                 $message = 'Coupon updated successfully';
             } else {
                 $coupon = new Coupon();
+                $coupon->expires_at    = $request->expires_at;
                 $message = 'Coupon created successfully';
             }
-
             $coupon->coupon_code   = $request->coupon_code;
             $coupon->discount_type = $request->discount_type;
             $coupon->discount_value = $request->discount_value;
@@ -58,7 +58,6 @@ class CouponController extends Controller
             $coupon->order_count   = $request->order_count ?? 0;
             $coupon->order_type    = $request->order_type ?? 1;
             $coupon->started_at    = $request->started_at;
-            $coupon->expires_at    = $request->expires_at;
             $coupon->status        = $request->status;
             $coupon->save();
 
