@@ -6,7 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductDetail extends Model
 {
-  public function product()
+
+    protected $fillable = [
+        'category_id',
+        'sale_price',
+        'regular_price',
+        'purchase_price',
+        'weight',
+        'weight_unit',
+        'stock',
+        'tax_type',
+        'tax_percentage',
+        'is_featured_product',
+    ];
+
+
+    public function product()
     {
         return $this->belongsTo(Product::class, 'product_id', 'id');
     }

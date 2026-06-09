@@ -76,13 +76,12 @@ class ProductsController extends Controller
             $variantIdsInRequest = [];
 
             if (!empty($request['variants']) && is_array($request['variants'])) {
-                foreach ($request['variants'] as $index => $variantData) {
+                foreach ($request['variants'] as $variantData) {
                     if (empty($variantData)) {
-                        Log::info("Variant #{$index} is empty",);
                         continue;
                     }
-                    if (!empty($variantData['id'])) {
-                        $variant = ProductDetail::find($variantData['id']);
+                    if (!empty($variantData['variant_id'])) {
+                        $variant = ProductDetail::find($variantData['variant_id']);
                         if ($variant) {
                             $variant->update([
                                 'category_id'        => $request['category_id'] ?? null,
@@ -98,11 +97,8 @@ class ProductsController extends Controller
                             ]);
 
                             $variantIdsInRequest[] = $variant->id;
-                        } else {
-                            Log::error("Variant with ID {$variantData['id']} not found for update.");
                         }
                     } else {
-
                         $product_details = new ProductDetail();
                         $product_details->product_id  = $product->id;
                         $product_details->category_id = $request['category_id'];
@@ -119,11 +115,11 @@ class ProductsController extends Controller
                         $variantIdsInRequest[] = $product_details->id;
                     }
                 }
-            }
 
-            ProductDetail::where('product_id', $product->id)
-                ->whereNotIn('id', $variantIdsInRequest)
-                ->delete();
+                ProductDetail::where('product_id', $product->id)
+                    ->whereNotIn('id', $variantIdsInRequest)
+                    ->delete();
+            }
 
             DB::commit();
 

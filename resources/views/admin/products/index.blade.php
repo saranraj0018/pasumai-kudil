@@ -121,6 +121,7 @@
                                             data-benefits="{{ $product->benefits ?? '' }}"
                                             data-category="{{ $product->details[0]->category_id ?? '' }}"
                                             data-sale_price="{{ $product->details->sale_price ?? '' }}"
+                                            data-variant_id="{{ $product->details->id ?? '' }}"
                                             data-regular_price="{{ $product->details->regular_price ?? '' }}"
                                             data-purchase_price="{{ $product->details->purchase_price ?? '' }}"
                                             data-weight="{{ $product->details->weight ?? '' }}"

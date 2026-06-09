@@ -10,6 +10,7 @@
         benefits: '',
         image: null,
         sale_price: null,
+        variant_id: 0,
         regular_price: null,
         purchase_price: null,
         weight: null,
@@ -32,6 +33,7 @@
             benefits: '',
             image: null,
             sale_price: null,
+             variant_id: 0,
             regular_price: null,
             purchase_price: null,
             weight: null,
@@ -144,6 +146,10 @@
 
                             <!-- Main product pricing -->
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                                    <x-input type="hidden" class="varinatIdInput" id="variant_id"
+                                             x-model="form.variant_id" name="variants[0][variant_id]" required />
+
                                 <div>
                                     <x-label>Sale Price</x-label>
                                     <x-input type="number" step="0.01" x-model="form.sale_price"

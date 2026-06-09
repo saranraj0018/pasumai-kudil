@@ -209,6 +209,7 @@ $(function () {
     $(document).on("click", ".editProduct", function () {
         let product = {
             id: $(this).data("id"),
+            variant_id: $(this).data("variant_id"),
             name: $(this).data("name"),
             category: $(this).data("category"),
             description: $(this).data("description"),
@@ -242,6 +243,7 @@ $(function () {
         alpine.form.benefits = product.benefits || "";
         alpine.form.cooking_ideas = product.cooking_ideas || "";
         alpine.form.sale_price = product.sale_price || "";
+        alpine.form.variant_id = product.variant_id || "";
         alpine.form.regular_price = product.regular_price || "";
         alpine.form.purchase_price = product.purchase_price || "";
         alpine.form.weight = product.weight || "";
@@ -265,6 +267,9 @@ $(function () {
                         let variantRow = `
                     <div class="variantRow border rounded-xl p-4 mb-4 bg-gray-50 shadow-sm" data-index="${index}">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                         <input type="hidden" class="variant_id varinatIdInput border border-gray-300 rounded-lg w-full p-2" name="variants[${index}][variant_id]" value="${
+                            variant.id ?? ""
+                        }">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Sale Price</label>
                                 <input type="number" step="0.01" class="salePrice salePriceInput border border-gray-300 rounded-lg w-full p-2" name="variants[${index}][sale_price]" value="${
