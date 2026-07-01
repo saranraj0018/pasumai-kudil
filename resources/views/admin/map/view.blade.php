@@ -36,6 +36,10 @@
 
         <!-- Action Buttons -->
         <div class="flex justify-end gap-4 pt-6 mt-3">
+            <button type="button" id="finish-polygon"
+                    class="px-5 py-2.5 bg-green-600 text-white rounded-lg">
+                Finish Polygon
+            </button>
             <button type="button" id="clear-polygons"
                     class="px-5 py-2.5 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
                 Clear Polygons
@@ -48,79 +52,90 @@
     </div>
 </x-layouts.app>
 
-<script async src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places,drawing&callback=initMap"></script>
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&callback=initMap"></script>
 <script>
     // Define initMap globally to be called by Google Maps API
     function initMap() {
-        let map, drawingManager, marker, searchBox, polygons = [];
+        let map, marker, polygons = [];
 
         // Initialize the map
         map = new google.maps.Map(document.getElementById('city_map'), {
-            center: { lat: 11.0168, lng: 76.9558 }, // Coimbatore
+            center: { lat: 11.0168, lng: 76.9558 },
             zoom: 12,
+            disableDoubleClickZoom: true
         });
-
         // Search box for city search
         const input = document.getElementById('search-city');
-        searchBox = new google.maps.places.SearchBox(input);
+        const autocomplete = new google.maps.places.Autocomplete(input);
 
-        map.addListener('bounds_changed', function () {
-            searchBox.setBounds(map.getBounds());
-        });
+        autocomplete.addListener('place_changed', function () {
 
-        searchBox.addListener('places_changed', function () {
-            const places = searchBox.getPlaces();
-            if (places.length === 0) return;
+            const place = autocomplete.getPlace();
 
-            const city = places[0];
-            map.setCenter(city.geometry.location);
+            if (!place.geometry) {
+                return;
+            }
+
+            map.setCenter(place.geometry.location);
             map.setZoom(14);
 
-            if (marker) marker.setMap(null);
+            if (marker) {
+                marker.setMap(null);
+            }
+
             marker = new google.maps.Marker({
                 map: map,
-                position: city.geometry.location,
-                title: city.name
+                position: place.geometry.location,
+                title: place.name
             });
         });
 
         // Drawing Manager
-        drawingManager = new google.maps.drawing.DrawingManager({
-            drawingMode: google.maps.drawing.OverlayType.POLYGON,
-            drawingControl: true,
-            drawingControlOptions: {
-                position: google.maps.ControlPosition.TOP_CENTER,
-                drawingModes: ['polygon']
-            },
-            polygonOptions: {
-                fillColor: '#FF0000',
-                fillOpacity: 0.35,
-                strokeWeight: 2,
-                strokeColor: '#FF0000',
-                editable: true,
-                zIndex: 1
-            }
-        });
-        drawingManager.setMap(map);
+        let currentPath = [];
+        let currentPolygon = null;
 
-        // Event listener for completed polygon
-        google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
-            polygons.push(polygon);
+        map.addListener('click', function(event) {
 
-            let coordinates = [];
-            polygon.getPath().forEach(function(vertex) {
-                coordinates.push({
-                    lat: vertex.lat(),
-                    lng: vertex.lng()
-                });
+            currentPath.push({
+                lat: event.latLng.lat(),
+                lng: event.latLng.lng()
             });
 
-            polygon.coordinates = coordinates;
+            if (currentPolygon) {
+                currentPolygon.setMap(null);
+            }
+
+            currentPolygon = new google.maps.Polygon({
+                paths: currentPath,
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: '#FF0000',
+                fillOpacity: 0.35,
+                editable: true
+            });
+
+            currentPolygon.setMap(map);
         });
+
+
         const cityCoords = @json($hub_list->mapWithKeys(function ($city) {
         return [$city->id => ['name' => $city->name, 'lat' => (float)$city->latitude, 'lng' => (float)$city->longitude]];
     }));
+        $('#finish-polygon').click(function() {
 
+            if (!currentPolygon || currentPath.length < 3) {
+                showToast("Minimum 3 points required", "error", 2000);
+                return;
+            }
+
+            polygons.push(currentPolygon);
+
+            currentPolygon = null;
+            currentPath = [];
+
+            showToast("Polygon completed", "success", 2000);
+        });
         // Dropdown to fetch and display saved polygons for a city
         $('#city').change(function() {
             let selectedCity = $(this).val();
@@ -144,12 +159,16 @@
 
                             response?.data.forEach(coords => {
                                 const polygon = new google.maps.Polygon({
-                                    paths: coords.map(coord => ({ lat: parseFloat(coord.lat), lng: parseFloat(coord.lng) })),
+                                    paths: coords.map(coord => ({
+                                        lat: parseFloat(coord.lat),
+                                        lng: parseFloat(coord.lng)
+                                    })),
                                     strokeColor: '#FF0000',
                                     strokeOpacity: 0.8,
                                     strokeWeight: 2,
                                     fillColor: '#FF0000',
-                                    fillOpacity: 0.35
+                                    fillOpacity: 0.35,
+                                    editable: true
                                 });
                                 polygon.setMap(map);
                                 window.currentPolygons.push(polygon);
@@ -161,17 +180,24 @@
         });
 
         // Clear button functionality
-        // Handle the clear button click
         $('#clear-polygons').click(function() {
-            if (window.currentPolygons && window.currentPolygons.length > 0) {
-                window.currentPolygons.forEach((polygon) => {
-                    polygon.setMap(null); // Remove each polygon from the map
-                });
-                window.currentPolygons = []; // Reset the array
-                showToast("All polygons have been cleared", "success", 2000);
-            } else {
-                showToast("No polygons to clear.!", "error", 2000);
+
+            if (window.currentPolygons) {
+                window.currentPolygons.forEach(p => p.setMap(null));
+                window.currentPolygons = [];
             }
+
+            polygons.forEach(p => p.setMap(null));
+            polygons = [];
+
+            if (currentPolygon) {
+                currentPolygon.setMap(null);
+                currentPolygon = null;
+            }
+
+            currentPath = [];
+
+            showToast("All polygons cleared", "success", 2000);
         });
 
         // Save all drawn polygons
@@ -184,27 +210,52 @@
                 return;
             }
 
-            if (polygons.length > 0) {
-                const dataToSave = polygons.map(p => p.coordinates);
-
-                $.ajax({
-                    url: '/admin/map/save-area',
-                    method: 'POST',
-                    data: {
-                        polygons: dataToSave,
-                        hub_id: selectedCity
-                    },
-                    success: function() {
-                        showToast("Area saved successfully!", "success", 2000);
-                        window.location.reload();
-                    },
-                    error: function() {
-                        showToast("Something went wrong!", "error", 2000);
-                    }
-                });
-            } else {
-                showToast("Please draw at least one polygon on the map.", "error", 2000);
+            // Auto-finish current drawing if not double-clicked
+            if (currentPolygon && currentPath.length >= 3) {
+                polygons.push(currentPolygon);
+                currentPolygon = null;
+                currentPath = [];
             }
+
+            const allPolygons = [
+                ...polygons,
+                ...(window.currentPolygons || [])
+            ];
+
+            if (allPolygons.length === 0) {
+                showToast("Please draw at least one polygon on the map.", "error", 2000);
+                return;
+            }
+
+            const dataToSave = allPolygons.map(function(polygon) {
+
+                const coords = [];
+
+                polygon.getPath().forEach(function(point) {
+                    coords.push({
+                        lat: point.lat(),
+                        lng: point.lng()
+                    });
+                });
+
+                return coords;
+            });
+
+            $.ajax({
+                url: '/admin/map/save-area',
+                method: 'POST',
+                data: {
+                    polygons: dataToSave,
+                    hub_id: selectedCity
+                },
+                success: function() {
+                    showToast("Area saved successfully!", "success", 2000);
+                    window.location.reload();
+                },
+                error: function() {
+                    showToast("Something went wrong!", "error", 2000);
+                }
+            });
         });
     }
 </script>

@@ -27,11 +27,11 @@ $(function () {
         $("#expires_at").val($(this).data("expires"));
         $("#status").val($(this).data("status"));
 
-       if ($(this).data("apply") == 2) {
-       $("#expires_at").prop("disabled", true);
-       } else {
-       $("#expires_at").prop("disabled", false);
-       }
+       // if ($(this).data("apply") == 2) {
+       // $("#expires_at").prop("disabled", true);
+       // } else {
+       // $("#expires_at").prop("disabled", false);
+       // }
 
 
         $("#coupon_label").text("Edit Coupon");

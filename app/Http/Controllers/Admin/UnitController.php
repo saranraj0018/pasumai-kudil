@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 
@@ -27,6 +28,19 @@ class UnitController extends Controller
 
             // Update or create
             if (!empty($request['unit_id'])) {
+
+                $product = Product::where('status',1)->whereHas('details', function ($q) use ($request) {
+                    $q->where('weight_unit', $request['unit_id']);
+                })->get();
+
+
+                if ($product->isNotEmpty()) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'This unit cannot be deactivated because it is already used in products.'
+                    ], 422);
+                }
+
                 $unit = Unit::findOrFail($request['unit_id']);
                 $message = 'Unit Updated successfully';
             } else {

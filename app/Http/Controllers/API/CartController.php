@@ -113,7 +113,7 @@ class CartController extends Controller
         $user = auth('api')->user();
         $cacheKey = "inside_grocery_zone:user:{$user->id}";
         $isInside = Cache::get($cacheKey);
-
+        $stock_id = $stock_product_id = [];
         foreach ($cart_list as $item) {
             $product = Product::with('product_details', 'product_details.unit')->where(function ($query) {
                 $query->whereDate('expiry_date', '>=', now())
@@ -126,10 +126,12 @@ class CartController extends Controller
                 $variant = collect($variants)->firstWhere('id', $item['variant_id']);
 
                 if (!$variant || (int) ($variant['stock'] ?? 0) <= 0) {
-                    return response()->json([
-                        'status' => 409,
-                        'message' => 'Variant not available',
-                    ]);
+//                    return response()->json([
+//                        'status' => 409,
+//                        'message' => 'Variant not available',
+//                    ]);
+                    $stock_id = $item['variant_id'];
+                    $stock_product_id = $item['product_id'];
                 }
                 $originalPrice = $variant['regular_price'] ?? 0;
                 $discountedPrice = $variant['sale_price'] ?? $originalPrice;

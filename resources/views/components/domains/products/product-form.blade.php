@@ -132,9 +132,8 @@
                         <x-label>Tax Type</x-label>
                         <x-select x-model="form.tax_type">
                             <option value="">Select Tax Type</option>
-                            <option value="0">Zero</option>
-                            <option value="1">Inclusive</option>
-                            <option value="2">Exclusive</option>
+                            <option value="1">Inclusive Tax</option>
+                            <option value="2">Exclusive Tax</option>
                         </x-select>
                     </div>
 

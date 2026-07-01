@@ -41,7 +41,7 @@ class CategoryController extends Controller {
             $validator = Validator::make($request->all(), [
                 'category_id' => 'required|integer',
             ]);
-            
+
             if ($validator->fails()) {
                 return response()->json([
                     'status'  => 419,
@@ -57,7 +57,7 @@ class CategoryController extends Controller {
             $products = \App\Models\Product::whereHas('details', function ($q) use ($categoryId) {
                 $q->where('category_id', $categoryId);
             })
-            ->with('details')
+            ->with(['details','variants.unit'])
             ->where(function ($query) {
                 $query->whereDate('expiry_date', '>=', now())
                     ->orWhereNull('expiry_date');
@@ -65,13 +65,14 @@ class CategoryController extends Controller {
             ->get()
                 ->map(function ($product) use ($cartQuantities, $likedProducts) {
                      $details = $product->details;
+                    $variants = $product->variants->first();
                     return [
                         "product_id"      => $product->id,
                         'category_id'    =>  $product->details->category_id ?? null,
                         "product_image" => $product->image ? url('/storage/' . $product->image) : null,
                         "offer_price"     => $details ? $details->sale_price : 0,
                         "normal_price"    => $details ? $details->regular_price : 0,
-                         'product_kg'  => $details ? ($details->weight . ' ' . $details->weight_unit) : null,
+                         'product_kg'  => $details ? ($details->weight . ' ' . $variants->unit?->short_name) : null,
                          'liked_status'         => in_array($product->id, $likedProducts),
                          'variation_id'  => $details ? $details->id : null,
                          'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
