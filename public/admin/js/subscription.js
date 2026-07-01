@@ -37,7 +37,6 @@ $(document).ready(function () {
         let quantity = $("#quantity").val();
         let delivery = $("#delivery_days_list").text().trim();
 
-
         if (planType === "") {
             showFieldError("#plan_type", "Plan type is required");
             isValid = false;
@@ -106,28 +105,45 @@ $(document).ready(function () {
         $("#subscriptionModal").hide();
         $("#subscriptionForm")[0].reset();
         $("#delivery_days_list").empty();
+        $("#customize_amount_list").empty();
         deliveryDayList = [];
+        deliveryDaysWithAmount = [];
         $("#plan_pack_container").show();
         $("#delivery_days_container").hide();
+        $("#customize_amount_list").show();
         clearAllFieldErrors();
     }
 
     $("#createSubscriptionBtn, #cancelSubscriptionModal").click(closeModal);
 
     // ===== Plan type change =====
+    // NOTE: This handler used to unconditionally clear plan_amount,
+    // deliveryDayList and deliveryDaysWithAmount every time it fired.
+    // That meant if you switched the dropdown away from "Customize"
+    // and back (or it fired while editing), all the already-loaded
+    // Delivery Days / Plan Amount data was wiped out and never came
+    // back. Now it ONLY toggles which section is visible; the
+    // underlying data (deliveryDayList / deliveryDaysWithAmount /
+    // plan_amount value) is left alone, so switching back to
+    // "Customize" instantly re-shows what was already there.
     $("#plan_type").on("change", function () {
-        $("#customize_amount_list").empty();
-        $("#plan_amount").val("");
-        if ($(this).val() === "Customize") {
+        let newType = $(this).val();
+        clearFieldError("#plan_amount");
+
+        if (newType === "Customize") {
             $("#amount").text("Per Day Amount");
             $("#plan_pack_container").hide();
             $("#delivery_days_container").show();
+            $("#customize_amount_list").show();
+            // Recompute breakdown from whatever is already in
+            // deliveryDayList (loaded from edit, or entered earlier
+            // before switching plan type away and back).
+            updateCustomizeAmountList();
         } else {
             $("#amount").text("Plan Amount");
             $("#plan_pack_container").show();
             $("#delivery_days_container").hide();
-            deliveryDayList = [];
-            $("#delivery_days_list").empty();
+            $("#customize_amount_list").hide();
         }
     });
 
@@ -155,33 +171,60 @@ $(document).ready(function () {
         $("#plan_name").val(btn.data("plan_name"));
         var isShowMobile = btn.data("is_show_mobile");
         $("#is_show_mobile").prop("checked", isShowMobile === 1);
+
         // Delivery days fix for Customize
         deliveryDayList = [];
+        deliveryDaysWithAmount = [];
         $("#delivery_days_list").empty();
-        if (
-            btn.data("type") === "Customize" &&
-            btn.attr("data-delivery_days")
-        ) {
-            let days = JSON.parse(btn.attr("data-delivery_days"));
-            days.forEach((d) => {
-                deliveryDayList.push(d);
-                let $daySpan = $(`
-            <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
-                ${d.days} Days
-                <button type="button" class="ml-2 text-red-500 remove-delivery-day">&times;</button>
-            </span>
-        `);
+        $("#customize_amount_list").empty();
 
-                $daySpan.find(".remove-delivery-day").on("click", function () {
-                    let index = deliveryDayList.indexOf(d);
-                    if (index > -1) deliveryDayList.splice(index, 1);
-                    $daySpan.remove();
-                });
-
-                $("#delivery_days_list").append($daySpan);
-            });
+        if (btn.data("type") === "Customize") {
+            $("#amount").text("Per Day Amount");
             $("#plan_pack_container").hide();
             $("#delivery_days_container").show();
+            $("#customize_amount_list").show();
+
+            if (btn.attr("data-delivery_days")) {
+                let days = [];
+                try {
+                    days = JSON.parse(btn.attr("data-delivery_days"));
+                } catch (e) {
+                    days = [];
+                }
+
+                days.forEach((d) => {
+                    // Keep deliveryDayList as plain numbers ONLY —
+                    // pushing the whole {days, amount} object here
+                    // is what caused NaN/null amounts to be saved
+                    // after editing.
+                    let dayValue = parseInt(d.days);
+                    deliveryDayList.push(dayValue);
+
+                    let $daySpan = $(`
+                <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
+                    ${dayValue} Days
+                    <button type="button" class="ml-2 text-red-500 remove-delivery-day">&times;</button>
+                </span>
+            `);
+
+                    $daySpan.find(".remove-delivery-day").on("click", function () {
+                        let index = deliveryDayList.indexOf(dayValue);
+                        if (index > -1) deliveryDayList.splice(index, 1);
+                        $daySpan.remove();
+                        updateCustomizeAmountList();
+                    });
+
+                    $("#delivery_days_list").append($daySpan);
+                });
+            }
+
+            // Build the amount breakdown now that both plan_amount
+            // and deliveryDayList are populated.
+            updateCustomizeAmountList();
+        } else {
+            $("#amount").text("Plan Amount");
+            $("#plan_pack_container").show();
+            $("#delivery_days_container").hide();
         }
 
         $("#subscription_label").text("Edit Subscription");
@@ -193,12 +236,12 @@ $(document).ready(function () {
     $(document).on("submit", "#subscriptionForm", function (e) {
         e.preventDefault();
         clearAllFieldErrors();
-   let $saveBtn = $("#save_subscription");
+        let $saveBtn = $("#save_subscription");
         if (!validateForm()) return;
-$saveBtn
-    .prop("disabled", true)
-    .removeClass("opacity-50 cursor-not-allowed")
-    .text("Saving....");
+        $saveBtn
+            .prop("disabled", true)
+            .removeClass("opacity-50 cursor-not-allowed")
+            .text("Saving....");
         let formData = new FormData(this);
         showLoader();
         formData.append("_token", $("input[name=_token]").val());
@@ -236,10 +279,10 @@ $saveBtn
             function (err) {
                 hideLoader();
                 showToast(err.message || "Unexpected error", "error", 2000);
-                  $saveBtn
-                      .prop("disabled", false)
-                      .removeClass("opacity-50 cursor-not-allowed")
-                      .text("Save");
+                $saveBtn
+                    .prop("disabled", false)
+                    .removeClass("opacity-50 cursor-not-allowed")
+                    .text("Save");
             }
         );
     });
@@ -290,50 +333,65 @@ $saveBtn
         });
     }
 
+    // Rebuilds the price breakdown under Plan Amount (Per Day).
+    // deliveryDayList is ALWAYS an array of plain numbers.
     function updateCustomizeAmountList() {
         if ($("#plan_type").val() !== "Customize") return;
+
         let perDayAmount = parseFloat($("#plan_amount").val()) || 0;
         $("#customize_amount_list").empty();
         deliveryDaysWithAmount = [];
-        let totalAmount = 0;
+
         if (!deliveryDayList.length) return;
+
         let uniqueDays = [...new Set(deliveryDayList)];
-        uniqueDays.forEach(function (days, index) {
+
+        uniqueDays.forEach(function (days) {
             let dayAmount = days * perDayAmount;
-            totalAmount += dayAmount;
+
             deliveryDaysWithAmount.push({
                 days: days,
                 amount: dayAmount,
             });
-            let $customizeAmountSpan;
-            if (typeof days === 'object' && days !== null) {
-                const total = days.days * perDayAmount;
-                $customizeAmountSpan = $(`
-            <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
-                ${days.days} × ${perDayAmount} = ₹${total}
-            </span>
-        `);
-            } else {
-                $customizeAmountSpan = $(`
+
+            let $customizeAmountSpan = $(`
             <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
                 ${days} × ${perDayAmount} = ₹${dayAmount}
             </span>
         `);
-            }
 
             $("#customize_amount_list").append($customizeAmountSpan);
         });
     }
 
-    // When per-day amount changes
+    // When per-day amount changes, refresh totals and clear any
+    // previous "amount required" error.
     $("#plan_amount").on("keyup change", function () {
+        clearFieldError("#plan_amount");
         updateCustomizeAmountList();
     });
 
-    // Add new delivery day
+    // Add new delivery day — blocks adding a day until Plan Amount
+    // (Per Day) has a valid value.
     $("#add_delivery_day_btn").on("click", function () {
+        clearFieldError("#plan_amount");
+
+        let planAmountVal = $("#plan_amount").val();
+        if (planAmountVal === "" || parseFloat(planAmountVal) <= 0) {
+            showFieldError(
+                "#plan_amount",
+                "Please enter Plan Amount (Per Day) before adding delivery days"
+            );
+            return;
+        }
+
         let val = parseInt($("#delivery_days_input").val());
         if (!isNaN(val) && val > 0) {
+            if (deliveryDayList.includes(val)) {
+                showToast("This delivery day is already added", "error", 1500);
+                return;
+            }
+
             deliveryDayList.push(val);
             let $daySpan = $(`
             <span class="inline-flex items-center bg-gray-200 px-2 py-1 rounded m-1">
@@ -342,7 +400,6 @@ $saveBtn
             </span>
         `);
 
-            // Add remove handler
             $daySpan.find(".remove-delivery-day").on("click", function () {
                 let index = deliveryDayList.indexOf(val);
                 if (index > -1) deliveryDayList.splice(index, 1);
@@ -378,7 +435,7 @@ $saveBtn
         $("#configTimeModal").show();
     });
 
-     $(document).on("submit", "#configtimeForm", function (e) {
+    $(document).on("submit", "#configtimeForm", function (e) {
         e.preventDefault();
         let isValid = true;
         let $saveBtn = $("#save_config_time");
@@ -388,7 +445,7 @@ $saveBtn
                 id: "#config_time",
                 condition: (val) => val === "",
                 message: "Config Time is required",
-            }
+            },
         ];
 
         fields.forEach((field) => {
@@ -396,10 +453,10 @@ $saveBtn
         });
 
         if (!isValid) return;
-  $saveBtn
-      .prop("disabled", true)
-      .removeClass("opacity-50 cursor-not-allowed")
-      .text("Saving....");
+        $saveBtn
+            .prop("disabled", true)
+            .removeClass("opacity-50 cursor-not-allowed")
+            .text("Saving....");
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -411,18 +468,16 @@ $saveBtn
                 if (res.success) {
                     showToast("Config Time saved successfully!", "success", 2000);
                     setTimeout(() => {
-                        // Reset form
                         document.getElementById("configtimeForm").reset();
                         window.location.reload();
-
                     }, 500);
                 } else {
                     showToast("Something went wrong!", "error", 2000);
                 }
-                  $saveBtn
-                      .prop("disabled", false)
-                      .removeClass("opacity-50 cursor-not-allowed")
-                      .text("Save");
+                $saveBtn
+                    .prop("disabled", false)
+                    .removeClass("opacity-50 cursor-not-allowed")
+                    .text("Save");
             },
             function (err) {
                 hideLoader();
@@ -435,15 +490,15 @@ $saveBtn
                 } else {
                     showToast(err.message || "Unexpected error", "error", 2000);
                 }
-                  $saveBtn
-                      .prop("disabled", false)
-                      .removeClass("opacity-50 cursor-not-allowed")
-                      .text("Save");
+                $saveBtn
+                    .prop("disabled", false)
+                    .removeClass("opacity-50 cursor-not-allowed")
+                    .text("Save");
             }
         );
-     });
+    });
 
-     $(document).on("click", "#cancelConfigTimeModal", function () {
-         $("#configTimeModal").hide();
-     });
+    $(document).on("click", "#cancelConfigTimeModal", function () {
+        $("#configTimeModal").hide();
+    });
 });
