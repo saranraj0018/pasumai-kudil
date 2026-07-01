@@ -58,6 +58,7 @@ class CouponController extends Controller
             $coupon->order_count   = $request->order_count ?? 0;
             $coupon->order_type    = $request->order_type ?? 1;
             $coupon->started_at    = $request->started_at;
+            $coupon->expires_at    = $request->expires_at;
             $coupon->status        = $request->status;
             $coupon->save();
 

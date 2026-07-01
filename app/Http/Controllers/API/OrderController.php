@@ -76,13 +76,13 @@ class OrderController extends Controller
                                 'email'               => $item->order->email ?? null,
                                 'status'              => $item->order->status ?? null,
                                 'net_amount'          => (string)$item->order->net_amount ?? null,
-                                'shipping_amount'     => $item->order->shipping_amount ?? null,
+                                'shipping_amount'     => (string)$item->order->shipping_amount ?? null,
                                 'gross_amount'        => (string)$item->order->gross_amount ?? null,
                                 'gst_amount'          => (string)$item->order->gst_amount ?? null,
                                 'notes'               => $item->order->notes ?? null,
                                 'rating_status'       => $item->order->rating_status ?? null,
                                 'coupon_id'           => $item->order->coupon_id ?? null,
-                                'coupon_amount'       => $item->order->coupon_amount ?? null,
+                                'coupon_amount'       => (string)$item->order->coupon_amount ?? null,
                                 'shipped_at'          => $item->order->shipped_at ?? null,
                                 'delivered_at'        => $item->order->delivered_at ?? null,
                                 'cancelled_at'        => $item->order->cancelled_at ?? null,
@@ -209,8 +209,14 @@ class OrderController extends Controller
                     ],
                     [
                         'status'  => 'Order Shipped',
-                        'date'    => $orderDetail->order->shipped_at ? Carbon::parse($orderDetail->order->shipped_at)->format('Y-m-d H:i:s') : null,
-                        'isDone'  => !empty($orderDetail->order->shipped_at)
+                        'date' => $orderDetail->order->shipped_at
+                            ? Carbon::parse($orderDetail->order->shipped_at)->format('Y-m-d H:i:s')
+                            : (
+                            $orderDetail->order->delivered_at
+                                ? Carbon::parse($orderDetail->order->delivered_at)->format('Y-m-d H:i:s')
+                                : null
+                            ),
+                        'isDone'  => !empty($orderDetail->order->shipped_at) ||  !empty($orderDetail->order->delivered_at)
                     ],
                     [
                         'status'  => 'Order Delivered',

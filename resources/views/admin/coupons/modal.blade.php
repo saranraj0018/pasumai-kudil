@@ -19,7 +19,14 @@
             <div class="flex items-center gap-3">
                 <div class="w-full">
                     <label>Coupon Code<span class="text-red-500">*</span></label>
-                    <input type="text" name="coupon_code" id="coupon_code" class="form-input w-full border rounded-lg p-2">
+                    <input
+                        type="text"
+                        name="coupon_code"
+                        id="coupon_code"
+                        class="form-input w-full border rounded-lg p-2"
+                        style="text-transform: uppercase;"
+                        oninput="this.value = this.value.toUpperCase();"
+                    />
                 </div>
                 <div class="w-full">
                     <label>Discount Type<span class="text-red-500">*</span></label>
@@ -80,11 +87,11 @@
             <div class="flex items-center gap-3">
                 <div class="w-full" id="expires_at_wrapper">
                     <label>Started At<span class="text-red-500">*</span></label>
-                    <input type="date" name="started_at" id="started_at" class="form-input w-full border rounded-lg p-2">
+                    <input type="date" name="started_at" id="started_at"  min="{{ date('Y-m-d') }}" class="form-input w-full border rounded-lg p-2">
                 </div>
                 <div class="w-full" id="expires_at_wrapper">
                     <label>Expires At<span class="text-red-500">*</span></label>
-                    <input type="date" name="expires_at" id="expires_at" class="form-input w-full border rounded-lg p-2">
+                    <input type="date" name="expires_at" id="expires_at"  min="{{ date('Y-m-d') }}" class="form-input w-full border rounded-lg p-2">
                 </div>
                 <div class="w-full">
                     <label>Status</label>

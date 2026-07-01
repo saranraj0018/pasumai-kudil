@@ -135,7 +135,7 @@
                                 </div>
                                 <div>
                                     <x-label>Expiry Date</x-label>
-                                    <x-input type="date" x-model="form.expiry_date" name="expiry_date"
+                                    <x-input type="date" x-model="form.expiry_date" name="expiry_date"  min="{{ date('Y-m-d') }}"
                                         id="expiry_date" />
                                 </div>
                             </div>
@@ -152,7 +152,7 @@
 
                                 <div>
                                     <x-label>Sale Price</x-label>
-                                    <x-input type="number" step="0.01" x-model="form.sale_price"
+                                    <x-input type="number" step="0.01" class="salePriceInput" x-model="form.sale_price"
                                         name="variants[0][sale_price]" />
                                 </div>
                                 <div>
@@ -177,7 +177,7 @@
                                         class="weightUnit">
                                         <option value="">Select Unit</option>
                                         @foreach ($units as $unit)
-                                            <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                            <option value="{{ $unit->id }}">{{ $unit->short_name ?? $unit->name }}</option>
                                         @endforeach
                                     </x-select>
                                 </div>
@@ -185,9 +185,8 @@
                                     <x-label>Tax Type</x-label>
                                     <x-select x-model="form.tax_type" name="variants[0][tax_type]">
                                         <option value="" selected>Please Select Tax Type</option>
-                                        <option value="0">Zero</option>
-                                        <option value="1">Inclusive</option>
-                                        <option value="2">Exclusive</option>
+                                        <option value="1">Inclusive Tax</option>
+                                        <option value="2">Exclusive Tax</option>
                                     </x-select>
                                 </div>
                                 <div x-show="form.tax_type != '0' && form.tax_type != ''">

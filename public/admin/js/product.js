@@ -115,6 +115,25 @@ $(function () {
             showToast("Purchase Price is required!", "error", 2000);
             isValid = false;
         }
+        const regularPrice = parseFloat($(".regularPriceInput").val()) || 0;
+        const purchasePrice = parseFloat($(".purchasePriceInput").val()) || 0;
+        if (purchasePrice > regularPrice) {
+            showToast(
+                "Purchase Price cannot be greater than Regular Price!",
+                "error",
+                2000
+            );
+            isValid = false;
+        }
+        const sale_price = parseFloat($(".salePriceInput").val()) || 0;
+        if (purchasePrice > sale_price) {
+            showToast(
+                "Purchase Price cannot be greater than Sale Price!",
+                "error",
+                2000
+            );
+            isValid = false;
+        }
         if ($(".stock").val() == "") {
              showToast("Stock is required!", "error", 2000);
              isValid = false;
@@ -304,11 +323,6 @@ $(function () {
                                 <label class="block text-sm font-medium text-gray-700">Tax Type</label>
                                 <select name="variants[${index}][tax_type]" class="taxType taxTypeSelect border border-gray-300 rounded-lg w-full p-2">
                                     <option value="">Select Type</option>
-                                    <option value="0" ${
-                                        variant.tax_type == "0"
-                                            ? "selected"
-                                            : ""
-                                    }>Zero</option>
                                     <option value="1" ${
                                         variant.tax_type == "1"
                                             ? "selected"
@@ -428,9 +442,9 @@ $(function () {
                 <label class="block text-sm font-medium text-gray-700">Tax Type</label>
                 <select name="variants[${variantIndex}][tax_type]" class="taxType taxTypeSelect mt-1 block w-full border rounded-md p-2">
                     <option value="">Select</option>
-                    <option value="0">Zero</option>
-                    <option value="1">Inclusive</option>
-                    <option value="2">Exclusive</option>
+
+                    <option value="1">Inclusive Tax</option>
+                    <option value="2">Exclusive Tax</option>
                 </select>
             </div>
             <div class="taxPercentageDiv" style="display:none;">

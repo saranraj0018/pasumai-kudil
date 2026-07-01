@@ -1,4 +1,5 @@
 <x-layouts.app>
+    <h2 class="text-xl font-bold">Tickets</h2>
     <div class="p-4" x-data="{ open: false }">
         <div class="mt-5 overflow-x-auto bg-white rounded-xl shadow-md" id="deliveryTableWrapper">
             <table id="products" class="w-full text-sm text-left text-gray-700 border-collapse">
@@ -9,6 +10,7 @@
                         <th class="px-3 py-2">User</th>
                         <th class="px-3 py-2">Description</th>
                         <th class="px-3 py-2">Status</th>
+                        <th class="px-3 py-2">Created At</th>
                         <th class="px-3 py-2">Actions</th>
                     </tr>
                 </thead>
@@ -49,6 +51,7 @@
                                         {{ $statusText }}
                                     </span>
                                 </td>
+                                <td class="px-2 py-3 w-100">{{ $list->created_at ?? '' }}</td>
                                 <td class="px-2 py-3 flex justify-center">
                                     @can('edit_ticket')
                                         <button class="text-blue-600 hover:text-blue-800 transition editstatusSave"

@@ -54,6 +54,7 @@ class OrderController extends Controller
             switch ($status) {
                 case 3:
                     $order->shipped_at = $date;
+                    $order->cancelled_at = null;
                     break;
                 case 4:
                     $order->delivered_at = $date;
