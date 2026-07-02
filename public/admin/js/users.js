@@ -55,7 +55,6 @@ $(function () {
                 if (res.success) {
                     showToast("User saved successfully!", "success", 2000);
                     setTimeout(() => {
-                         window.location.reload();
                         let modalScope =
                             document.querySelector("#userCreateModal").__x
                                 .$data;
@@ -70,6 +69,7 @@ $(function () {
                                 .html();
                             $("#userTableBody").html($tbody);
                         });
+                        window.location.reload();
                     }, 500);
                 } else {
                     showToast("Something went wrong!", "error", 2000);
