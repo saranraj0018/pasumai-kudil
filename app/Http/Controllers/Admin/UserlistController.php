@@ -79,38 +79,68 @@ class UserlistController extends Controller
             ->whereHas('subscriptions', function ($q) {
                 $q->where('status', 1);
             })->where('id', $request->id)->first();
+
         $this->data['getuserSubscription'] = UserSubscription::where(['user_id' => $request->id, 'status' => 1])->first();
+
         if (!$this->data['getuserSubscription']) {
-            $cancelled = []; // No cancelled deliveries
+            $cancelled = [];
+            $delivered = [];
         } else {
             $cancelled = DailyDelivery::where([
                 'subscription_id' => $this->data['getuserSubscription']->id,
-                'delivery_status' => 'cancelled'
+                'delivery_status' => 'cancelled',
+            ])->pluck('delivery_date')->toArray();
+
+            $delivered = DailyDelivery::where([
+                'subscription_id' => $this->data['getuserSubscription']->id,
+                'delivery_status' => 'delivered',
             ])->pluck('delivery_date')->toArray();
         }
 
+        // Normalize both to 'Y-m-d' strings so they match flatpickr's dateFormat exactly
+        $cancelled = array_values(array_unique(array_map(
+            fn($d) => Carbon::parse($d)->format('Y-m-d'),
+            $cancelled
+        )));
+
+        $delivered = array_values(array_unique(array_map(
+            fn($d) => Carbon::parse($d)->format('Y-m-d'),
+            $delivered
+        )));
+
         $this->data['cancelled'] = $cancelled;
-        // Convert to array of ranges {start_date,end_date}
+        $this->data['deliveredDates'] = $delivered;
+
+        // Convert cancelled to array of ranges {start_date,end_date}
         // if you have single-day cancellations only, start=end
-        $this->data['cancelledRanges']  = array_map(function ($d) {
+        $this->data['cancelledRanges'] = array_map(function ($d) {
             return ['start_date' => $d, 'end_date' => $d];
-        }, array_values(array_unique($cancelled)));
+        }, $cancelled);
+
         $latestinactivesubscription = UserSubscription::with('get_subscription')->where('user_id', $request->id)
             ->where('status', 2)
             ->pluck('id');
+
         $this->data['previouswalletamount'] = Wallet::where('user_id', $request->id)
             ->whereIn('subscription_id', $latestinactivesubscription)
             ->pluck('balance')
             ->sum();
+
         $this->data['delivery'] = $this->data['getuserSubscription']?->id
             ? DailyDelivery::with('get_delivery_partner')
             ->where('user_id', $request->id)
-            ->where('subscription_id', $this->data['getuserSubscription']->id)->get()
+            ->where('subscription_id', $this->data['getuserSubscription']->id)
+            ->get()
             : collect();
+
         $this->data['delivery_boy'] = DeliveryPartner::get();
-        $this->data['user_current_blalnce'] = Wallet::where('user_id', $request->id)->with('user_subscription')->whereHas('user_subscription', function ($query) {
-            $query->where('status', 1);
-        })->first();
+
+        $this->data['user_current_blalnce'] = Wallet::where('user_id', $request->id)
+            ->with('user_subscription')
+            ->whereHas('user_subscription', function ($query) {
+                $query->where('status', 1);
+            })->first();
+
         return view('admin.users.users_view')->with($this->data);
     }
 
@@ -214,13 +244,16 @@ class UserlistController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name'           => 'required|string|max:255',
-            'mobile_number'  => 'required|regex:/^[0-9]{10}$/|unique:users,mobile_number', // 10-digit validation
+            'mobile_number'  => 'required|regex:/^[0-9]{10}$/|unique:users,mobile_number',
             'email'          => 'nullable|unique:users,email',
             'plan_id'        => 'required|integer|exists:subscriptions,id',
             'custom_days'    => 'nullable|integer|min:1',
             'image'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'state'        => 'nullable|string|max:255',
-            'pincode'      => 'nullable|string|max:10',
+            'state'          => 'nullable|string|max:255',
+            'pincode'        => 'nullable|string|max:10',
+            'floor_number'   => 'required',
+            'latitude'       => 'required|numeric',
+            'longitude'      => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -230,6 +263,18 @@ class UserlistController extends Controller
             ], 409);
         }
 
+        // ------------------------------------------------------------------
+        // CHECK DELIVERY PARTNER COVERAGE BEFORE CREATING ANYTHING
+        // ------------------------------------------------------------------
+        $partner = $this->getMappedDeliveryPartner((float) $request->latitude, (float) $request->longitude);
+
+        if (!$partner) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No delivery partner covers this location. Please choose a different address or contact support.',
+            ], 422);
+        }
+
         DB::beginTransaction();
         try {
             $subscription = Subscription::findOrFail($request['plan_id']);
@@ -237,7 +282,7 @@ class UserlistController extends Controller
             if ($request->filled('custom_days')) {
                 $daycount = (int) $request['custom_days'];
                 $daymonth = false;
-                $amount =  round((float)$subscription->plan_amount, 2);
+                $amount   = round((float) $subscription->plan_amount, 2);
             } else {
                 $daycount = (int) $subscription->plan_pack;
                 $daymonth = true;
@@ -252,9 +297,9 @@ class UserlistController extends Controller
             }
 
             if ($request->filled('custom_days')) {
-                $amount =  round((float)$subscription->plan_amount, 2);
+                $amount = round((float) $subscription->plan_amount, 2);
             } else {
-                $totalAmount = (float)$subscription->plan_amount;
+                $totalAmount = (float) $subscription->plan_amount;
                 $amount = $totalAmount;
             }
 
@@ -266,7 +311,7 @@ class UserlistController extends Controller
             $valid_date_formatted = $valid_date->format('Y-m-d');
 
             $startDate = Carbon::parse($start_date_formatted);
-            $endDate = Carbon::parse($end_date_formatted);
+            $endDate   = Carbon::parse($end_date_formatted);
 
             $image = null;
             if ($request->hasFile('image')) {
@@ -279,23 +324,25 @@ class UserlistController extends Controller
 
             if (!$user) {
                 $user = new User();
-                $user->name          = $request['name'];
-                $user->mobile_number = $request['mobile_number'];
-                $user->email         = $request['email'] ?? null;
-                $user->image         = $image;
-                $user->city          = $request['city'];
-                $user->state         = $request['state'];
-                $user->pincode       = $request['pincode'];
-                $user->latitude      = $request['latitude'] ?? '';
-                $user->longitude     = $request['longitude'] ?? '';
-                $user->address       = $request['address'] ?? '';
-                $user->prefix        = $request['prefix'] ?? '';
+                $user->name           = $request['name'];
+                $user->mobile_number  = $request['mobile_number'];
+                $user->email          = $request['email'] ?? null;
+                $user->image          = $image;
+                $user->city           = $request['city'];
+                $user->state          = $request['state'];
+                $user->pincode        = $request['pincode'];
+                $user->latitude       = $request['latitude'] ?? '';
+                $user->longitude      = $request['longitude'] ?? '';
+                $user->address        = $request['address'] ?? '';
+                $user->prefix         = $request['prefix'] ?? '';
+                $user->floor_number   = $request['floor_number'] ?? '';
                 $user->save();
             }
 
             $existing_subscription = UserSubscription::where(['user_id' => $user->id])->first();
 
             if ($existing_subscription && $existing_subscription->status == 1) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'message' => 'User already has an active subscription. Please deactivate it before adding a new one.'
@@ -317,44 +364,45 @@ class UserlistController extends Controller
 
             User::where('id', $user->id)->update(['subscription_id' => $user_subscription->id]);
 
-            DB::commit();
-            $start_date = Carbon::parse($user_subscription->start_date);
-            $end_date   = Carbon::parse($user_subscription->end_date);
-
             $dates = collect();
             for ($date = $start_date->copy(); $date->lte($end_date); $date->addDay()) {
                 $dates->push($date->toDateString());
             }
 
+            if (!empty($subscription->delivery_days)) {
+                $plan_amount   = $subscription->plan_amount ?? 0;
+                $days          = $subscription->plan_duration;
+                $total_amounts = $plan_amount * $days;
+            } else {
+                $days          = $startDate->diffInDays($endDate) + 1;
+                $plan_amount   = $subscription->plan_amount ?? 0;
+                $total_amounts = $plan_amount * $days;
+            }
+
+            $wallet = new Wallet();
+            $wallet->user_id         = $user->id;
+            $wallet->subscription_id = $user_subscription->id;
+            $wallet->balance         = $total_amounts;
+            $wallet->save();
+
+            $transaction = new Transaction();
+            $transaction->wallet_id       = $wallet->id;
+            $transaction->user_id         = $user->id;
+            $transaction->type            = 'credit';
+            $transaction->amount          = $total_amounts;
+            $transaction->balance_amount  = $total_amounts;
+            $transaction->save();
+
+            DB::commit();
+
+            // Dispatch AFTER commit — partner already confirmed above, so this
+            // will always find the same partner (location doesn't change mid-request).
             foreach ($dates->chunk(50) as $chunk) {
                 GenerateDailyDeliveries::dispatch(
                     $user_subscription,
                     $chunk->toArray()
                 );
             }
-            if (!empty($subscription->delivery_days)) {
-                $plan_amount = $subscription->plan_amount ?? 0;
-                $days = $subscription->plan_duration;
-                $total_amounts = $plan_amount * $days;
-            } else {
-                $days = $startDate->diffInDays($endDate) + 1;
-                $plan_amount = $subscription->plan_amount ?? 0;
-                $total_amounts = $plan_amount * $days;
-            }
-
-            $wallet = new Wallet();
-            $wallet->user_id = $user->id;
-            $wallet->subscription_id = $user_subscription->id;
-            $wallet->balance  = $total_amounts;
-            $wallet->save();
-
-            $transaction = new Transaction();
-            $transaction->wallet_id = $wallet->id;
-            $transaction->user_id = $user->id;
-            $transaction->type = 'credit';
-            $transaction->amount  = $total_amounts;
-            $transaction->balance_amount  = $total_amounts;
-            $transaction->save();
 
             return response()->json([
                 'success' => true,
@@ -369,6 +417,87 @@ class UserlistController extends Controller
                 'error'   => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Find the delivery partner whose hub polygon covers the given coordinates.
+     * Mirrors GenerateDailyDeliveries::getMappedDeliveryPartner but takes raw
+     * lat/lng directly, since at this point in the controller the User model
+     * may not exist yet.
+     */
+    private function getMappedDeliveryPartner(float $latitude, float $longitude)
+    {
+        $partners = DeliveryPartner::with('get_map_address', 'get_hub')->get();
+
+        foreach ($partners as $partner) {
+            if (!$partner->get_hub || $partner->get_hub->type == 1) continue;
+            if (!$partner->get_map_address) continue;
+
+            $coords = json_decode($partner->get_map_address->coordinates, true);
+            if (!is_array($coords)) continue;
+
+            if ($this->isPointInPolygon($latitude, $longitude, $coords)) {
+                return $partner;
+            }
+        }
+
+        return null;
+    }
+
+    private function isPointInPolygon($lat, $lng, array $polygon)
+    {
+        $inside = false;
+        $numPoints = count($polygon);
+        $j = $numPoints - 1;
+
+        for ($i = 0; $i < $numPoints; $i++) {
+            $polygon[$i]['lat'] = (float) $polygon[$i]['lat'];
+            $polygon[$i]['lng'] = (float) $polygon[$i]['lng'];
+        }
+
+        foreach ($polygon as $point) {
+            if (abs($lat - $point['lat']) < 1e-9 && abs($lng - $point['lng']) < 1e-9) {
+                return true;
+            }
+        }
+
+        for ($i = 0; $i < $numPoints; $i++) {
+            $iLat = $polygon[$i]['lat'];
+            $iLng = $polygon[$i]['lng'];
+            $jLat = $polygon[$j]['lat'];
+            $jLng = $polygon[$j]['lng'];
+
+            $cross = ($lng - $iLng) * ($jLat - $iLat) - ($lat - $iLat) * ($jLng - $iLng);
+            if (abs($cross) < 1e-9) {
+                if (
+                    $lat >= min($iLat, $jLat) && $lat <= max($iLat, $jLat) &&
+                    $lng >= min($iLng, $jLng) && $lng <= max($iLng, $jLng)
+                ) {
+                    return true;
+                }
+            }
+
+            $j = $i;
+        }
+
+        $j = $numPoints - 1;
+        for ($i = 0; $i < $numPoints; $i++) {
+            $lat_i = $polygon[$i]['lat'];
+            $lng_i = $polygon[$i]['lng'];
+            $lat_j = $polygon[$j]['lat'];
+            $lng_j = $polygon[$j]['lng'];
+
+            $intersect = (($lng_i > $lng) != ($lng_j > $lng)) &&
+                ($lat < ($lat_j - $lat_i) * ($lng - $lng_i) / (($lng_j - $lng_i) ?: 1e-9) + $lat_i);
+
+            if ($intersect) {
+                $inside = !$inside;
+            }
+
+            $j = $i;
+        }
+
+        return $inside;
     }
 
 
@@ -524,6 +653,8 @@ class UserlistController extends Controller
 
     public function modifySubscription(Request $request)
     {
+        DB::beginTransaction();
+
         try {
             $validated = $request->validate([
                 'user_id'     => 'required|integer',
@@ -531,20 +662,33 @@ class UserlistController extends Controller
                 'end_date'    => 'required|date',
                 'description' => 'nullable|string',
             ]);
+
             $userId = $validated['user_id'];
-            $subscription = UserSubscription::where('user_id', $userId)
+
+            $subscription = UserSubscription::with('get_subscription')
+                ->where('user_id', $userId)
                 ->where('status', 1)
                 ->first();
+
             if (!$subscription) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'message' => 'Active subscription not found.'
                 ]);
             }
-            $subQty      = (int)$subscription->quantity;
-            $unitPrice   = $subscription->price;
-            $subPack     = $subscription->pack;
+
+            $plan = $subscription->get_subscription;
+            if (!$plan) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Plan details not found for this subscription']);
+            }
+
+            $subQty  = (int) $subscription->quantity;
+            $subPack = $subscription->pack;
+
             if ($subQty <= 0) {
+                DB::rollBack();
                 return response()->json(['success' => false, 'message' => 'Invalid subscription quantity']);
             }
 
@@ -556,13 +700,15 @@ class UserlistController extends Controller
                 $changeDays[] = $date->format('Y-m-d');
             }
 
-            $oldEnd   = Carbon::parse($subscription->end_date);
+            $oldEnd    = Carbon::parse($subscription->end_date);
             $validDate = Carbon::parse($subscription->valid_date);
+
             // Fetch all affected orders
             $orders = DailyDelivery::where('user_id', $userId)
                 ->where('subscription_id', $subscription->id)
                 ->whereIn('delivery_date', $changeDays)
                 ->get();
+
             if ($orders->count() != count($changeDays)) {
                 DB::rollBack();
                 return response()->json([
@@ -570,27 +716,78 @@ class UserlistController extends Controller
                     'message' => 'Some selected dates do not exist in delivery schedule'
                 ]);
             }
-            // Total cancelled quantity
-            $totalCancelQty = (int)$orders->sum('quantity');
+
+            $totalCancelQty = (int) $orders->sum('quantity');
 
             if ($totalCancelQty <= 0) {
+                DB::rollBack();
                 return response()->json(['success' => false, 'message' => 'No quantity available to cancel']);
             }
-            // Calculate extend days
+
+            // Calculate extend days FIRST
             $extendDays = (int) ceil($totalCancelQty / $subQty);
             $newEnd     = $oldEnd->copy()->addDays($extendDays);
 
+            // ----------------------------------------------------------
+            // VALIDATE BEFORE MAKING ANY CHANGES — nothing is cancelled
+            // unless the extension actually fits within valid_date.
+            // ----------------------------------------------------------
+            if ($newEnd->gt($validDate)) {
+                $availableDays = $oldEnd->diffInDays($validDate);
+                $availableDays = $availableDays > 0 ? $availableDays : 0;
+                $availableQty  = $availableDays * $subQty;
+
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => "Cannot cancel these dates — the subscription validity would be exceeded. Only {$availableDays} day(s) ({$availableQty} unit(s)) remaining before validity ends on {$validDate->format('Y-m-d')}.",
+                    'remaining_days' => $availableDays,
+                    'remaining_qty'  => $availableQty,
+                ]);
+            }
+
+            // Rate used for newly created pending rows — reuse existing
+            // delivery amount, do NOT recompute from plan/date math (avoids drift).
+            $unitPrice = $this->calculateUnitPrice($plan, $subscription, $validDate);
+
+            // ----------------------------------------------------------
+            // Extension fits — now it's safe to actually cancel + extend
+            // ----------------------------------------------------------
             DailyDelivery::where('user_id', $userId)
                 ->where('subscription_id', $subscription->id)
                 ->whereIn('delivery_date', $changeDays)
                 ->update(['delivery_status' => 'cancelled', 'modify' => 2]);
+
+            $qtyPending = $totalCancelQty;
+            $deliveryId = $orders->first()->delivery_id ?? null;
+
+            for ($i = 1; $i <= $extendDays; $i++) {
+                $qtyToday = min($subQty, $qtyPending);
+                $qtyPending -= $qtyToday;
+
+                DailyDelivery::create([
+                    'user_id'         => $userId,
+                    'subscription_id' => $subscription->id,
+                    'delivery_id'     => $deliveryId,
+                    'delivery_date'   => $oldEnd->copy()->addDays($i)->format('Y-m-d'),
+                    'delivery_status' => 'pending',
+                    'quantity'        => $qtyToday,
+                    'pack'            => $subPack,
+                    'amount'          => round($qtyToday * $unitPrice, 2),
+                ]);
+            }
+
+            $subscription->update([
+                'end_date'    => $newEnd->format('Y-m-d'),
+                'description' => $validated['description'],
+            ]);
+
             $cancelledDatesText = implode(', ', $changeDays);
 
-            // SEND NOTIFICATION TO USER
+            // SEND NOTIFICATION — only after everything succeeded
             $user = User::find($userId);
 
             if ($user && $user->fcm_token) {
-                // Save Notification in DB
                 $notify = new Notification();
                 $notify->user_id     = $user->id;
                 $notify->title       = 'Delivery Cancelled';
@@ -599,7 +796,6 @@ class UserlistController extends Controller
                 $notify->role        = 2;
                 $notify->save();
 
-                // Send Firebase Notification
                 $this->firebase->sendNotification(
                     $user->fcm_token,
                     'Delivery Cancelled',
@@ -607,44 +803,14 @@ class UserlistController extends Controller
                 );
             }
 
-            // Create future pending deliveries
-            $qtyPending = $totalCancelQty;
-            $deliveryId = $orders->first()->delivery_id ?? null;
+            DB::commit();
 
-            if ($newEnd <= $validDate) {
-                for ($i = 1; $i <= $extendDays; $i++) {
-                    $qtyToday = min($subQty, $qtyPending);
-                    $qtyPending -= $qtyToday;
-                    $daily_delivery = new DailyDelivery();
-                    $daily_delivery->user_id         = $userId;
-                    $daily_delivery->subscription_id = $subscription->id;
-                    $daily_delivery->delivery_id     = $deliveryId;
-                    $daily_delivery->delivery_date   = $oldEnd->copy()->addDays($i)->format('Y-m-d');
-                    $daily_delivery->delivery_status = 'pending';
-                    $daily_delivery->quantity        = $qtyToday;
-                    $daily_delivery->pack       = $subPack;
-                    $daily_delivery->amount     =  round($qtyToday * $unitPrice, 2);
-                    $daily_delivery->save();
-                }
-
-                // Update subscription end date + description
-                $subscription->update([
-                    'end_date'       => $newEnd->format('Y-m-d'),
-                    'description'    => $validated['description'],
-                ]);
-
-                return response()->json([
-                    'success'        => true,
-                    'message'       => 'Subscription updated successfully!',
-                    'extended_days' => $extendDays,
-                    'new_end_date'  => $newEnd->format('Y-m-d'),
-                ]);
-            } else {
-                return response()->json([
-                    'success'        => false,
-                    'message'       => '"Order Cancelled Successfully, but the valid date is less than or equal to the current date, so it was not extended."',
-                ]);
-            }
+            return response()->json([
+                'success'       => true,
+                'message'       => 'Subscription updated successfully!',
+                'extended_days' => $extendDays,
+                'new_end_date'  => $newEnd->format('Y-m-d'),
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -653,6 +819,29 @@ class UserlistController extends Controller
                 'error'   => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function calculateUnitPrice($plan, $subscription, Carbon $validDate)
+    {
+        $referenceDelivery = DailyDelivery::where('user_id', $subscription->user_id)
+            ->where('subscription_id', $subscription->id)
+            ->where('delivery_status', 'pending')
+            ->where('quantity', '>', 0)
+            ->orderBy('delivery_date', 'asc')
+            ->first();
+        if ($referenceDelivery) {
+            return round((float) $referenceDelivery->amount / (int) $referenceDelivery->quantity, 2);
+        }
+
+        if (strtolower($plan->plan_type) === 'customize') {
+            return round((float) $plan->plan_amount, 2);
+        }
+
+        $startDate = Carbon::parse($subscription->start_date);
+        $totalDays = $startDate->diffInDays($validDate) + 1;
+        $totalDays = $totalDays > 0 ? $totalDays : 1;
+
+        return round((float) $plan->plan_amount / $totalDays, 2);
     }
 
     public function removePreviousWallet(Request $request)

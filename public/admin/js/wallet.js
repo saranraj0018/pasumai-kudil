@@ -414,7 +414,7 @@ $(function () {
         );
     });
 
-    document.addEventListener("alpine:init", () => {
+ document.addEventListener("alpine:init", () => {
         Alpine.data("dateRangePicker", () => ({
             init() {
                 flatpickr("#date_range", {
@@ -431,7 +431,6 @@ $(function () {
             },
         }));
     });
-
     $("#removeWalletBtn").click(function () {
         var id = new URLSearchParams(window.location.search).get("id");
         $.confirm({
@@ -439,8 +438,8 @@ $(function () {
             content: 'Are you sure you want to remove your previous wallet amount?',
             type: 'orange',
 
-            boxWidth: '500px',     // 👈 CUSTOM POPUP WIDTH
-            useBootstrap: false,   // 👈 IMPORTANT otherwise width won't work
+            boxWidth: '500px',
+            useBootstrap: false,
 
             buttons: {
                 yes: {

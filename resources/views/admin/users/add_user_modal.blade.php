@@ -18,7 +18,8 @@
         mobile_number: '',
         city: '',
         address: '',
-        plan_id: ''
+        plan_id: '',
+        floor_number: ''
     },
     closeModal() {
         this.open = false;
@@ -29,7 +30,8 @@
             mobile_number: '',
             city: '',
             address: '',
-            plan_id: ''
+            plan_id: '',
+            floor_number: ''
         };
         this.previewUrl = null;
         this.errors = {}; // clear errors on close
@@ -99,6 +101,12 @@
                                 <x-label>Mobile Number</x-label>
                                 <x-input type="text" x-model="form.mobile_number" name="mobile_number"
                                     id="mobile_number" placeholder="Enter Your Mobile Number" autocomplete="off"
+                                    required />
+                            </div>
+                            <div>
+                                <x-label>Floor Number</x-label>
+                                <x-input type="text" x-model="form.floor_number" name="floor_number"
+                                    id="floor_number" placeholder="Enter Your Floor Number" autocomplete="off"
                                     required />
                             </div>
                             <div>

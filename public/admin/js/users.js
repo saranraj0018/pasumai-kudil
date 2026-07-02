@@ -31,6 +31,11 @@ $(function () {
                 condition: (val) => val === "",
                 message: "City is required",
             },
+            {
+                id: "#floor_number",
+                condition: (val) => val === "",
+                message: "Floor Number is required",
+            },
         ];
 
         fields.forEach((field) => {
@@ -50,6 +55,7 @@ $(function () {
                 if (res.success) {
                     showToast("User saved successfully!", "success", 2000);
                     setTimeout(() => {
+                         window.location.reload();
                         let modalScope =
                             document.querySelector("#userCreateModal").__x
                                 .$data;

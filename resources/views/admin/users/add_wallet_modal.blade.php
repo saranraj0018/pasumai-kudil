@@ -1,4 +1,15 @@
 <!-- WALLET MODAL -->
+<style>
+.flatpickr-day.marked-date {
+    background: #22c55e !important;
+    color: #fff !important;
+    border-color: #22c55e !important;
+}
+.flatpickr-day.marked-date:hover {
+    background: #16a34a !important;
+    border-color: #16a34a !important;
+}
+</style>
 <div id="addWalletModal" x-data="{
     open: false,
     form: {
@@ -228,26 +239,22 @@
 </div>
 
 
-
-<!-- Load once in your layout head (only once) -->
-
 <div id="modifySubscriptionModal" x-data="modifySubscription(
-    '{{ $userSubscription->start_date ?? '' }}',
-    '{{ $userSubscription->end_date ?? '' }}',
-    @js($cancelled_date)
-)" x-init="init()" x-cloak
+        '{{ $userSubscription->start_date ?? '' }}',
+        '{{ $userSubscription->end_date ?? '' }}',
+        @js($cancelledRanges ?? []),
+        @js($deliveredDates ?? [])
+    )" x-init="init()" x-cloak
     @keydown.escape.window="closeModal()">
 
     <div x-show="open" x-transition.opacity class="fixed inset-0 flex items-center justify-center z-50"
         style="display: none;">
-        <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/40" @click="closeModal()"></div>
 
-        <!-- Modal -->
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-2xl relative z-50 overflow-visible">
             <h2 class="text-2xl font-semibold mb-4 text-gray-800">Modify Subscription</h2>
 
-            <form id="modifySubscriptionForm" class="flex flex-col space-y-5" novalidate>
+            <form id="modifySubscriptionForm" class="flex flex-col space-y-5" novalidate @submit.prevent="submitForm()">
                 @csrf
                 <input type="hidden" name="user_id" value="{{ request()->id }}">
 
@@ -267,8 +274,7 @@
                 <input type="hidden" name="end_date" :value="form.end_date">
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Description <span
-                            class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700">Description <span class="text-red-500">*</span></label>
                     <textarea name="description" id="description" x-model="form.description" rows="3"
                         class="w-full border rounded-lg px-3 py-2 mt-1"></textarea>
                 </div>
@@ -287,101 +293,146 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+<style>
+.flatpickr-day.delivered-date {
+    background: #22c55e !important;
+    color: #fff !important;
+    border-color: #22c55e !important;
+    cursor: not-allowed !important;
+}
+.flatpickr-day.cancelled-date {
+    background: #ef4444 !important;
+    color: #fff !important;
+    border-color: #ef4444 !important;
+    cursor: not-allowed !important;
+}
+.flatpickr-day.flatpickr-disabled.delivered-date,
+.flatpickr-day.flatpickr-disabled.cancelled-date {
+    opacity: 0.6;
+}
+</style>
+
 <script>
-    window.modifySubscription = function(startDate, validDate, cancelledDates = []) {
-        return {
-            open: false,
-            fp: null,
-            minDate: startDate,
-            maxDate: validDate,
-            cancelledDates: Array.isArray(cancelledDates) ? cancelledDates : [],
-            form: {
-                start_date: '',
-                end_date: '',
-                description: '',
-            },
+// Alpine v2 requires a plain global function referenced directly in x-data — no Alpine.data(), no alpine:init event.
+function modifySubscription(startDate, endDate, cancelledRanges, deliveredDates) {
+    return {
+        open: false,
+        flatpickrInstance: null,
+        form: {
+            start_date: '',
+            end_date: '',
+            description: '',
+        },
+        disabledDates: [],
+        cancelledDates: [],
+        deliveredDates: [],
 
-            init() {
-                this.$watch('open', (isOpen) => {
-                    if (isOpen) this.$nextTick(() => this.initDatePicker());
-                    else this.destroyPicker();
-                });
-            },
+        init() {
+            this.deliveredDates = Array.isArray(deliveredDates) ? deliveredDates : [];
+            this.cancelledDates = Array.isArray(cancelledRanges)
+                ? cancelledRanges.flatMap(r => this.expandRange(r.start_date, r.end_date))
+                : [];
 
-            openModal() {
-                this.open = true;
+            this.disabledDates = [...new Set([...this.cancelledDates, ...this.deliveredDates])];
+        },
 
-                // Preselect only if there is exactly ONE cancelled range
-                if (this.cancelledDates.length === 1) {
-                    this.form.start_date = this.cancelledDates[0].start_date;
-                    this.form.end_date = this.cancelledDates[0].end_date;
-                }
-            },
-
-            closeModal() {
-                this.open = false;
-            },
-
-            initDatePicker() {
-                const input = this.$refs.dateInput;
-                const container = this.$refs.calendarContainer;
-                if (!input || !container) return;
-
-                this.destroyPicker();
-
-                const highlightRanges = this.cancelledDates.map(r => ({
-                    from: r.start_date,
-                    to: r.end_date
-                }));
-
-                this.fp = flatpickr(input, {
-                    mode: 'range',
-                    dateFormat: 'Y-m-d',
-                    altInput: true,
-                    altFormat: 'Y-m-d',
-                    static: true,
-                    appendTo: container,
-                    minDate: this.minDate,
-                    maxDate: this.maxDate,
-                    disable: highlightRanges,
-
-                    defaultDate: this.cancelledDates.length === 1 ?
-                        [this.cancelledDates[0].start_date, this.cancelledDates[0].end_date] :
-                        null,
-
-                    onDayCreate: (dObj, dStr, fp, dayElem) => {
-                        const d = dayElem.dateObj;
-                        const ymd =
-                            `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-
-                        if (highlightRanges.some(r => ymd >= r.from && ymd <= r.to)) {
-                            dayElem.style.background = '#ef4444';
-                            dayElem.style.color = 'white';
-                            dayElem.style.borderRadius = '6px';
-                            dayElem.title = 'Cancelled';
-                        }
-                    },
-
-                    onChange: (dates) => {
-                        if (dates.length === 2) {
-                            this.form.start_date = this.formatYMD(dates[0]);
-                            this.form.end_date = this.formatYMD(dates[1]);
-                        }
-                    }
-                });
-            },
-
-            destroyPicker() {
-                if (this.fp) this.fp.destroy();
-                this.fp = null;
-            },
-
-            formatYMD(dt) {
-                const y = dt.getFullYear();
-                const m = String(dt.getMonth() + 1).padStart(2, '0');
-                const d = String(dt.getDate()).padStart(2, '0');
-                return `${y}-${m}-${d}`;
+        // Expand a {start_date,end_date} pair into individual 'Y-m-d' strings (inclusive)
+        expandRange(start, end) {
+            const dates = [];
+            let current = new Date(start);
+            const last = new Date(end);
+            while (current <= last) {
+                dates.push(this.formatDate(current));
+                current.setDate(current.getDate() + 1);
             }
-        };
-    }
+            return dates;
+        },
+
+        formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        },
+
+        openModal() {
+            this.open = true;
+        },
+
+        closeModal() {
+            this.open = false;
+            if (this.flatpickrInstance) {
+                this.flatpickrInstance.destroy();
+                this.flatpickrInstance = null;
+            }
+            this.form.start_date = '';
+            this.form.end_date = '';
+        },
+
+        initDatePicker() {
+            const inputEl = document.getElementById('date_range');
+            if (!inputEl) return;
+
+            if (this.flatpickrInstance) {
+                this.flatpickrInstance.open();
+                return;
+            }
+
+            const self = this;
+
+            this.flatpickrInstance = flatpickr(inputEl, {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                minDate: startDate || null,
+                maxDate: endDate || null,
+                disable: self.disabledDates,
+
+                onDayCreate: function (dObj, dStr, fp, dayElem) {
+                    const cellDate = self.formatDate(dayElem.dateObj);
+                    if (self.cancelledDates.includes(cellDate)) {
+                        dayElem.classList.add('cancelled-date');
+                    } else if (self.deliveredDates.includes(cellDate)) {
+                        dayElem.classList.add('delivered-date');
+                    }
+                },
+
+                onChange: function (selectedDates, dateStr, instance) {
+                    if (selectedDates.length !== 2) return;
+
+                    const rangeStart = self.formatDate(selectedDates[0]);
+                    const rangeEnd = self.formatDate(selectedDates[1]);
+                    const rangeDates = self.expandRange(rangeStart, rangeEnd);
+
+                    const blocked = rangeDates.filter(d => self.disabledDates.includes(d));
+
+                    if (blocked.length > 0) {
+                        alert('Selected range includes already delivered or cancelled date(s): ' + blocked.join(', '));
+                        instance.clear();
+                        self.form.start_date = '';
+                        self.form.end_date = '';
+                        return;
+                    }
+
+                    self.form.start_date = rangeStart;
+                    self.form.end_date = rangeEnd;
+                },
+            });
+
+            this.flatpickrInstance.open();
+        },
+
+        submitForm() {
+            if (!this.form.start_date || !this.form.end_date) {
+                alert('Please select a date range.');
+                return;
+            }
+            if (!this.form.description) {
+                alert('Description is required.');
+                return;
+            }
+            this.$el.submit();
+        },
+    };
+}
 </script>

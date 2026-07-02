@@ -22,16 +22,16 @@ class MilkAPIController extends Controller
                 ->where('status', 1)
                 ->latest()
                 ->first();
-            if(!empty($subscription)){
-                $wallet = Wallet::where(['user_id' => $user->id,'subscription_id' => $subscription->id])->first();
-            }else{
+            if (!empty($subscription)) {
+                $wallet = Wallet::where(['user_id' => $user->id, 'subscription_id' => $subscription->id])->first();
+            } else {
                 $wallet = null;
             }
             $latestinactivesubscription = UserSubscription::with('get_subscription')->where('user_id', $user->id)
                 ->where('status', 2)
                 ->pluck('id');
-            $previouswalletamount = Wallet::where('user_id' , $user->id)
-                ->whereIn('subscription_id' ,$latestinactivesubscription)
+            $previouswalletamount = Wallet::where('user_id', $user->id)
+                ->whereIn('subscription_id', $latestinactivesubscription)
                 ->pluck('balance')
                 ->sum();
             if (!$wallet) {
@@ -40,11 +40,11 @@ class MilkAPIController extends Controller
                     'message' => 'Wallet not found for this user.',
                     'response' =>   [
                         'previous_wallet_balance' => $previouswalletamount,
-                        'wallet_balance' =>0.0,
+                        'wallet_balance' => 0.0,
                         'validity' =>  null,
                         'subscription' => false,
                         'recent_activity' => [],
-                        'createdAt' =>null,
+                        'createdAt' => null,
                     ],
                 ], 200);
             }
@@ -105,7 +105,7 @@ class MilkAPIController extends Controller
                 'quantity',
                 'pack',
                 'delivery_days',
-            )->where('is_show_mobile',1)->get();
+            )->where('is_show_mobile', 1)->get();
 
             // Format plan details
             $planDetails = $plans->map(function ($plan) {
@@ -212,7 +212,7 @@ class MilkAPIController extends Controller
                 ->map(function ($delivery) use ($quantity, $packValue) {
                     return [
                         'date' => Carbon::parse($delivery->delivery_date)->format('d M Y'),
-                        'consuming_liters' => (double)round($quantity * $packValue, 2),
+                        'consuming_liters' => (float)round($quantity * $packValue, 2),
                         'status' => 'completed',
                     ];
                 })
@@ -227,7 +227,7 @@ class MilkAPIController extends Controller
                     $cumulativeUsed += $usedToday;
                     return [
                         'date' => Carbon::parse($delivery->delivery_date)->format('d M Y'),
-                        'remaining_liters' => (double) round($quantity * $packValue, 2),
+                        'remaining_liters' => (float) round($quantity * $packValue, 2),
                         'status' => $delivery->delivery_status,
                     ];
                 })
@@ -250,10 +250,10 @@ class MilkAPIController extends Controller
                     ],
                     'usage_summary' => [
                         'variable_size' => $pack,
-                        'used_liters' => (double) round($usedLiters, 2),
-                        'remaining_liters' => (double) round($remainingLiters, 2),
+                        'used_liters' => (float) round($usedLiters, 2),
+                        'remaining_liters' => (float) round($remainingLiters, 2),
                         'usage_history' => $usageHistory,
-                        'remaining_history' =>(object) $remainingHistory,
+                        'remaining_history' => (object) $remainingHistory,
                     ],
                     'milk_config_time' => $setting->data_value ?? '',
                     'createdAt' => Carbon::now()->format('d/m/Y'),
@@ -286,11 +286,11 @@ class MilkAPIController extends Controller
                 ], 404);
             }
             // Extract subscription & plan details
-             $plan = $subscription->get_subscription;
-            if(!empty($plan->plan_pack)){
-                 $subscriptionType = 'month';
-            }else{
-                 $subscriptionType = 'days';
+            $plan = $subscription->get_subscription;
+            if (!empty($plan->plan_pack)) {
+                $subscriptionType = 'month';
+            } else {
+                $subscriptionType = 'days';
             }
             $planId = $plan->id ?? 'N/A';
             $planAmount = $plan->plan_amount ?? 0;
@@ -339,6 +339,4 @@ class MilkAPIController extends Controller
             ], 500);
         }
     }
-
-
 }
