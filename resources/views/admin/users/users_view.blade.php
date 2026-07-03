@@ -29,7 +29,7 @@
                 </div>
                 <div class="mt-6">
                     @can('add_user_list')
-                    @if ($user->account_holder_name || $user->bank_name || $user->account_number || $user->ifsc_code)
+                   @if (($user->account_holder_name ?? '') || ($user->bank_name ?? '') || ($user->account_number ?? '') || ($user->ifsc_code ?? ''))
                         <button @click="document.querySelector('#addAccountModal').__x.$data.open = true"
                             class="bg-[#276221] hover:bg-[#52a447] transition text-white px-4 py-2 rounded-lg shadow update_account"
                             data-id="{{ $user->id }}"
@@ -100,6 +100,7 @@
         @include('admin.users.add_wallet_modal', [
             'userSubscription' => $getuserSubscription,
             'cancelled_date' => $cancelledRanges,
+            'deliveredDates' => $deliveredDates
         ])
         <div class="overflow-x-auto bg-white rounded-xl shadow-md m-4">
 
