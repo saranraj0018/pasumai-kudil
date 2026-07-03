@@ -289,7 +289,6 @@ class UserlistController extends Controller
                 $user->latitude      = $request['latitude'] ?? '';
                 $user->longitude     = $request['longitude'] ?? '';
                 $user->address       = $request['address'] ?? '';
-                $user->prefix        = $request['prefix'] ?? '';
                 $user->save();
             }
 
@@ -378,7 +377,6 @@ class UserlistController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'edit_user_id' => 'required|exists:users,id',
-                'prefix_id' => 'required|unique:users,prefix,' . $request->edit_user_id . ',id',
                 'user_name' => 'required|string|max:255',
                 'user_email' => 'nullable|email|unique:users,email,' . $request->edit_user_id . ',id',
             ]);
@@ -396,7 +394,6 @@ class UserlistController extends Controller
             $user->update([
                 'name'      => $request->user_name,
                 'email'     => $request->user_email,
-                'prefix'    => $request->prefix_id,
             ]);
 
             return response()->json([

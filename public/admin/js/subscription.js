@@ -368,8 +368,9 @@ $saveBtn
             url: "/admin/milk/get-config-time",
             type: "GET",
             success: function (res) {
-                if (res.success && res.config_time) {
-                    $("#config_time").val(res.config_time); // HH:MM format
+                if (res.success) {
+                    $("#config_time").val(res.config_time ?? "");
+                    $("#config_prefix").val(res.config_prefix ?? "");
                 }
 
                 $("#configTimeModal").removeClass("hidden").addClass("flex");

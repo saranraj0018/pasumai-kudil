@@ -154,6 +154,15 @@
                     <input type="time" name="config_time" id="config_time"
                         class="form-input w-full border rounded-lg p-2">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Prefix
+                    </label>
+                    <div>
+                        <x-input type="text" x-model="form.prefix" name="config_prefix" id="config_prefix"
+                                 placeholder="Enter User Code Prefix" autocomplete="off" required />
+                    </div>
+                </div>
             </div>
 
             <!-- Buttons -->
