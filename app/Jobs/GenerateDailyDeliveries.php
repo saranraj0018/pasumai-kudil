@@ -41,10 +41,11 @@ class GenerateDailyDeliveries implements ShouldQueue
             return;
         }
 
-//         $wallet = Wallet::where('user_id', $user->id)->first();
-//         if (!$wallet) return;
+        //         $wallet = Wallet::where('user_id', $user->id)->first();
+        //         if (!$wallet) return;
 
         $amount = $this->calculatePerDayAmount($plan, $sub);
+
         $partner = $this->getMappedDeliveryPartner($user);
         if (!$partner) return;
         DB::transaction(function () use ($user, $sub, $amount, $partner) {
@@ -72,7 +73,39 @@ class GenerateDailyDeliveries implements ShouldQueue
 
     private function calculatePerDayAmount($plan, $sub)
     {
-        return round((float)$plan->plan_amount, 2);
+        $quantity = (float)($sub->quantity ?: 1);
+
+        if (strtolower($plan->plan_type) === 'customize') {
+            $perDay = (float)$plan->plan_amount * $quantity;
+
+            Log::info('customize perDay calc', [
+                'plan_amount' => $plan->plan_amount,
+                'quantity'    => $quantity,
+                'perDay'      => $perDay,
+            ]);
+
+            return round($perDay, 2);
+        }
+
+        // basic / best_value: total plan_amount is for the full duration, scaled by quantity only.
+        // pack (e.g. "500ml", "1ltr") is descriptive only — NOT a multiplier.
+        $startDate = Carbon::parse($sub->start_date);
+        $endDate   = Carbon::parse($sub->end_date);
+        $totalDays = $startDate->diffInDays($endDate) + 1;
+        $totalDays = $totalDays > 0 ? $totalDays : 1;
+
+        $totalAmount = (float)$plan->plan_amount * $quantity;
+        $perDay = $totalAmount / $totalDays;
+
+        Log::info('basic/best_value perDay calc', [
+            'plan_amount' => $plan->plan_amount,
+            'quantity'    => $quantity,
+            'totalDays'   => $totalDays,
+            'perDay'      => $perDay,
+            'totalAmount'      => $totalAmount,
+        ]);
+
+        return round($perDay, 2);
     }
 
     private function getMappedDeliveryPartner($user)
@@ -152,5 +185,4 @@ class GenerateDailyDeliveries implements ShouldQueue
 
         return $inside;
     }
-
 }

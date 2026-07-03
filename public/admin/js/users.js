@@ -26,6 +26,11 @@ $(function () {
                 condition: (val) => val === "",
                 message: "City is required",
             },
+            {
+                id: "#floor_number",
+                condition: (val) => val === "",
+                message: "Floor Number is required",
+            },
         ];
 
         fields.forEach((field) => {
@@ -59,6 +64,7 @@ $(function () {
                                 .html();
                             $("#userTableBody").html($tbody);
                         });
+                        window.location.reload();
                     }, 500);
                 } else {
                     showToast("Something went wrong!", "error", 2000);

@@ -21,6 +21,7 @@ class UserAddressController extends Controller
             'city' => 'required|string',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'floor_number' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -38,6 +39,7 @@ class UserAddressController extends Controller
             'city' => $request['city'],
             'latitude' => $request['latitude'],
             'longitude' => $request['longitude'],
+            'floor_number' => $request['floor_number']
         ]);
 
         $userdetails = User::where('id', $userId)->first();
@@ -51,7 +53,7 @@ class UserAddressController extends Controller
 
     public function userAddressDetails(Request $request){
         $userId = auth()->id();
-        $userDetails = User::select('name','address', 'pincode', 'city', 'state', 'latitude', 'longitude')
+        $userDetails = User::select('name','address', 'pincode', 'city', 'state', 'latitude', 'longitude', 'floor_number')
             ->where('id', $userId)
             ->first();
 

@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('branch', 255)->nullable();
             $table->string('prefix', 255)->nullable();
             $table->string('fcm_token')->nullable()->after('remember_token');
+            $table->string('floor_number', 255)->nullable();
         });
     }
 
