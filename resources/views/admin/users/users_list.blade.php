@@ -30,16 +30,18 @@
                             $setting = \App\Models\Setting::where('data_key', 'milk_config_prefix')->first();
                         @endphp
                         @foreach ($getuser as $user)
+                        @php
+                            $setting = \App\Models\Setting::where('data_key', 'milk_config_prefix')->first();
+                            $wallet = $user->subscriptions->where(['status' => 1, 'user_id' => $user->id])->first();
+                        @endphp
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-4 py-3 font-medium text-gray-900">{{ ($getuser->currentPage() - 1) * $getuser->perPage() + $loop->iteration }}</td>
                                 <td class="px-4 py-3">{{  ($setting->data_value ?? '').$user->id ?? '' }}</td>
                                 <td class="px-4 py-3">{{ $user->name ?? ''}}</td>
                                 <td class="px-4 py-3">{{ $user->mobile_number ?? '' }}</td>
                                 <td class="px-4 py-3">{{ $user->address ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $user->subscriptions?->wallet?->balance ?? 0 }}</td>
+                                <td class="px-4 py-3">{{ $wallet->wallet?->balance ?? 0 }}</td>
                                 <td class="px-4 py-3 flex justify-center gap-4">
-                                    <!-- View -->
-
                                     <!-- Edit -->
                                     @can('edit_user_list')
                                         <button class="text-blue-600 hover:text-blue-800 transition editUserBtn"
@@ -49,7 +51,6 @@
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
                                     @endcan
-
                                     @can('view_user_list')
                                     <a href="{{ route('user_view.users', ['id' => $user->id]) }}"
                                         class="text-green-600 hover:text-green-800 viewuser"
@@ -57,7 +58,6 @@
                                         <i class="fa-solid fa-eye"></i>
                                     </a>
                                     @endcan
-
                                 </td>
                             </tr>
                         @endforeach

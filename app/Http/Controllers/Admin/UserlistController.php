@@ -43,6 +43,7 @@ class UserlistController extends Controller
                     ->orWhere('prefix', 'like', "%{$search}%")
                     ->orWhere('mobile_number', 'like', "%{$search}%");
             })
+
             ->paginate(10);
 
         $this->data['search'] = $search;
@@ -54,7 +55,7 @@ class UserlistController extends Controller
         $search = $request->input('search');
         $this->data['getuser'] = User::with('subscriptions', 'subscriptions.wallet')
             ->whereHas('subscriptions', function ($q) {
-                $q->where('status', 1);
+                $q->whereIn('status', [1, 2]);
             })
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
@@ -77,7 +78,7 @@ class UserlistController extends Controller
     {
         $this->data['user'] = User::with('subscriptions', 'subscriptions.wallet')
             ->whereHas('subscriptions', function ($q) {
-                $q->where('status', 1);
+                $q->whereIn('status', [1, 2]);
             })->where('id', $request->id)->first();
 
         $this->data['getuserSubscription'] = UserSubscription::where(['user_id' => $request->id, 'status' => 1])->first();
@@ -277,7 +278,7 @@ class UserlistController extends Controller
 
         DB::beginTransaction();
         try {
-            $subscription = Subscription::findOrFail($request['plan_id']);
+            $subscription = Subscription::where('id', $request['plan_id'])->first();
 
             if ($request->filled('custom_days')) {
                 $daycount = (int) $request['custom_days'];
@@ -321,6 +322,16 @@ class UserlistController extends Controller
             }
 
             $user = User::where('mobile_number', $request['mobile_number'])->first();
+
+            if (!empty($subscription->delivery_days)) {
+                $plan_amount   = $subscription->plan_amount ?? 0;
+                $days          = $subscription->plan_duration;
+                $total_amounts = $plan_amount * $days;
+            } else {
+                $days          = $startDate->diffInDays($endDate) + 1;
+                $plan_amount   = $subscription->plan_amount ?? 0;
+                $total_amounts = $plan_amount;
+            }
 
             if (!$user) {
                 $user = new User();
@@ -368,15 +379,7 @@ class UserlistController extends Controller
                 $dates->push($date->toDateString());
             }
 
-            if (!empty($subscription->delivery_days)) {
-                $plan_amount   = $subscription->plan_amount ?? 0;
-                $days          = $subscription->plan_duration;
-                $total_amounts = $plan_amount * $days;
-            } else {
-                $days          = $startDate->diffInDays($endDate) + 1;
-                $plan_amount   = $subscription->plan_amount ?? 0;
-                $total_amounts = $plan_amount * $days;
-            }
+
 
             $wallet = new Wallet();
             $wallet->user_id         = $user->id;
@@ -503,11 +506,11 @@ class UserlistController extends Controller
     public function updateUser(Request $request)
     {
         try {
-
             $validator = Validator::make($request->all(), [
                 'edit_user_id' => 'required|exists:users,id',
                 'user_name' => 'required|string|max:255',
                 'user_email' => 'nullable|email|unique:users,email,' . $request->edit_user_id . ',id',
+
             ]);
 
             if ($validator->fails()) {
@@ -578,7 +581,7 @@ class UserlistController extends Controller
         }
 
         try {
-            User::where('id', $request['id'])->update([
+            User::where('id', $request['user_id'])->update([
                 'account_number' => $request['account_number'],
                 'bank_name' => $request['bank_name'],
                 'ifsc_code' => $request['ifsc_code'],
