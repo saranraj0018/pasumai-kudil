@@ -7,11 +7,6 @@ $(function () {
 
         const fields = [
             {
-                id: "#prefix",
-                condition: (val) => val === "",
-                message: "User Code Prefix is required",
-            },
-            {
                 id: "#name",
                 condition: (val) => val === "",
                 message: "User Name is required",
@@ -57,7 +52,7 @@ $(function () {
                             modalScope.open = false; // close modal
                         }
                         // Reset form
-                        document.getElementById("productAddForm").reset();
+                        document.getElementById("userForm").reset();
                         $.get("/admin/users/lists", function (html) {
                             let $tbody = $(html)
                                 .find("#userTableBody")
@@ -94,7 +89,6 @@ $(function () {
 
     $(document).on("click", ".editUserBtn", function () {
         $("#edit_user_id").val($(this).data("id"));
-        $("#prefix_id").val($(this).data("prefix_id"));
         $("#user_name").val($(this).data("name"));
         $("#user_email").val($(this).data("email"));
 
@@ -112,7 +106,6 @@ $(function () {
 
         // Basic validation
         let fields = [
-            { id: "#prefix_id", condition: val => val === "", message: "User Id is required" },
             { id: "#user_name", condition: val => val === "", message: "User Name is required" },
             { id: "#user_name", condition: val => val === "", message: "User Email is required" },
         ];
@@ -141,6 +134,7 @@ $(function () {
                             let $tbody = $(html)
                                 .find("#userTableBody")
                                 .html();
+                            console.log($tbody)
                             $("#userTableBody").html($tbody);
                         });
                     }, 500);

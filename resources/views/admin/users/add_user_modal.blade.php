@@ -81,11 +81,6 @@
                     <div class="p-5 space-y-5 flex-1 w-full h-fit">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <x-label>Prefix</x-label>
-                                <x-input type="text" x-model="form.prefix" name="prefix" id="prefix"
-                                    placeholder="Enter User Code Prefix" autocomplete="off" required />
-                            </div>
-                            <div>
                                 <x-label>Name</x-label>
                                 <x-input type="text" x-model="form.name" name="name" id="name"
                                     placeholder="Enter Your Name" autocomplete="off" required />
@@ -104,7 +99,7 @@
                             <div>
                                 <x-label>Plan Name</x-label>
                                 <x-select x-model="form.plan_id" name="plan_id" id="plan_id" required>
-                                    <option value="" selected disabled>Please Select Plan Name</option>
+                                    <option value="" selected>Please Select Plan Name</option>
                                     @foreach ($subscription_plan as $plan)
                                         <option value="{{ $plan->id }}">{{ $plan->plan_name }}</option>
                                     @endforeach
@@ -174,10 +169,7 @@
 
             <!-- Code + Type + Value -->
             <div class="flex items-center gap-3">
-                <div class="w-full">
-                    <label>User Id<span class="text-red-500">*</span></label>
-                    <input type="text" name="prefix_id" id="prefix_id" class="form-input w-full border rounded-lg p-2">
-                </div>
+
                 <div class="w-full">
                     <div class="w-full">
                         <label>User Name<span class="text-red-500">*</span></label>

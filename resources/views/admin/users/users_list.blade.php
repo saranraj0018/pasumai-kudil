@@ -25,10 +25,14 @@
                 </thead>
                 <tbody id="userTableBody" class="divide-y divide-gray-200">
                     @if ($getuser->isNotEmpty())
+
+                        @php
+                            $setting = \App\Models\Setting::where('data_key', 'milk_config_prefix')->first();
+                        @endphp
                         @foreach ($getuser as $user)
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-4 py-3 font-medium text-gray-900">{{ ($getuser->currentPage() - 1) * $getuser->perPage() + $loop->iteration }}</td>
-                                <td class="px-4 py-3">{{ $user->prefix ?? '' }}</td>
+                                <td class="px-4 py-3">{{  ($setting->data_value ?? '').$user->id ?? '' }}</td>
                                 <td class="px-4 py-3">{{ $user->name ?? ''}}</td>
                                 <td class="px-4 py-3">{{ $user->mobile_number ?? '' }}</td>
                                 <td class="px-4 py-3">{{ $user->address ?? '' }}</td>
@@ -40,7 +44,6 @@
                                     @can('edit_user_list')
                                         <button class="text-blue-600 hover:text-blue-800 transition editUserBtn"
                                                 data-id="{{ $user->id }}"
-                                                data-prefix_id="{{ $user->prefix }}"
                                                 data-name="{{ $user->name }}"
                                                 data-email="{{ $user->email }}">
                                             <i class="fa-solid fa-pen-to-square"></i>

@@ -68,39 +68,47 @@ class SubscriptionController extends Controller
     public function saveConfigTime(Request $request)
     {
         $request->validate([
-            'config_time' => 'required',
+            'config_time'   => 'required',
+            'config_prefix' => 'required',
         ]);
+
         try {
 
-            $exists_setting = Setting::where('data_key','milk_config_time')->first();
-            if(!empty($exists_setting)){
-              $update = Setting::where('data_key', 'milk_config_time')
-              ->update([
-                    'data_value' => $request->config_time
-              ]);
-                $message = 'Config Time updated successfully';
-                return response()->json(['success' => true, 'message' => $message]);
-            }else{
-                $settings = new Setting();
-                $settings->data_key = 'milk_config_time';
-                $settings->data_value = $request->config_time;
-                $settings->save();
-                $message = 'Config Time created successfully';
-                return response()->json(['success' => true, 'message' => $message]);
-            }
+            Setting::updateOrCreate(
+                ['data_key' => 'milk_config_time'],
+                ['data_value' => $request->config_time]
+            );
+
+            Setting::updateOrCreate(
+                ['data_key' => 'milk_config_prefix'],
+                ['data_value' => $request->config_prefix]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Settings saved successfully.'
+            ]);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
     public function getConfigTime()
     {
         try {
-            $setting = Setting::where('data_key', 'milk_config_time')->first();
+            $settings = Setting::whereIn('data_key', [
+                'milk_config_time',
+                'milk_config_prefix'
+            ])->pluck('data_value', 'data_key');
+
             return response()->json([
                 'success' => true,
-                'config_time' => $setting ? $setting->data_value : null
+                'config_time'   => $settings['milk_config_time'] ?? null,
+                'config_prefix' => $settings['milk_config_prefix'] ?? null,
             ]);
         } catch (\Exception $e) {
             return response()->json([
