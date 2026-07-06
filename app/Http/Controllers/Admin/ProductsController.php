@@ -33,8 +33,14 @@ class ProductsController extends Controller
     public function saveProduct(Request $request)
     {
         $rules = [
-            'product_name'   => 'required|string|max:255',
-            'category_id'    => 'required',
+            'product_name' => 'required|string|max:255',
+            'category_id'  => 'required',
+            'variants'                    => 'required|array|min:1',
+            'variants.*.regular_price'    => 'required|numeric|min:0.01',
+            'variants.*.purchase_price'   => 'required|numeric|min:0',
+            'variants.*.weight'           => 'required|numeric|min:0.01',
+            'variants.*.weight_unit'      => 'required',
+            'variants.*.stock'            => 'required|integer|min:0',
         ];
 
         if (empty($request['product_id']) && !$request->has('existing_image')) {
