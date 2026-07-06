@@ -1,39 +1,19 @@
-<div id="productCreateModal" x-data="{
-    open: false,
-    previewUrl: null,
-    steps: ['Product Info', 'Product Details', 'Review'],
-    stepNumber: 0,
-    form: {
-        name: '',
-        category_id: '',
-        description: '',
-        benefits: '',
-        image: null,
-        sale_price: null,
-        variant_id: 0,
-        regular_price: null,
-        purchase_price: null,
-        weight: null,
-        weight_unit: 'kg',
-        tax_type: '',
-        tax_percentage: null,
-        is_featured_product: false,
-        existing_image: '',
-        expiry_date: '',
-        cooking_ideas: '',
-    },
-    closeModal() {
-        this.open = false;
-        this.stepNumber = 0;
-        this.variants = [];
-        this.form = {
+<div id="productCreateModal"
+    x-data="{
+        open: false,
+        previewUrl: null,
+
+        steps: ['Product Info', 'Product Details', 'Review'],
+        stepNumber: 0,
+
+        form: {
             name: '',
             category_id: '',
             description: '',
             benefits: '',
             image: null,
             sale_price: null,
-             variant_id: 0,
+            variant_id: 0,
             regular_price: null,
             purchase_price: null,
             weight: null,
@@ -41,38 +21,206 @@
             tax_type: '',
             tax_percentage: null,
             is_featured_product: false,
-            expiry_date: null,
+            existing_image: '',
+            expiry_date: '',
             cooking_ideas: '',
-        };
-    },
-    handleImageChange(event) {
-             const file = event.target.files[0];
-             if (!file) return;
+        },
 
-             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-             const maxSize = 2 * 1024 * 1024;
+        closeModal() {
+            this.open = false;
+            this.stepNumber = 0;
+            this.previewUrl = null;
+            this.variants = [];
 
-             if (!allowedTypes.includes(file.type)) {
-                 showToast('Only JPG, JPEG, and PNG files are allowed.', 'error', 2000);
-                 event.target.value = '';
-                 this.previewUrl = null;
-                 return;
-             }
+            this.form = {
+                name: '',
+                category_id: '',
+                description: '',
+                benefits: '',
+                image: null,
+                sale_price: null,
+                variant_id: 0,
+                regular_price: null,
+                purchase_price: null,
+                weight: null,
+                weight_unit: 'kg',
+                tax_type: '',
+                tax_percentage: null,
+                is_featured_product: false,
+                existing_image: '',
+                expiry_date: '',
+                cooking_ideas: '',
+            };
+        },
 
-             if (file.size > maxSize) {
-                 showToast('File size must not exceed 2MB.', 'error', 2000);
-                 event.target.value = '';
-                 this.previewUrl = null;
-                 return;
-             }
+        handleImageChange(event) {
+            const file = event.target.files[0];
 
-             const reader = new FileReader();
-             reader.onload = e => { this.previewUrl = e.target.result; };
-             reader.readAsDataURL(file);
-         },
-    nextStep() { if (this.stepNumber < this.steps.length - 1) this.stepNumber++ },
-    prevStep() { if (this.stepNumber > 0) this.stepNumber-- },
-}" x-cloak>
+            if (!file) {
+                this.previewUrl = null;
+                return;
+            }
+
+            const allowedTypes = [
+                'image/jpeg',
+                'image/jpg',
+                'image/png'
+            ];
+
+            const maxSize = 2 * 1024 * 1024;
+
+            if (!allowedTypes.includes(file.type)) {
+                showToast('Only JPG, JPEG, and PNG files are allowed.', 'error', 2000);
+                event.target.value = '';
+                this.previewUrl = null;
+                return;
+            }
+
+            if (file.size > maxSize) {
+                showToast('File size must not exceed 2MB.', 'error', 2000);
+                event.target.value = '';
+                this.previewUrl = null;
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                this.previewUrl = e.target.result;
+            };
+
+            reader.readAsDataURL(file);
+        },
+
+        nextStep() {
+            if (this.stepNumber === 0 && !this.validateStep1()) {
+                return;
+            }
+
+            if (this.stepNumber === 1 && !this.validateStep2()) {
+                return;
+            }
+
+            if (this.stepNumber < this.steps.length - 1) {
+                this.stepNumber++;
+            }
+        },
+
+        prevStep() {
+            if (this.stepNumber > 0) {
+                this.stepNumber--;
+            }
+        },
+
+        validateStep1() {
+            let isValid = true;
+
+            const fields = [
+                {
+                    id: '#product_name',
+                    condition: (val) => val.trim() === '',
+                    message: 'Product Name is required'
+                },
+                {
+                    id: '#category_id',
+                    condition: (val) => val === '',
+                    message: 'Category is required'
+                },
+                {
+                    id: '#expiry_date',
+                    condition: (val) => val === '',
+                    message: 'Expiry Date is required'
+                }
+            ];
+
+            fields.forEach(field => {
+                if (!validateField(field)) {
+                    isValid = false;
+                }
+            });
+
+            const image = $('#image').val();
+            const existingImage = $('#existing_image').val();
+
+            if (image === '' && existingImage === '') {
+                showToast('Please select an image.', 'error', 2000);
+                isValid = false;
+            }
+
+            return isValid;
+        },
+
+        validateStep2() {
+            return this.validateAllVariantRows();
+        },
+
+        validateAllVariantRows() {
+            let isValid = true;
+
+            $('.regularPriceInput').each(function (i) {
+
+                const $row = $(this).closest('.grid');
+                const rowLabel = i === 0 ? 'Main product' : `Variant ${i}`;
+
+                const regular = $row.find('.regularPriceInput').val();
+                const purchase = $row.find('.purchasePriceInput').val();
+                const sale = $row.find('.salePriceInput').val();
+                const weight = $row.find('.weight').val();
+                const weightUnit = $row.find('.weightUnit').val();
+                const stock = $row.find('.stock').val();
+
+                if (regular === '' || parseFloat(regular) <= 0) {
+                    showToast(`${rowLabel}: MRP is required`, 'error', 2000);
+                    isValid = false;
+                    return false;
+                }
+
+                if (purchase === '' || parseFloat(purchase) <= 0) {
+                    showToast(`${rowLabel}: Purchase Price is required`, 'error', 2000);
+                    isValid = false;
+                    return false;
+                }
+
+                if (weight === '' || weight == null) {
+                    showToast(`${rowLabel}: Weight is required`, 'error', 2000);
+                    isValid = false;
+                    return false;
+                }
+
+                if (weightUnit === '' || weightUnit == null) {
+                    showToast(`${rowLabel}: Weight Unit is required`, 'error', 2000);
+                    isValid = false;
+                    return false;
+                }
+
+                if (stock === '' || stock == null) {
+                    showToast(`${rowLabel}: Stock is required`, 'error', 2000);
+                    isValid = false;
+                    return false;
+                }
+
+                const regNum = parseFloat(regular) || 0;
+                const purNum = parseFloat(purchase) || 0;
+                const saleNum = parseFloat(sale) || 0;
+
+                if (purNum > regNum) {
+                    showToast(`${rowLabel}: Purchase Price cannot exceed Regular Price`, 'error', 2000);
+                    isValid = false;
+                    return false;
+                }
+
+                if (saleNum > 0 && purNum > saleNum) {
+                    showToast(`${rowLabel}: Purchase Price cannot exceed Sale Price`, 'error', 2000);
+                    isValid = false;
+                    return false;
+                }
+
+            });
+
+            return isValid;
+        }
+    }"
+    x-cloak>
     <template x-if="open">
         <div x-show="open" class="fixed inset-0 flex items-center justify-center z-50">
             <div class="absolute inset-0 bg-black/40" @click="closeModal()"></div>
@@ -97,7 +245,7 @@
                                     <x-label>Category</x-label>
 
                                     <x-select x-model="form.category_id" name="category_id" id="category_id" required>
-                                        <option value="" selected disabled>Please Select Category</option>
+                                        <option value="" selected>Please Select Category</option>
                                         @foreach ($category as $cat)
                                             <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                                         @endforeach
@@ -114,15 +262,16 @@
                                 </div>
                                 <div>
                                     <x-label>Cooking Ideas</x-label>
-                                    <x-textarea placeholder="Enter Cooking Ideas" name="cooking_ideas" x-model="form.cooking_ideas" />
+                                    <x-textarea placeholder="Enter Cooking Ideas" name="cooking_ideas"
+                                        x-model="form.cooking_ideas" />
                                 </div>
                                 <div class="col-span-2">
                                     <x-label>Image</x-label>
                                     <input type="file" name="image" id="image" accept=".png, .jpg, .jpeg"
-                                        x-ref="fileInput"
-                                      @change="handleImageChange($event)"
+                                        x-ref="fileInput" @change="handleImageChange($event)"
                                         class="form-input w-full border border-gray-300 rounded-lg p-2 cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ab5f00] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#ab5f00] file:text-white hover:file:bg-[#ab5f00]">
-            <span class="text-red-600 text-sm">Only JPG,JPEG,PNG files are allowed and File size must not exceed 2MB</span>
+                                    <span class="text-red-600 text-sm">Only JPG,JPEG,PNG files are allowed and File size
+                                        must not exceed 2MB</span>
                                     <div class="mt-4 flex justify-center overflow-hidden">
                                         <img :src="previewUrl" x-show="previewUrl"
                                             class="w-full max-h-[30vh] rounded-lg border border-gray-300 shadow-md object-cover" />
@@ -135,8 +284,8 @@
                                 </div>
                                 <div>
                                     <x-label>Expiry Date</x-label>
-                                    <x-input type="date" x-model="form.expiry_date" name="expiry_date"  min="{{ date('Y-m-d') }}"
-                                        id="expiry_date" />
+                                    <x-input type="date" x-model="form.expiry_date" name="expiry_date"
+                                        min="{{ date('Y-m-d') }}" id="expiry_date" />
                                 </div>
                             </div>
                         </div>
@@ -147,13 +296,13 @@
                             <!-- Main product pricing -->
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-                                    <x-input type="hidden" class="varinatIdInput" id="variant_id"
-                                             x-model="form.variant_id" name="variants[0][variant_id]" required />
+                                <x-input type="hidden" class="varinatIdInput" id="variant_id" x-model="form.variant_id"
+                                    name="variants[0][variant_id]" required />
 
                                 <div>
                                     <x-label>Sale Price</x-label>
-                                    <x-input type="number" step="0.01" class="salePriceInput" x-model="form.sale_price"
-                                        name="variants[0][sale_price]" />
+                                    <x-input type="number" step="0.01" class="salePriceInput"
+                                        x-model="form.sale_price" name="variants[0][sale_price]" />
                                 </div>
                                 <div>
                                     <x-label>MRP<span class="text-red-500">*</span></x-label>
@@ -167,17 +316,18 @@
                                         name="variants[0][purchase_price]" required />
                                 </div>
                                 <div>
-                                    <x-label>Weight</x-label>
+                                    <x-label>Weight<span class="text-red-500">*</span></x-label>
                                     <x-input type="number" step="0.01" x-model="form.weight" class="weight"
-                                        name="variants[0][weight]" />
+                                        name="variants[0][weight]" required />
                                 </div>
                                 <div>
-                                    <x-label>Weight Unit</x-label>
+                                    <x-label>Weight Unit<span class="text-red-500">*</span></x-label>
                                     <x-select x-model="form.weight_unit" name="variants[0][weight_unit]"
-                                        class="weightUnit">
+                                        class="weightUnit" required>
                                         <option value="">Select Unit</option>
                                         @foreach ($units as $unit)
-                                            <option value="{{ $unit->id }}">{{ $unit->short_name ?? $unit->name }}</option>
+                                            <option value="{{ $unit->id }}">{{ $unit->short_name ?? $unit->name }}
+                                            </option>
                                         @endforeach
                                     </x-select>
                                 </div>

@@ -119,7 +119,7 @@
                                             data-id="{{ $product->id }}" data-name="{{ $product->name ?? '' }}"
                                             data-description="{{ $product->description ?? '' }}"
                                             data-benefits="{{ $product->benefits ?? '' }}"
-                                            data-category="{{ $product->details[0]->category_id ?? '' }}"
+                                            data-category="{{ $product->details?->category?->id ?? '' }}"
                                             data-sale_price="{{ $product->details->sale_price ?? '' }}"
                                             data-variant_id="{{ $product->details->id ?? '' }}"
                                             data-regular_price="{{ $product->details->regular_price ?? '' }}"

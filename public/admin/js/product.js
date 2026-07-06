@@ -32,6 +32,77 @@ $(function () {
             });
     }
 
+    function validateAllVariantRows() {
+        let isValid = true;
+
+        $(".regularPriceInput").each(function (i) {
+            const $row = $(this).closest(".grid");
+            const rowLabel = i === 0 ? "Main product" : `Variant ${i}`;
+
+            const regular = $row.find(".regularPriceInput").val();
+            const purchase = $row.find(".purchasePriceInput").val();
+            const weight = $row.find(".weight").val();
+            const weightUnit = $row.find(".weightUnit").val();
+            const stock = $row.find(".stock").val();
+
+            if (regular === "" || parseFloat(regular) <= 0) {
+                showToast(`${rowLabel}: MRP is required`, "error", 2000);
+                isValid = false;
+            }
+
+            if (purchase === "" || parseFloat(purchase) <= 0) {
+                showToast(
+                    `${rowLabel}: Purchase Price is required`,
+                    "error",
+                    2000,
+                );
+                isValid = false;
+            }
+
+            if (weight === "" || weight == null) {
+                showToast(`${rowLabel}: Weight is required`, "error", 2000);
+                isValid = false;
+            }
+
+            if (weightUnit === "" || weightUnit == null) {
+                showToast(
+                    `${rowLabel}: Weight Unit is required`,
+                    "error",
+                    2000,
+                );
+                isValid = false;
+            }
+
+            if (stock === "" || stock == null) {
+                showToast(`${rowLabel}: Stock is required`, "error", 2000);
+                isValid = false;
+            }
+
+            const regNum = parseFloat(regular) || 0;
+            const purNum = parseFloat(purchase) || 0;
+            const saleNum = parseFloat($row.find(".salePriceInput").val()) || 0;
+
+            if (purNum > regNum) {
+                showToast(
+                    `${rowLabel}: Purchase Price cannot exceed MRP`,
+                    "error",
+                    2000,
+                );
+                isValid = false;
+            }
+            if (saleNum && purNum > saleNum) {
+                showToast(
+                    `${rowLabel}: Purchase Price cannot exceed Sale Price`,
+                    "error",
+                    2000,
+                );
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
     attachPaginationEvents();
 
     $(document).on("submit", "#productAddForm", function (e) {
@@ -51,13 +122,13 @@ $(function () {
             },
             {
                 id: ".regularPriceInput",
-                condition: (val) => val === "",
-                message: "Regular Price is required",
+                condition: (val) => val === "" || parseFloat(val) <= 0,
+                message: "MRP must be greater than 0",
             },
             {
                 id: ".purchasePriceInput",
-                condition: (val) => val === "",
-                message: "Purchase Price is required",
+                condition: (val) => val === "" || parseFloat(val) <= 0,
+                message: "Purchase Price must be greater than 0",
             },
             {
                 id: ".stock",
@@ -108,20 +179,23 @@ $(function () {
             isValid = false;
         }
         if ($(".regularPriceInput").val() == "") {
-            showToast("Regular Price is required!", "error", 2000);
+            showToast("MRP is required!", "error", 2000);
             isValid = false;
         }
         if ($(".purchasePriceInput").val() == "") {
             showToast("Purchase Price is required!", "error", 2000);
             isValid = false;
         }
+        if (!validateAllVariantRows()) {
+            isValid = false;
+        }
         const regularPrice = parseFloat($(".regularPriceInput").val()) || 0;
         const purchasePrice = parseFloat($(".purchasePriceInput").val()) || 0;
         if (purchasePrice > regularPrice) {
             showToast(
-                "Purchase Price cannot be greater than Regular Price!",
+                "Purchase Price cannot be greater than MRP!",
                 "error",
-                2000
+                2000,
             );
             isValid = false;
         }
@@ -130,13 +204,13 @@ $(function () {
             showToast(
                 "Purchase Price cannot be greater than Sale Price!",
                 "error",
-                2000
+                2000,
             );
             isValid = false;
         }
         if ($(".stock").val() == "") {
-             showToast("Stock is required!", "error", 2000);
-             isValid = false;
+            showToast("Stock is required!", "error", 2000);
+            isValid = false;
         }
         if ($("#expiry_date").val() == "") {
             showToast("Expiry Date is required!", "error", 2000);
@@ -287,8 +361,8 @@ $(function () {
                     <div class="variantRow border rounded-xl p-4 mb-4 bg-gray-50 shadow-sm" data-index="${index}">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                          <input type="hidden" class="variant_id varinatIdInput border border-gray-300 rounded-lg w-full p-2" name="variants[${index}][variant_id]" value="${
-                            variant.id ?? ""
-                        }">
+                             variant.id ?? ""
+                         }">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Sale Price</label>
                                 <input type="number" step="0.01" class="salePrice salePriceInput border border-gray-300 rounded-lg w-full p-2" name="variants[${index}][sale_price]" value="${
@@ -296,7 +370,7 @@ $(function () {
                                 }">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Regular Price<span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-medium text-gray-700">MRP<span class="text-red-500">*</span></label>
                                 <input type="number" step="0.01" name="variants[${index}][regular_price]" class="regularPrice regularPriceInput border border-gray-300 rounded-lg w-full p-2" value="${
                                     variant.regular_price ?? ""
                                 }" required>
@@ -421,7 +495,7 @@ $(function () {
                 <input type="number" step="0.01" name="variants[${variantIndex}][sale_price]" class="salePrice mt-1 block w-full border rounded-md p-2"/>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700">Regular Price<span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700">MRP<span class="text-red-500">*</span></label>
                 <input type="number" step="0.01" name="variants[${variantIndex}][regular_price]" class="regularPrice regularPriceInput mt-1 block w-full border rounded-md p-2" required/>
             </div>
             <div>
@@ -429,12 +503,12 @@ $(function () {
                 <input type="number" step="0.01" name="variants[${variantIndex}][purchase_price]" class="purchasePrice purchasePriceInput mt-1 block w-full border rounded-md p-2" required/>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700">Weight</label>
-                <input type="number" step="0.01" name="variants[${variantIndex}][weight]" class="weight mt-1 block w-full border rounded-md p-2"/>
+                <label class="block text-sm font-medium text-gray-700">Weight<span class="text-red-500">*</span></label>
+                <input type="number" step="0.01" name="variants[${variantIndex}][weight]" class="weight mt-1 block w-full border rounded-md p-2" required/>
             </div>
              <div>
-                    <label class="block text-sm font-medium text-gray-700">Weight Unit</label>
-                    <select name="variants[${variantIndex}][weight_unit]" class="weightUnit mt-1 block w-full border rounded-md p-2">
+                    <label class="block text-sm font-medium text-gray-700">Weight Unit<span class="text-red-500">*</span></label>
+                    <select name="variants[${variantIndex}][weight_unit]" class="weightUnit mt-1 block w-full border rounded-md p-2" required>
                         ${getUnitOptions()}
                     </select>
             </div>
@@ -482,7 +556,47 @@ $(function () {
             taxDiv.show();
         }
     });
+function validateStep1() {
+    let isValid = true;
 
+    const fields = [
+        {
+            id: "#product_name",
+            condition: (val) => val.trim() === "",
+            message: "Product Name is required",
+        },
+        {
+            id: "#category_id",
+            condition: (val) => val === "",
+            message: "Category is required",
+        },
+        {
+            id: "#expiry_date",
+            condition: (val) => val === "",
+            message: "Expiry Date is required",
+        },
+    ];
+
+    fields.forEach((field) => {
+        if (!validateField(field)) {
+            isValid = false;
+        }
+    });
+
+    let image = $("#image").val();
+    let existing = $("#existing_image").val();
+
+    if (image === "" && existing === "") {
+        showToast("Please select an image", "error", 2000);
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+function validateStep2() {
+    return validateAllVariantRows();
+}
     $(document).on(
         "click",
         "#productCreateModal [x-show='stepNumber < steps.length - 1']",
@@ -537,7 +651,7 @@ $(function () {
                     }</p>
                 </div>
                 <div>
-                    <span class="font-semibold">Regular Price:</span>
+                    <span class="font-semibold">MRP:</span>
                     <p class="text-gray-700">${
                         v.regular_price ? "$" + v.regular_price : "-"
                     }</p>
