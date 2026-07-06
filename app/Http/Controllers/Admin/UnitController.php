@@ -34,7 +34,7 @@ class UnitController extends Controller
                 })->get();
 
 
-                if ($product->isNotEmpty()) {
+                if (!$request['unit_status'] && $product->isNotEmpty()) {
                     return response()->json([
                         'status' => false,
                         'message' => 'This unit cannot be deactivated because it is already used in products.'
@@ -78,6 +78,17 @@ class UnitController extends Controller
         if (!$request->id) {
             return response()->json(['success' => false, 'message' => 'unit ID is required'], 400);
         }
+
+        $product = Product::where('status',1)->whereHas('details', function ($q) use ($request) {
+            $q->where('weight_unit', $request['id']);
+        })->get();
+        if ($product->isNotEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This unit cannot be deactivated because it is already used in products.'
+            ], 422);
+        }
+
         $unit = Unit::find($request->id);
         if (!$unit) {
             return response()->json(['success' => false, 'message' => 'unit not found'], 404);

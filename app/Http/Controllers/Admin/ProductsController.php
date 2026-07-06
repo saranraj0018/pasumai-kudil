@@ -89,7 +89,7 @@ class ProductsController extends Controller
                                 'regular_price'      => $variantData['regular_price'] ?? 0,
                                 'purchase_price'     => $variantData['purchase_price'] ?? 0,
                                 'weight'             => $variantData['weight'] ?? 0,
-                                'weight_unit'        => $variantData['weight_unit'] ?? '',
+                                'weight_unit'        => $variantData['weight_unit'] ?? null,
                                 'stock'              => $variantData['stock'] ?? 0,
                                 'tax_type'           => $variantData['tax_type'] ?? 0,
                                 'tax_percentage'     => $variantData['tax_percentage'] ?? 0,
@@ -106,7 +106,7 @@ class ProductsController extends Controller
                         $product_details->regular_price = $variantData['regular_price'] ?? 0;
                         $product_details->purchase_price = $variantData['purchase_price'] ?? 0;
                         $product_details->weight  = $variantData['weight'] ?? 0;
-                        $product_details->weight_unit  = $variantData['weight_unit'] ?? '';
+                        $product_details->weight_unit  = $variantData['weight_unit'] ?? null;
                         $product_details->tax_type   = $variantData['tax_type'] ?? 0;
                         $product_details->tax_percentage   = $variantData['tax_percentage'] ?? 0;
                         $product_details->stock   = $variantData['stock'] ?? 0;

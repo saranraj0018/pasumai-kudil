@@ -217,7 +217,7 @@ $(function () {
         units.forEach((unit) => {
             options += `
                 <option value="${unit.id}" ${selected == unit.id ? "selected" : ""}>
-                    ${unit.name}
+                    ${unit.short_name}
                 </option>
             `;
         });
