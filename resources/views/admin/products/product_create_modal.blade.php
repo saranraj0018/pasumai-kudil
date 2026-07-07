@@ -204,7 +204,7 @@
                 const saleNum = parseFloat(sale) || 0;
 
                 if (purNum > regNum) {
-                    showToast(`${rowLabel}: Purchase Price cannot exceed Regular Price`, 'error', 2000);
+                    showToast(`${rowLabel}: Purchase Price cannot exceed MRP`, 'error', 2000);
                     isValid = false;
                     return false;
                 }

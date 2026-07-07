@@ -100,7 +100,7 @@
                     </div>
 
                     <div>
-                        <x-label>Regular Price</x-label>
+                        <x-label>MRP</x-label>
                         <x-input placeholder="eg .., 550.00" type="number" step="0.01"
                             x-model="form.regular_price" />
                     </div>

@@ -382,14 +382,14 @@ $(function () {
                                 }" required>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Weight</label>
+                                <label class="block text-sm font-medium text-gray-700">Weight<span class="text-red-500">*</span></label>
                                 <input type="number" class="weight weightInput border border-gray-300 rounded-lg w-full p-2" name="variants[${index}][weight]" value="${
                                     variant.weight ?? ""
-                                }">
+                                }" required>
                             </div>
                            <div>
-    <label class="block text-sm font-medium text-gray-700">Weight Unit</label>
-    <select name="variants[${index}][weight_unit]" class="weightUnit weightUnitSelect border border-gray-300 rounded-lg w-full p-2">
+    <label class="block text-sm font-medium text-gray-700">Weight Unit<span class="text-red-500">*</span></label>
+    <select name="variants[${index}][weight_unit]" class="weightUnit weightUnitSelect border border-gray-300 rounded-lg w-full p-2" required>
         ${getUnitOptions(variant.weight_unit)}
     </select>
 </div>
