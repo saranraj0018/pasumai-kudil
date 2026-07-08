@@ -41,6 +41,7 @@ class ProductsController extends Controller
             'variants.*.weight'           => 'required|numeric|min:0.01',
             'variants.*.weight_unit'      => 'required',
             'variants.*.stock'            => 'required|integer|min:0',
+            'expiry_date' => 'required',
         ];
 
         if (empty($request['product_id']) && !$request->has('existing_image')) {
@@ -61,6 +62,11 @@ class ProductsController extends Controller
             } else {
                 $product = new Product();
                 $message = 'Product created successfully';
+            }
+if($request['is_featured'] == 'on'){
+                $is_featured = 1;
+            }else{
+                $is_featured= 0;
             }
 
             $product->name = $request['product_name'];
@@ -99,7 +105,7 @@ class ProductsController extends Controller
                                 'stock'              => $variantData['stock'] ?? 0,
                                 'tax_type'           => $variantData['tax_type'] ?? 0,
                                 'tax_percentage'     => $variantData['tax_percentage'] ?? 0,
-                                'is_featured_product' => $request['is_featured'] ?? 0,
+                                'is_featured_product' =>  $is_featured ?? 0,
                             ]);
 
                             $variantIdsInRequest[] = $variant->id;
@@ -116,7 +122,7 @@ class ProductsController extends Controller
                         $product_details->tax_type   = $variantData['tax_type'] ?? 0;
                         $product_details->tax_percentage   = $variantData['tax_percentage'] ?? 0;
                         $product_details->stock   = $variantData['stock'] ?? 0;
-                        $product_details->is_featured_product  = $request['is_featured'] ?? 0;
+                        $product_details->is_featured_product  = $is_featured ?? 0;
                         $product_details->save();
                         $variantIdsInRequest[] = $product_details->id;
                     }

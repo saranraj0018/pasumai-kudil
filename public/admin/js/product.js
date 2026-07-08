@@ -150,6 +150,11 @@ $(function () {
                 condition: (val) => val === "",
                 message: "Weight Unit is required",
             },
+            {
+                id: "#expiry_date",
+                condition: (val) => val === "",
+                message: "Expiry Date is required",
+            },
         ];
 
         fields.forEach((field) => {
@@ -191,23 +196,28 @@ $(function () {
         }
         const regularPrice = parseFloat($(".regularPriceInput").val()) || 0;
         const purchasePrice = parseFloat($(".purchasePriceInput").val()) || 0;
-        if (purchasePrice > regularPrice) {
-            showToast(
-                "Purchase Price cannot be greater than MRP!",
-                "error",
-                2000,
-            );
-            isValid = false;
-        }
         const sale_price = parseFloat($(".salePriceInput").val()) || 0;
-        if (purchasePrice > sale_price) {
+        if (purchasePrice >= sale_price) {
             showToast(
-                "Purchase Price cannot be greater than Sale Price!",
+                "Purchase Price must be less than Sale Price.",
                 "error",
                 2000,
             );
             isValid = false;
         }
+
+        // Sale Price < MRP
+        if (sale_price >= regularPrice) {
+            showToast("Sale Price must be less than MRP.", "error", 2000);
+            isValid = false;
+        }
+
+        // Purchase Price < MRP
+        if (purchasePrice >= regularPrice) {
+            showToast("Purchase Price must be less than MRP.", "error", 2000);
+            isValid = false;
+        }
+
         if ($(".stock").val() == "") {
             showToast("Stock is required!", "error", 2000);
             isValid = false;

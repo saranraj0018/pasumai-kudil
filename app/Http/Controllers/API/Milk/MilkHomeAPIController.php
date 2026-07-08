@@ -41,6 +41,10 @@ class MilkHomeAPIController extends Controller
                 ->where('status', 1)
                 ->latest()
                 ->first();
+
+            $deliveryPartner = DailyDelivery::with('get_delivery_partner')->where('user_id', $user->id)
+                ->where('subscription_id', $subscription?->id)
+                ->first();
             $latestinactivesubscription = UserSubscription::with('get_subscription')->where('user_id', $user->id)
                 ->where('status', 2)
                 ->pluck('id');
@@ -82,6 +86,7 @@ class MilkHomeAPIController extends Controller
                         'plan_details' => (object) [],
                         'milk_config_time' => '',
                         'customer_id' =>  $user->prefix ?? '',
+                        'delivery_partner' => $deliveryPartner?->get_delivery_partner?->mobile_number ?? '',
                     ]
                 ]);
             }
@@ -101,6 +106,7 @@ class MilkHomeAPIController extends Controller
                 'wallet_balance' => (string) $walletBalance,
                 'banner' => $banner,
                 'milk_config_time' => $setting->data_value ?? '',
+                'delivery_partner' => $deliveryPartner?->get_delivery_partner?->mobile_number ?? '',
                 'plan_details' => [
                     'plan_id' => $subscription->subscription_id,
                     'plan_amount' => $subscription->get_subscription?->plan_amount ?? 0,

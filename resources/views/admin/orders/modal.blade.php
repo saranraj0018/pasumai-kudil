@@ -70,7 +70,7 @@
                             class="text-red-500">*</span></label>
                     <select id="status" class="w-full border p-2 sm:p-3 rounded-lg text-gray-900">
                         <option value="1">Pending</option>
-                        <option value="2">In Progress</option>
+                        {{-- <option value="2">In Progress</option> --}}
                         <option value="3">Shipped</option>
                         <option value="4">Delivered</option>
                         <option value="5">Cancelled</option>

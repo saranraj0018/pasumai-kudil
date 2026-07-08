@@ -20,7 +20,7 @@
             weight_unit: 'kg',
             tax_type: '',
             tax_percentage: null,
-            is_featured_product: false,
+            is_featured: false,
             existing_image: '',
             expiry_date: '',
             cooking_ideas: '',
@@ -46,7 +46,7 @@
                 weight_unit: 'kg',
                 tax_type: '',
                 tax_percentage: null,
-                is_featured_product: false,
+                is_featured: false,
                 existing_image: '',
                 expiry_date: '',
                 cooking_ideas: '',
@@ -242,7 +242,7 @@
                                 </div>
 
                                 <div>
-                                    <x-label>Category</x-label>
+                                    <x-label>Category<span class="text-red-500">*</span></x-label>
 
                                     <x-select x-model="form.category_id" name="category_id" id="category_id" required>
                                         <option value="" selected>Please Select Category</option>
@@ -279,13 +279,13 @@
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <input type="checkbox" value="1" name="is_featured"
-                                        x-model="form.is_featured_product" class="h-4 w-4" />
+                                        x-model="form.is_featured" class="h-4 w-4" />
                                     <x-label class="block text-sm font-medium">Is Featured Product</x-label>
                                 </div>
                                 <div>
-                                    <x-label>Expiry Date</x-label>
+                                    <x-label>Expiry Date<span class="text-red-500">*</span></x-label>
                                     <x-input type="date" x-model="form.expiry_date" name="expiry_date"
-                                        min="{{ date('Y-m-d') }}" id="expiry_date" />
+                                        min="{{ date('Y-m-d') }}" id="expiry_date" required/>
                                 </div>
                             </div>
                         </div>
