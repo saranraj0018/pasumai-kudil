@@ -109,8 +109,9 @@ class Dashboard extends Controller
         $ticketStatusMap =
             [
                 1 => 'Open',
-                2 => 'Closed',
-                3 => 'Rejected'
+                2 => 'In Progress',
+                3 => 'On Hold',
+                4 => 'Resolved'
             ];
 
         $ticketStatus = Ticket::when(true, function ($q) use ($applyPeriod) {
