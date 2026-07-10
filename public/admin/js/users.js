@@ -31,6 +31,11 @@ $(function () {
                 condition: (val) => val === "",
                 message: "Floor Number is required",
             },
+            {
+                id: "#apartment_name",
+                condition: (val) => val === "",
+                message: "Apartment Name is required",
+            },
         ];
 
         fields.forEach((field) => {

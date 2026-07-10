@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Exception;
-use App\Models\Hub;
-use App\Models\User;
-use App\Models\Wallet;
-use App\Models\Transaction;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\DailyDelivery;
 use App\Models\DeliveryPartner;
-use App\Services\FirebaseService;
-use App\Http\Controllers\Controller;
+use App\Models\Hub;
 use App\Models\Notification;
+use App\Models\Transaction;
+use App\Models\User;
+use App\Models\Wallet;
+use App\Services\FirebaseService;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DeliveryListController extends Controller
 {
@@ -25,17 +27,11 @@ class DeliveryListController extends Controller
 
     public function index(Request $request)
     {
-        // $this->data['daily_delivery'] = DailyDelivery::with('get_user', 'get_delivery_partner', 'get_user_subscription')
-        //     ->whereHas('get_user_subscription', function ($query) {
-        //         $query->where('status', 1);
-        //     })
-        //     ->orderBy('id', 'asc')
-        //     ->paginate(10);
+
         $query = DailyDelivery::with(['get_user', 'get_delivery_partner', 'get_user_subscription', 'get_order'])
             ->whereHas('get_user_subscription', function ($q) {
                 $q->where('status', 1);
             });
-        // City polygon filter
         if ($request->city) {
             $hub = Hub::find($request->city);
             if ($hub && $hub->get_city && $hub->get_city->coordinates) {
@@ -92,7 +88,12 @@ class DeliveryListController extends Controller
 
         $this->data['daily_delivery']  = $query->orderBy('id', 'asc')->paginate(10)->withQueryString();
         $this->data['delivery_boy'] = DeliveryPartner::get();
-        $this->data['hub_list'] = Hub::with('get_city')->where('type',2)->orderBy('created_at', 'desc')->get();
+        $this->data['users'] = User::with('subscriptions', 'subscriptions')
+            ->whereHas('subscriptions', function ($q) {
+                $q->whereIn('status', [1, 2]);
+            })
+            ->get();
+        $this->data['hub_list'] = Hub::with('get_city')->where('type', 2)->orderBy('created_at', 'desc')->get();
         return view('admin.delivery_list.list')->with($this->data);
     }
 
@@ -103,23 +104,23 @@ class DeliveryListController extends Controller
             'delivery_boy' => 'nullable'
         ];
 
-        if (empty($request['delivery_id']) && !$request->has('existing_image')) {
-            $rules['image'] = 'required|image|mimes:jpeg,png,jpg';
-        } elseif ($request->hasFile('image')) {
-            $rules['image'] = 'image|mimes:jpeg,png,jpg';
-        }
+        // if (empty($request['delivery_id']) && !$request->has('existing_image')) {
+        //     $rules['image'] = 'required|image|mimes:jpeg,png,jpg';
+        // } elseif ($request->hasFile('image')) {
+        //     $rules['image'] = 'image|mimes:jpeg,png,jpg';
+        // }
 
         $request->validate($rules);
 
         try {
             $delivery = DailyDelivery::findOrFail($request->delivery_id);
-            $wallet   = Wallet::where(['user_id' => $delivery->user_id,'subscription_id' => $delivery->subscription_id])->first();
+            $wallet   = Wallet::where(['user_id' => $delivery->user_id, 'subscription_id' => $delivery->subscription_id])->first();
 
             // ---- IMAGE HANDLING ----
             if ($request->hasFile('image')) {
-                $img_name = time().'_'.$request->file('image')->getClientOriginalName();
+                $img_name = time() . '_' . $request->file('image')->getClientOriginalName();
                 $request->image->storeAs('products/', $img_name, 'public');
-                $image = 'delivery/'.$img_name;
+                $image = 'delivery/' . $img_name;
             } else {
                 $image = $request->existing_image ?? null;
             }
@@ -167,7 +168,6 @@ class DeliveryListController extends Controller
             $user = User::where('id', $delivery->user_id)->first();
 
             if ($user->fcm_token) {
-
                 $notification = new Notification();
                 $notification->user_id = $user->id;
                 $notification->title = 'Delivery Status Changed';
@@ -175,7 +175,6 @@ class DeliveryListController extends Controller
                 $notification->type = 2;
                 $notification->role = 2;
                 $notification->save();
-
                 $this->firebase->sendNotification(
                     $user->fcm_token,
                     'Delivery Status Changed',
@@ -187,12 +186,170 @@ class DeliveryListController extends Controller
                 'success' => true,
                 'message' => 'Delivery status updated successfully',
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save delivery status',
                 'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function overallSave(Request $request)
+    {
+        $request->validate([
+            'from_date'    => 'required|date',
+            'to_date'      => 'required|date|after_or_equal:from_date',
+            'delivery_boy' => 'nullable',
+            'users'        => 'required',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+
+            $image = null;
+
+            $query = DailyDelivery::whereBetween('delivery_date', [
+                $request->from_date,
+                $request->to_date
+            ]);
+
+            if ($request->users !== 'all') {
+
+                $userIds = is_array($request->users)
+                    ? $request->users
+                    : explode(',', $request->users);
+
+                $query->whereIn('user_id', $userIds);
+            }
+
+            $deliveries = $query->get();
+
+            if ($deliveries->isEmpty()) {
+
+                DB::rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No deliveries found for the selected date range.'
+                ]);
+            }
+
+            $updated = 0;
+            $skipped = [];
+
+            foreach ($deliveries as $delivery) {
+
+                // Wallet Deduction
+                if ($request->status == 'delivered') {
+
+                    $wallet = Wallet::where('user_id', $delivery->user_id)
+                        ->where('subscription_id', $delivery->subscription_id)
+                        ->first();
+
+                    if (!$wallet) {
+                        continue;
+                    }
+
+                    $alreadyDeducted = Transaction::where('user_id', $delivery->user_id)
+                        ->where('subscription_id', $delivery->subscription_id)
+                        ->whereDate('date', $delivery->delivery_date)
+                        ->exists();
+
+                    if (!$alreadyDeducted) {
+
+                        $remaining = $wallet->balance - $delivery->amount;
+
+                        if ($remaining < 0) {
+
+                            $skipped[] = $delivery->user_id;
+                            continue;
+                        }
+
+                        Transaction::create([
+                            'user_id'         => $delivery->user_id,
+                            'wallet_id'       => $wallet->id,
+                            'subscription_id' => $delivery->subscription_id,
+                            'type'            => 'debit',
+                            'amount'          => $delivery->amount,
+                            'balance_amount'  => $remaining,
+                            'description'     => 'Daily milk amount deducted.',
+                            'date'            => $delivery->delivery_date,
+                        ]);
+
+                        $wallet->update([
+                            'balance' => $remaining
+                        ]);
+                    }
+                }
+
+                // Update Delivery
+                $delivery->update([
+                    'delivery_id'     => $request->delivery_boy ?: $delivery->delivery_id,
+                    'delivery_status' => 'delivered',
+                    'image'           => $image ?? $delivery->image,
+                ]);
+
+                $updated++;
+
+                // Send Notification
+                $user = User::find($delivery->user_id);
+
+                if ($user) {
+
+                    $notification = new Notification();
+                    $notification->user_id = $user->id;
+                    $notification->title = 'Delivery Status Changed';
+                    $notification->description = "Your delivery has been delivered sucessfully!";
+                    $notification->type = 2;
+                    $notification->role = 2;
+                    $notification->save();
+
+                    if (!empty($user->fcm_token)) {
+                        try {
+                            $this->firebase->sendNotification(
+                                $user->fcm_token,
+                                'Delivery Status Changed',
+                                "Your delivery status has been changed to {$request->status} successfully."
+                            );
+                        } catch (\Exception $e) {
+                            Log::error('Firebase Notification Error', [
+                                'user_id' => $user->id,
+                                'token'   => $user->fcm_token,
+                                'error'   => $e->getMessage(),
+                            ]);
+                            // Optional:
+                            // $user->update(['fcm_token' => null]);
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            $message = "{$updated} delivery record(s) updated successfully.";
+
+            if (!empty($skipped)) {
+                $message .= " " . count($skipped) . " user(s) were skipped due to insufficient wallet balance.";
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Overall Delivery Update Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update delivery status.',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
@@ -209,12 +366,11 @@ class DeliveryListController extends Controller
             $yj = $polygon[$j]['lng'];
 
             $intersect = (($yi > $lng) != ($yj > $lng)) &&
-                         ($lat < ($xj - $xi) * ($lng - $yi) / ($yj - $yi + 0.0000001) + $xi);
+                ($lat < ($xj - $xi) * ($lng - $yi) / ($yj - $yi + 0.0000001) + $xi);
             if ($intersect) $inside = !$inside;
             $j = $i;
         }
 
         return $inside;
     }
-
 }

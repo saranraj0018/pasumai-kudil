@@ -76,7 +76,10 @@
                     class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Reset</a>
             </div>
         </form>
-
+        <div class="p-10 mt-5 overflow-x-auto bg-white rounded-xl shadow-md">
+            <button type="submit" class="px-4 py-2 bg-[#ab5f00] text-white rounded-lg hover:bg-[#ab7d00]"
+                id="changeDeliveryStatus">Change Delivery Address</button>
+        </div>
         <!-- Delivery Table -->
         <div class="mt-5 overflow-x-auto bg-white rounded-xl shadow-md">
             <table class="w-full text-sm text-left text-gray-700 border-collapse">
@@ -101,21 +104,26 @@
                             <td class="px-4 py-3">{{ $list->get_user->name ?? '' }}</td>
                             <td class="px-4 py-3">
                                 @php
-                                    $orders = !empty($list->get_order) ? $list->get_order
-                                        ->where('user_id', $list->user_id)
-                                        ->where('shipped_at', $list->delivery_date)
-                                        ->get() : [];
+                                    $orders = !empty($list->get_order)
+                                        ? $list->get_order
+                                            ->where('user_id', $list->user_id)
+                                            ->where('shipped_at', $list->delivery_date)
+                                            ->get()
+                                        : [];
                                 @endphp
 
                                 @if (!empty($orders))
                                     <div class="flex flex-wrap gap-2">
                                         @foreach ($orders as $order)
-                                        @php
-                                            $get_order = $order->where('id',$order->id)->with('user', 'userAddress', 'orderDetails')->first();
-                                        @endphp
+                                            @php
+                                                $get_order = $order
+                                                    ->where('id', $order->id)
+                                                    ->with('user', 'userAddress', 'orderDetails')
+                                                    ->first();
+                                            @endphp
                                             <a href="{{ route('view.orders') }}"
                                                 class="text-blue-600 hover:text-blue-800 font-medium"
-                                                  data-order='@json($get_order)'>
+                                                data-order='@json($get_order)'>
                                                 {{ $order['order_id'] }}
                                             </a>
                                         @endforeach
@@ -125,7 +133,13 @@
                                 @endif
                             </td>
 
-                            <td class="px-4 py-3">{{ $list->get_user->address ?? '' }}</td>
+                            <td class="px-4 py-3">
+                                {{ collect([
+                                    $list->get_user->floor_number ?? null,
+                                    $list->get_user->apartment_name ?? null,
+                                    $list->get_user->address ?? null,
+                                ])->filter()->implode(', ') }}
+                            </td>
                             <td class="px-4 py-3">{{ $list->get_delivery_partner->name ?? '' }}</td>
                             <td class="px-4 py-3">{{ $list->amount ?? '' }}</td>
                             <td class="px-4 py-3">
@@ -159,10 +173,13 @@
             <div class="p-4">
                 {{ $daily_delivery->links() }}
             </div>
-             @include('admin.orders.modal')
+            @include('admin.orders.modal')
         </div>
         <!-- Edit Delivery Status Modal -->
-        @include('admin.delivery_list.edit_delivery_status', ['delivery_boy' => $delivery_boy])
+        @include('admin.delivery_list.edit_delivery_status', [
+            'delivery_boy' => $delivery_boy,
+            'users' => $users,
+        ])
     </div>
 </x-layouts.app>
 <script src="{{ asset('admin/js/delivery_list.js') }}?v={{ time() }}"></script>

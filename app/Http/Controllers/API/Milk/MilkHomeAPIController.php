@@ -352,9 +352,12 @@ class MilkHomeAPIController extends Controller
             }
 
             $start_date = Carbon::now()->addDay();  // Start tomorrow
-            $end_date = $isMonth
-                ? $start_date->copy()->addMonthsNoOverflow(2)
-                : $start_date->copy()->addDays($dayCount)->subDay();
+            if ($isMonth) {
+                $totalDays = $dayCount * 30;
+                $end_date = $start_date->copy()->addDays($totalDays - 1);
+            } else {
+                $end_date = $start_date->copy()->addDays($dayCount - 1);
+            }
 
                 $amount = round((float)$subscription->plan_amount, 2);
             $valid_date = $end_date->copy()->addDays((int)$subscription->plan_duration);
