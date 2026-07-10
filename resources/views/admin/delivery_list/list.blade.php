@@ -100,7 +100,9 @@
                     @forelse ($daily_delivery as $list)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
-                            <td class="px-4 py-3">{{ $list->delivery_date ?? '' }}</td>
+                             <td class="px-4 py-3">
+    {{ $list->delivery_date ? \Carbon\Carbon::parse($list->delivery_date)->format('d-m-Y') : '' }}
+</td>
                             <td class="px-4 py-3">{{ $list->get_user->name ?? '' }}</td>
                             <td class="px-4 py-3">
                                 @php

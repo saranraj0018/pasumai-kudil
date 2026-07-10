@@ -380,8 +380,11 @@ class MilkOrderAPIController extends Controller
                     }
                 }
 
-                $lastOrder = DailyDelivery::where(['user_id' => $userId, 'subscription_id' => $subscription->id])
-                    ->latest()
+                $lastOrder = DailyDelivery::where([
+                    'user_id' => $userId,
+                    'subscription_id' => $subscription->id,
+                ])
+                    ->orderBy('id', 'desc')
                     ->first();
 
                 $subscription->update([
@@ -458,10 +461,13 @@ class MilkOrderAPIController extends Controller
                     'modify'   => 2,
                 ]);
 
-                $lastOrder = DailyDelivery::where(['user_id' => $userId, 'subscription_id' => $subscription->id])
-                    ->latest()
+                $lastOrder = DailyDelivery::where([
+                    'user_id' => $userId,
+                    'subscription_id' => $subscription->id,
+                ])
+                    ->orderBy('id', 'desc')
                     ->first();
-
+                Log::info($lastOrder);
                 if ($lastOrder) {
                     $subscription->update(['end_date' => $lastOrder->delivery_date]);
                 }

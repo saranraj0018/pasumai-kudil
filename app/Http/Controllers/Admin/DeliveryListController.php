@@ -160,7 +160,7 @@ class DeliveryListController extends Controller
 
             // ---------- NOW ALLOW STATUS UPDATE ----------
             $delivery->update([
-                'delivery_id' => $request->delivery_boy ?? '',
+                'delivery_id' => $request->delivery_boy ?? $delivery->delivery_id,
                 'delivery_status' => $request->status,
                 'image' => $image,
             ]);
@@ -311,7 +311,7 @@ class DeliveryListController extends Controller
                             $this->firebase->sendNotification(
                                 $user->fcm_token,
                                 'Delivery Status Changed',
-                                "Your delivery status has been changed to {$request->status} successfully."
+                                "Your delivery status has been changed to delivered successfully."
                             );
                         } catch (\Exception $e) {
                             Log::error('Firebase Notification Error', [

@@ -114,7 +114,7 @@ $(function () {
        if (!isValid) {
            return;
        }
-     
+
            const result = await Swal.fire({
                title: "Confirm Delivery",
                html: `
@@ -178,14 +178,7 @@ $(function () {
                        "success",
                        2000,
                    );
-
-                   closeDeliveryModal();
-
-                   if (typeof reloadDeliveryList === "function") {
-                       reloadDeliveryList();
-                   } else {
-                       location.reload();
-                   }
+                     window.location.reload();
                } else {
                    showToast(res.message, "error", 2000);
                }
