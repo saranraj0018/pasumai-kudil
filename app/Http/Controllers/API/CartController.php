@@ -126,12 +126,8 @@ class CartController extends Controller
                 $variant = collect($variants)->firstWhere('id', $item['variant_id']);
 
                 if (!$variant || (int) ($variant['stock'] ?? 0) <= 0) {
-//                    return response()->json([
-//                        'status' => 409,
-//                        'message' => 'Variant not available',
-//                    ]);
-                    $stock_id = $item['variant_id'];
-                    $stock_product_id = $item['product_id'];
+                    $stock_id[] = $item['variant_id'];
+                    $stock_product_id[] = $item['product_id'];
                 }
                 $originalPrice = $variant['regular_price'] ?? 0;
                 $discountedPrice = $variant['sale_price'] ?? $originalPrice;
@@ -139,7 +135,8 @@ class CartController extends Controller
                 $totalItems += $item['quantity'];
                 $total_weight += $variant['weight'] * $item['quantity'] ?? 0;
 
-                $total_tax += !empty($variant->tax_type == 2) && !empty($variant->tax_percentage) ? $subtotal * $variant->tax_percentage / 100 : 0;
+                $total_tax += !empty($variant['tax_type'] == 2) && !empty($variant['tax_percentage']) ? $variant['sale_price'] * $variant['tax_percentage'] / 100 : 0;
+
                 // Weight Calculation Logic
                 $weightValue = isset($variant['weight']) ? floatval($variant['weight']) : 0;
                 $weightUnit = isset($variant->unit['short_name']) ? strtolower(trim($variant->unit['short_name'])) : '';
@@ -228,8 +225,8 @@ class CartController extends Controller
                     // expires_at is optional
                     $query->whereNull('expires_at')
                         ->orWhere('expires_at', '>=', now());
-                // Include if expires_at is in the future
-            })->find($coupon_id);
+                    // Include if expires_at is in the future
+                })->find($coupon_id);
             $user_coupon = Setting::where('data_key', 'temp_coupon_' . Auth::id())->where('expires_at', '>=', now())
                 ->where('data_value', $coupon->id)->first();
             if (!empty($coupon) && Cache::has($key)) {
