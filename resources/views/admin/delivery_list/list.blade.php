@@ -76,10 +76,12 @@
                     class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Reset</a>
             </div>
         </form>
-        <div class="p-10 mt-5 overflow-x-auto bg-white rounded-xl shadow-md">
-            <button type="submit" class="px-4 py-2 bg-[#ab5f00] text-white rounded-lg hover:bg-[#ab7d00]"
-                id="changeDeliveryStatus">Change Delivery Address</button>
-        </div>
+        @can('edit_delivery_list')
+            <div class="p-10 mt-5 overflow-x-auto bg-white rounded-xl shadow-md">
+                <button type="submit" class="px-4 py-2 bg-[#ab5f00] text-white rounded-lg hover:bg-[#ab7d00]"
+                    id="changeDeliveryStatus">Change Delivery Address</button>
+            </div>
+        @endcan
         <!-- Delivery Table -->
         <div class="mt-5 overflow-x-auto bg-white rounded-xl shadow-md">
             <table class="w-full text-sm text-left text-gray-700 border-collapse">
@@ -100,9 +102,9 @@
                     @forelse ($daily_delivery as $list)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
-                             <td class="px-4 py-3">
-    {{ $list->delivery_date ? \Carbon\Carbon::parse($list->delivery_date)->format('d-m-Y') : '' }}
-</td>
+                            <td class="px-4 py-3">
+                                {{ $list->delivery_date ? \Carbon\Carbon::parse($list->delivery_date)->format('d-m-Y') : '' }}
+                            </td>
                             <td class="px-4 py-3">{{ $list->get_user->name ?? '' }}</td>
                             <td class="px-4 py-3">
                                 @php
