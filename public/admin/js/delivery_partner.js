@@ -55,6 +55,7 @@ $(function () {
                         document
                             .getElementById("deliveryPartnerAddForm")
                             .reset();
+                            window.location.reload();
                         reloadDeliveryPartnerList();
                     }, 500);
                 } else {
@@ -136,6 +137,7 @@ $(function () {
                         "success",
                         2000,
                     );
+                    window.location.reload();
                     reloadDeliveryPartnerList();
                 } else {
                     showToast(res.message, "error", 2000);

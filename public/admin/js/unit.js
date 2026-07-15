@@ -79,7 +79,7 @@ $(function () {
                         alpine.form = { name: "", status: "1" };
                         alpine.previewUrl = null;
                         document.getElementById("unitForm").reset();
-
+ window.location.reload();
                         $.get("/admin/unit/list", function (html) {
                             let $tbody = $(html).find("#unitTableBody").html();
                             $("#unitTableBody").html($tbody);
@@ -127,6 +127,7 @@ $(function () {
             function (res) {
                 if (res.success) {
                     showToast("Unit deleted successfully!", "success", 2000);
+                     window.location.reload();
                     reloadUnitList();
                 } else {
                     showToast(res.message, "error", 2000);

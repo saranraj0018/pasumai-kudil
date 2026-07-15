@@ -141,6 +141,7 @@ $(function () {
                         document.getElementById("hub_form").reset();
                         initializeGoogleMap();
                         initializeAutocomplete();
+                        window.location.reload();
                         reloadList()
                     }, 500);
 
@@ -216,6 +217,7 @@ $(function () {
                         "success",
                         2000
                     );
+                    window.location.reload();
                     reloadList();
                 } else {
                     showToast(res.message, "error", 2000);

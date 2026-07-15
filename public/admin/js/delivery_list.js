@@ -260,8 +260,8 @@ $(function () {
                         document
                             .getElementById("deliverystatusChangeForm")
                             .reset();
+                         window.location.reload();
                         reloadDeliveryList();
-                        window.location.reload();
                     }, 500);
                 } else {
                     showToast(res.message, "error", 2000);

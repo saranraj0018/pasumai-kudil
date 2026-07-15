@@ -124,6 +124,7 @@ $(function () {
                         let modalScope = document.querySelector('#couponModal').__x.$data;
                         modalScope.open = false; // close modal
                         document.getElementById("couponForm").reset();
+                        window.location.reload();
                         reloadCouponList();
                     }, 500);
                 } else {
@@ -169,6 +170,7 @@ $(function () {
                  hideLoader();
                 if (res.success) {
                     showToast("Coupon deleted successfully!", "success", 2000);
+                    window.location.reload();
                     reloadCouponList();
                 } else {
                     showToast(res.message, "error", 2000);

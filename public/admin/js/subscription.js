@@ -262,6 +262,7 @@ $(document).ready(function () {
                     showToast(res.message, "success", 2000);
                     setTimeout(() => {
                         closeModal();
+                         window.location.reload();
                         reloadSubscriptionList();
                     }, 500);
                 } else if (res.errors) {
@@ -310,6 +311,7 @@ $(document).ready(function () {
                         "success",
                         2000
                     );
+                     window.location.reload();
                     reloadSubscriptionList();
                 } else {
                     showToast(res.message, "error", 2000);

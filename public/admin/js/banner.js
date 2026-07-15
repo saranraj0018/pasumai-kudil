@@ -70,8 +70,7 @@ $(function () {
                         alpine.form = { type: 'main', banner_id: 0 };
                         alpine.previewUrl = null;
                         document.getElementById("bannerForm").reset();
-
-                        // Reload table
+                       window.location.reload();
                         $.get("/admin/banner/list", function (html) {
                             let $tbody = $(html).find("#bannerTableBody").html();
                             $("#bannerTableBody").html($tbody);
@@ -118,13 +117,14 @@ $(function () {
                 if (res.success) {
                     showToast("Banner deleted successfully!", "success", 2000);
                     reloadBannerList();
+                    window.location.reload();
                 } else {
                     showToast(res.message, "error", 2000);
                 }
                 document.querySelector('#deleteBannerModal').__x.$data.open = false;
             },
             function (err) {
-                 hideLoader();
+                hideLoader();
                 showToast(err.message || "Delete failed", "error", 2000);
                 document.querySelector('#deleteBannerModal').__x.$data.open = false;
             }

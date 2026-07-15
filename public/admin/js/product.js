@@ -261,6 +261,7 @@ $(function () {
                         }
                         // Reset form
                         document.getElementById("productAddForm").reset();
+                        window.location.reload();
                         $.get("/admin/products/lists", function (html) {
                             let $tbody = $(html)
                                 .find("#productTableBody")

@@ -67,7 +67,7 @@ $(function () {
                         let alpine = modal.__x.$data;
                         alpine.form = { name: "" };
                         document.getElementById("roleForm").reset();
-
+ window.location.reload();
                         $.get("/admin/roles-list", function (html) {
                             let $tbody = $(html).find("#roleTableBody").html();
                             $("#roleTableBody").html($tbody);

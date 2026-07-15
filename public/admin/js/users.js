@@ -63,6 +63,7 @@ $(function () {
                         }
                         // Reset form
                         document.getElementById("userForm").reset();
+                         window.location.reload();
                         $.get("/admin/users/lists", function (html) {
                             let $tbody = $(html)
                                 .find("#userTableBody")
@@ -141,6 +142,7 @@ $(function () {
                         let modalScope = document.querySelector('#editUserModal').__x.$data;
                         modalScope.open = false; // close modal
                         document.getElementById("userForm").reset();
+                        window.location.reload();
                         $.get("/admin/users/lists", function (html) {
                             let $tbody = $(html)
                                 .find("#userTableBody")
