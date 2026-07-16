@@ -354,11 +354,11 @@ $(function () {
         alpine.form.variant_id = product.variant_id || "";
         alpine.form.regular_price = product.regular_price || "";
         alpine.form.purchase_price = product.purchase_price || "";
-        alpine.form.weight = product.weight || "";
+        alpine.form.weight = product.weight || 0;
         alpine.form.weight_unit = product.weight_unit || "";
         alpine.form.stock = product.stock || "";
         alpine.form.tax_type = product.tax_type || "";
-        alpine.form.tax_percentage = product.tax_percentage || "";
+        alpine.form.tax_percentage = product.tax_percentage || 0;
         alpine.form.is_featured_product = product.is_featured || "";
         alpine.form.expiry_date = product.expiry_date || "";
         alpine.existing_image = product.existing_image || "";
