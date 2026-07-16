@@ -23,6 +23,7 @@
                     <th class="px-3 py-2">Name</th>
                     <th class="px-3 py-2">Mobile Number</th>
                     <th class="px-3 py-2">Hub</th>
+                    <th class="px-3 py-2">Area Name</th>
                     <th class="px-3 py-2 text-center">Actions</th>
                     </tr>
                 </thead>
@@ -34,6 +35,7 @@
                             <td class="px-4 py-3">{{ $partner->name ?? ''}}</td>
                             <td class="px-4 py-3">{{ $partner->mobile_number ?? '' }}</td>
                             <td class="px-4 py-3">{{ $partner->get_hub->name ?? ''}}</td>
+                            <td class="px-4 py-3">{{ $partner->area_name ?? ''}}</td>
                             <td class="px-4 py-3 flex justify-center gap-4">
                             <!-- Edit -->
                             @can('edit_delivery_partner')
@@ -42,7 +44,7 @@
                                 data-id="{{ $partner->id }}"
                                 data-name="{{ $partner->name ?? ''}}"
                                 data-mobile_number="{{ $partner->mobile_number ?? '' }}"
-                                data-hub_id="{{ $partner->hub_id ?? ''}}">
+                                data-area_name="{{ $partner->area_name ?? ''}}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
                             @endcan
@@ -72,6 +74,8 @@
         </div>
         @include('admin.delivery_partner.create_delivery_partner')
     </div>
+
 </x-layouts.app>
 
 <script src="{{ asset('admin/js/delivery_partner.js') }}?v={{ time() }}"></script>
+

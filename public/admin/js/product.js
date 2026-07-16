@@ -197,7 +197,7 @@ $(function () {
         const regularPrice = parseFloat($(".regularPriceInput").val()) || 0;
         const purchasePrice = parseFloat($(".purchasePriceInput").val()) || 0;
         const sale_price = parseFloat($(".salePriceInput").val()) || 0;
-        if (purchasePrice >= sale_price) {
+        if (purchasePrice > sale_price) {
             showToast(
                 "Purchase Price must be less than Sale Price.",
                 "error",
@@ -207,16 +207,20 @@ $(function () {
         }
 
         // Sale Price < MRP
-        if (sale_price >= regularPrice) {
+        if (sale_price > regularPrice) {
+            console.log('test1');
             showToast("Sale Price must be less than MRP.", "error", 2000);
             isValid = false;
         }
 
         // Purchase Price < MRP
-        if (purchasePrice >= regularPrice) {
+        if (purchasePrice > regularPrice) {
+            console.log('test0');
             showToast("Purchase Price must be less than MRP.", "error", 2000);
             isValid = false;
         }
+
+
 
         if ($(".stock").val() == "") {
             showToast("Stock is required!", "error", 2000);
@@ -260,8 +264,8 @@ $(function () {
                             modalScope.open = false; // close modal
                         }
                         // Reset form
+                          window.location.reload();
                         document.getElementById("productAddForm").reset();
-                        window.location.reload();
                         $.get("/admin/products/lists", function (html) {
                             let $tbody = $(html)
                                 .find("#productTableBody")
@@ -374,23 +378,24 @@ $(function () {
                          <input type="hidden" class="variant_id varinatIdInput border border-gray-300 rounded-lg w-full p-2" name="variants[${index}][variant_id]" value="${
                              variant.id ?? ""
                          }">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Sale Price</label>
-                                <input type="number" step="0.01" class="salePrice salePriceInput border border-gray-300 rounded-lg w-full p-2" name="variants[${index}][sale_price]" value="${
-                                    variant.sale_price ?? ""
-                                }">
+                           <div>
+                                <label class="block text-sm font-medium text-gray-700">Purchase Price<span class="text-red-500">*</span></label>
+                                <input type="number" step="0.01" name="variants[${index}][purchase_price]" class="purchasePrice purchasePriceInput border border-gray-300 rounded-lg w-full p-2" value="${
+                                    variant.purchase_price ?? ""
+                                }" required>
                             </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">MRP<span class="text-red-500">*</span></label>
                                 <input type="number" step="0.01" name="variants[${index}][regular_price]" class="regularPrice regularPriceInput border border-gray-300 rounded-lg w-full p-2" value="${
                                     variant.regular_price ?? ""
                                 }" required>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Purchase Price<span class="text-red-500">*</span></label>
-                                <input type="number" step="0.01" name="variants[${index}][purchase_price]" class="purchasePrice purchasePriceInput border border-gray-300 rounded-lg w-full p-2" value="${
-                                    variant.purchase_price ?? ""
-                                }" required>
+                           <div>
+                                <label class="block text-sm font-medium text-gray-700">Sale Price</label>
+                                <input type="number" step="0.01" class="salePrice salePriceInput border border-gray-300 rounded-lg w-full p-2" name="variants[${index}][sale_price]" value="${
+                                    variant.sale_price ?? ""
+                                }">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Weight<span class="text-red-500">*</span></label>
@@ -471,6 +476,7 @@ $(function () {
                 if (res.success) {
                     showToast("Product deleted successfully!", "success", 2000);
                     reloadProductList();
+                      window.location.reload();
                 } else {
                     showToast(res.message, "error", 2000);
                 }
@@ -501,18 +507,19 @@ $(function () {
         let variantRow = `
     <div class="variantRow border rounded-xl p-4 mb-4 bg-gray-50 shadow-sm" data-index="${variantIndex}">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Sale Price</label>
-                <input type="number" step="0.01" name="variants[${variantIndex}][sale_price]" class="salePrice mt-1 block w-full border rounded-md p-2"/>
+          <div>
+                <label class="block text-sm font-medium text-gray-700">Purchase Price<span class="text-red-500">*</span></label>
+                <input type="number" step="0.01" name="variants[${variantIndex}][purchase_price]" class="purchasePrice purchasePriceInput mt-1 block w-full border rounded-md p-2" required/>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">MRP<span class="text-red-500">*</span></label>
                 <input type="number" step="0.01" name="variants[${variantIndex}][regular_price]" class="regularPrice regularPriceInput mt-1 block w-full border rounded-md p-2" required/>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700">Purchase Price<span class="text-red-500">*</span></label>
-                <input type="number" step="0.01" name="variants[${variantIndex}][purchase_price]" class="purchasePrice purchasePriceInput mt-1 block w-full border rounded-md p-2" required/>
+                <label class="block text-sm font-medium text-gray-700">Sale Price</label>
+                <input type="number" step="0.01" name="variants[${variantIndex}][sale_price]" class="salePrice mt-1 block w-full border rounded-md p-2"/>
             </div>
+
             <div>
                 <label class="block text-sm font-medium text-gray-700">Weight<span class="text-red-500">*</span></label>
                 <input type="number" step="0.01" name="variants[${variantIndex}][weight]" class="weight mt-1 block w-full border rounded-md p-2" required/>
@@ -655,22 +662,23 @@ function validateStep2() {
             html += `
         <div class="bg-gray-50 rounded-lg p-4 shadow-sm mt-2">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <span class="font-semibold">Sale Price:</span>
+              <div>
+                    <span class="font-semibold">Purchase Price:</span>
                     <p class="text-gray-700">${
-                        v.sale_price ? "$" + v.sale_price : "-"
+                        v.purchase_price ? "$" + v.purchase_price : "-"
                     }</p>
                 </div>
+
                 <div>
                     <span class="font-semibold">MRP:</span>
                     <p class="text-gray-700">${
                         v.regular_price ? "$" + v.regular_price : "-"
                     }</p>
                 </div>
-                <div>
-                    <span class="font-semibold">Purchase Price:</span>
+               <div>
+                    <span class="font-semibold">Sale Price:</span>
                     <p class="text-gray-700">${
-                        v.purchase_price ? "$" + v.purchase_price : "-"
+                        v.sale_price ? "$" + v.sale_price : "-"
                     }</p>
                 </div>
                 <div>

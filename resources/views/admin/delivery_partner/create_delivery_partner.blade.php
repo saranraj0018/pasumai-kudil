@@ -3,14 +3,14 @@
     form: {
         name: '',
         mobile_number: '',
-        hub_id: '',
+        area_name: '',
     },
     closeModal() {
         this.open = false;
         this.form = {
             name: '',
             mobile_number: '',
-            hub_id: '',
+            area_name: '',
         };
     }
 }" x-cloak>
@@ -20,7 +20,7 @@
             <div class="absolute inset-0 bg-black/40" @click="closeModal()"></div>
             <!-- Modal Box -->
             <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-[90%] relative z-50">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800" x-text="modalTitle">Add Delivery Partner</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800" x-text="modalTitle">Add Delivery Partner</h2>
                 <form id="deliveryPartnerAddForm" enctype="multipart/form-data" novalidate
                     class="flex flex-col justify-start items-start w-full  h-[35vh] overflow-y-scroll">
                     @csrf
@@ -39,18 +39,44 @@
                                 <x-input type="number" name="mobile_number" id="mobile_number"
                                     x-model="form.mobile_number" />
                             </div>
-                            <div>
+                            {{-- <div>
                                 <x-label>Hub<span class="text-red-500">*</span></x-label>
-                                <x-select x-model="form.hub_id" name="hub_id" id="hub_id" required>
-                                    <option value="" selected disabled>Please Select Hub</option>
-                                    @foreach ($hub as $h)
-                                        <option value="{{ $h->id }}">{{ $h->name }}</option>
+                                <x-select x-model="form.area_name" name="area_name" id="area_name" class="choice-select"
+                                    required>
+                                    <option value="" selected>Please Select Hub</option>
+                                    @foreach ($areas as $area)
+                                        @foreach ($area['names'] as $name)
+                                            <option value="{{ $name }}" data-city_id="{{ $area['city_id'] }}" data-hub_id="{{ $area['hub_id'] }}">
+                                                {{ $name }}
+                                            </option>
+                                        @endforeach
                                     @endforeach
                                 </x-select>
+                                    <input type="hidden" name="hub_id" id="hub_id">
+                                    <input type="hidden" name="city_id" id="city_id">
+                            </div> --}}
+                            <div>
+                                <x-label>Hub<span class="text-red-500">*</span></x-label>
+                                <x-select x-model="form.area_name" name="area_name" id="area_name" class="choice-select"
+                                    required>
+                                    <option value="" selected>Please Select Hub</option>
+                                    @foreach ($areas as $area)
+                                        @foreach ($area['names'] as $place)
+                                            <option value="{{ $place['name'] }}" data-city_id="{{ $area['city_id'] }}"
+                                                data-hub_id="{{ $area['hub_id'] }}" data-lat="{{ $place['lat'] }}"
+                                                data-lng="{{ $place['lng'] }}">
+                                                {{ $place['name'] }}
+                                            </option>
+                                        @endforeach
+                                    @endforeach
+                                </x-select>
+                                <input type="hidden" name="hub_id" id="hub_id">
+                                <input type="hidden" name="city_id" id="city_id">
+                                <input type="hidden" name="lat" id="lat">
+                                <input type="hidden" name="lng" id="lng">
                             </div>
                         </div>
                     </div>
-                    <!-- Buttons -->
                     <!-- Buttons -->
                     <div class="flex items-center justify-end gap-3 pt-4 w-full">
                         <button type="button" @click="closeModal()"

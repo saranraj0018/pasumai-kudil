@@ -10,9 +10,9 @@ $(function () {
                 message: "Name is required",
             },
             {
-                id: "#hub_id",
+                id: "#area_name",
                 condition: (val) => val === "",
-                message: "Please select Hub",
+                message: "Please select Area Name",
             },
             {
                 id: "#mobile_number",
@@ -98,7 +98,7 @@ $(function () {
         let delivery_partner = {
             id: $(this).data("id"),
             name: $(this).data("name"),
-            hub_id: $(this).data("hub_id"),
+            area_name: $(this).data("area_name"),
             mobile_number: $(this).data("mobile_number"),
         };
         // Show modal
@@ -111,7 +111,7 @@ $(function () {
         alpine.buttonText = "Update";
         alpine.form.delivery_partner_id = delivery_partner.id || "";
         alpine.form.name = delivery_partner.name || "";
-        alpine.form.hub_id = delivery_partner.hub_id || "";
+        alpine.form.area_name = delivery_partner.area_name || "";
         alpine.form.mobile_number = delivery_partner.mobile_number || "";
     });
 
@@ -162,4 +162,12 @@ $(function () {
             $("#deliveryPartnerTableBody").html($tbody);
         });
     }
+
+    $(document).on("click", "#area_name", function () {
+        let selected = $(this).find(":selected");
+        $("#hub_id").val(selected.data("hub_id"));
+        $("#city_id").val(selected.data("city_id"));
+         $("#lat").val(selected.data("lat"));
+         $("#lng").val(selected.data("lng"));
+    });
 });
