@@ -39,27 +39,11 @@
                                 <x-input type="number" name="mobile_number" id="mobile_number"
                                     x-model="form.mobile_number" />
                             </div>
-                            {{-- <div>
-                                <x-label>Hub<span class="text-red-500">*</span></x-label>
-                                <x-select x-model="form.area_name" name="area_name" id="area_name" class="choice-select"
-                                    required>
-                                    <option value="" selected>Please Select Hub</option>
-                                    @foreach ($areas as $area)
-                                        @foreach ($area['names'] as $name)
-                                            <option value="{{ $name }}" data-city_id="{{ $area['city_id'] }}" data-hub_id="{{ $area['hub_id'] }}">
-                                                {{ $name }}
-                                            </option>
-                                        @endforeach
-                                    @endforeach
-                                </x-select>
-                                    <input type="hidden" name="hub_id" id="hub_id">
-                                    <input type="hidden" name="city_id" id="city_id">
-                            </div> --}}
                             <div>
-                                <x-label>Hub<span class="text-red-500">*</span></x-label>
+                                <x-label>Area<span class="text-red-500">*</span></x-label>
                                 <x-select x-model="form.area_name" name="area_name" id="area_name" class="choice-select"
                                     required>
-                                    <option value="" selected>Please Select Hub</option>
+                                    <option value="" selected>Please Select Area</option>
                                     @foreach ($areas as $area)
                                         @foreach ($area['names'] as $place)
                                             <option value="{{ $place['name'] }}" data-city_id="{{ $area['city_id'] }}"
