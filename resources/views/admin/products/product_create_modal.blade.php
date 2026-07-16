@@ -278,7 +278,7 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" value="1" name="is_featured"
+                                    <input type="checkbox" name="is_featured"
                                         x-model="form.is_featured" class="h-4 w-4" />
                                     <x-label class="block text-sm font-medium">Is Featured Product</x-label>
                                 </div>
@@ -298,22 +298,21 @@
 
                                 <x-input type="hidden" class="varinatIdInput" id="variant_id" x-model="form.variant_id"
                                     name="variants[0][variant_id]" required />
-
-                                <div>
-                                    <x-label>Sale Price</x-label>
-                                    <x-input type="number" step="0.01" class="salePriceInput"
-                                        x-model="form.sale_price" name="variants[0][sale_price]" />
+ <div>
+                                    <x-label>Purchase Price<span class="text-red-500">*</span></x-label>
+                                    <x-input type="number" step="0.01" class="purchasePriceInput"
+                                        id="purchase_price" x-model="form.purchase_price"
+                                        name="variants[0][purchase_price]" required />
                                 </div>
                                 <div>
                                     <x-label>MRP<span class="text-red-500">*</span></x-label>
                                     <x-input type="number" step="0.01" class="regularPriceInput" id="regular_price"
                                         x-model="form.regular_price" name="variants[0][regular_price]" required />
                                 </div>
-                                <div>
-                                    <x-label>Purchase Price<span class="text-red-500">*</span></x-label>
-                                    <x-input type="number" step="0.01" class="purchasePriceInput"
-                                        id="purchase_price" x-model="form.purchase_price"
-                                        name="variants[0][purchase_price]" required />
+                              <div>
+                                    <x-label>Sale Price</x-label>
+                                    <x-input type="number" step="0.01" class="salePriceInput"
+                                        x-model="form.sale_price" name="variants[0][sale_price]" />
                                 </div>
                                 <div>
                                     <x-label>Weight<span class="text-red-500">*</span></x-label>
@@ -397,7 +396,7 @@
                                     </div>
                                     <div>
                                         <input type="checkbox" disabled class="h-4 w-4"
-                                            :checked="form.is_featured_product" />
+                                            :checked="form.is_featured" />
                                         <span class="font-semibold">Is Featured Product</span>
                                     </div>
                                     <div>
@@ -410,20 +409,21 @@
                             <div class="bg-gray-50 rounded-lg p-4 shadow-sm">
                                 <h4 class="text-md font-medium mb-2">Pricing & Details</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <span class="font-semibold">Sale Price:</span>
-                                        <p class="text-gray-700" x-text="form.sale_price ? '$'+form.sale_price : '-'">
-                                        </p>
+                                     <div>
+                                        <span class="font-semibold">Purchase Price:</span>
+                                        <p class="text-gray-700"
+                                            x-text="form.purchase_price ? '$'+form.purchase_price : '-'"></p>
                                     </div>
+
                                     <div>
                                         <span class="font-semibold">MRP:</span>
                                         <p class="text-gray-700"
                                             x-text="form.regular_price ? '$'+form.regular_price : '-'"></p>
                                     </div>
-                                    <div>
-                                        <span class="font-semibold">Purchase Price:</span>
-                                        <p class="text-gray-700"
-                                            x-text="form.purchase_price ? '$'+form.purchase_price : '-'"></p>
+                                     <div>
+                                        <span class="font-semibold">Sale Price:</span>
+                                        <p class="text-gray-700" x-text="form.sale_price ? '$'+form.sale_price : '-'">
+                                        </p>
                                     </div>
                                     <div>
                                         <span class="font-semibold">Weight:</span>
