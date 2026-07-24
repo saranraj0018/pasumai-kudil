@@ -42,7 +42,7 @@ class CategoryController extends Controller
                 $category = new Category();
                 $message = 'Category saved successfully';
             }
-            $category->name = $request->category_name;
+            $category->name = strtoupper($request->category_name);
             $category->status = $request->category_status;
             $category->admin_id = Auth::guard('admin')->id();
             if ($request->hasFile('category_image')) {

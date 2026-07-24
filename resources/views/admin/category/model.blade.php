@@ -41,7 +41,9 @@
                     <label class="block text-gray-700 font-medium mb-2">Category Name<span class="text-red-500">*</span></label>
                     <input type="text" name="category_name" id="category_name"
                            x-model="form.name"
+                           @input="$event.target.value = form.name = $event.target.value.toUpperCase()"
                            placeholder="Enter category name"
+                           style="text-transform: uppercase;"
                            class="form-input w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#ab5f00]">
                 </div>
                 <div class="w-full">
