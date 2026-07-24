@@ -20,7 +20,7 @@ class CategoryController extends Controller {
             ->map(function ($category){
                 return [
                     'category_id'    => $category->id,
-                    'category_name'  => $category->name,
+                    'category_name'  => strtoupper($category->name),
                     'category_image' => $category->image
                         ? url('/storage/' . $category->image)
                         : null,
