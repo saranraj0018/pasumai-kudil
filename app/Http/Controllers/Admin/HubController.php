@@ -118,7 +118,7 @@ class HubController extends Controller
                 'required',
                 'string',
                 Rule::unique('cities', 'name')->where(function ($query) use ($request) {
-                    return $query->where('hub_id', '!=', $request->hub_id);
+                    return $query->where('hub_id', '=', $request->hub_id);
                 }),
             ],
             'polygons.*' => 'required|array',
