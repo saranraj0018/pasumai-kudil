@@ -61,7 +61,7 @@ class MilkHomeAPIController extends Controller
 
             // Get active subscription
 
-
+            $setting = \App\Models\Setting::where('data_key', 'milk_config_prefix')->first();
             $banner = Banner::where('type', 'MilkMain')
                 ->get()
                 ->map(function ($item) {
@@ -81,7 +81,7 @@ class MilkHomeAPIController extends Controller
                         'banner' => $banner,
                         'plan_details' => (object) [],
                         'milk_config_time' => '',
-                        'customer_id' =>  $user->prefix ?? '',
+                        'customer_id' =>  ($setting->data_value ?? '').$user->id ?? '',
                     ]
                 ]);
             }
