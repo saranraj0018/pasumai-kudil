@@ -45,19 +45,18 @@
                                     required>
                                     <option value="" selected>Please Select Area</option>
                                     @foreach ($areas as $area)
-                                        @foreach ($area['names'] as $place)
-                                            <option value="{{ $place['name'] }}" data-city_id="{{ $area['city_id'] }}"
-                                                data-hub_id="{{ $area['hub_id'] }}" data-lat="{{ $place['lat'] }}"
-                                                data-lng="{{ $place['lng'] }}">
-                                                {{ $place['name'] }}
-                                            </option>
-                                        @endforeach
+                                        <option value="{{ $area->name }}" data-city_id="{{ $area->id }}"
+                                            data-hub_id="{{ $area->hub_id }}" data-hub_name="{{ $area->hub->name ?? '' }}">
+                                            {{ $area->name }}
+                                        </option>
                                     @endforeach
                                 </x-select>
                                 <input type="hidden" name="hub_id" id="hub_id">
                                 <input type="hidden" name="city_id" id="city_id">
-                                <input type="hidden" name="lat" id="lat">
-                                <input type="hidden" name="lng" id="lng">
+                            </div>
+                            <div>
+                                <x-label>Hub</x-label>
+                                <x-input type="text" id="hub_name_display" placeholder="Hub" readonly disabled />
                             </div>
                         </div>
                     </div>

@@ -203,10 +203,15 @@
         // Save all drawn polygons
         $('#save-area').click(function() {
             let selectedCity = $('#city').val();
-
+            let cityName = $('#search-city').val().trim();
 
             if (!selectedCity) {
                 showToast("Please Select City!", "error", 2000);
+                return;
+            }
+
+            if (!cityName) {
+                showToast("Please enter a city name!", "error", 2000);
                 return;
             }
 
@@ -217,17 +222,12 @@
                 currentPath = [];
             }
 
-            const allPolygons = [
-                ...polygons,
-                ...(window.currentPolygons || [])
-            ];
-
-            if (allPolygons.length === 0) {
-                showToast("Please draw at least one polygon on the map.", "error", 2000);
+            if (polygons.length === 0) {
+                showToast("Please draw at least one new polygon on the map.", "error", 2000);
                 return;
             }
 
-            const dataToSave = allPolygons.map(function(polygon) {
+            const dataToSave = polygons.map(function(polygon) {
 
                 const coords = [];
 
@@ -246,7 +246,8 @@
                 method: 'POST',
                 data: {
                     polygons: dataToSave,
-                    hub_id: selectedCity
+                    hub_id: selectedCity,
+                    city_name: cityName
                 },
                 success: function() {
                     showToast("Area saved successfully!", "success", 2000);

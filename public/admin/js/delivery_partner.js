@@ -163,11 +163,10 @@ $(function () {
         });
     }
 
-    $(document).on("click", "#area_name", function () {
+    $(document).on("change", "#area_name", function () {
         let selected = $(this).find(":selected");
         $("#hub_id").val(selected.data("hub_id"));
         $("#city_id").val(selected.data("city_id"));
-         $("#lat").val(selected.data("lat"));
-         $("#lng").val(selected.data("lng"));
+        $("#hub_name_display").val(selected.data("hub_name"));
     });
 });

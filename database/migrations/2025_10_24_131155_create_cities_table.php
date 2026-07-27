@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('cities', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('hub_id');
-            $table->json('coordinates'); // Storing coordinates as JSON
+            $table->json('coordinates');
+            $table->string('name');
             $table->timestamps();
         });
     }

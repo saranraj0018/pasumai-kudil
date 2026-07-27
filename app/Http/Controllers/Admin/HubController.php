@@ -8,7 +8,9 @@ use App\Models\Hub;
 use App\Models\HubArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class HubController extends Controller
 {
@@ -112,19 +114,38 @@ class HubController extends Controller
         $validated = $request->validate([
             'polygons' => 'required|array',
             'hub_id' => 'required',
+            'city_name' => [
+                'required',
+                'string',
+                Rule::unique('cities', 'name')->where(function ($query) use ($request) {
+                    return $query->where('hub_id', '!=', $request->hub_id);
+                }),
+            ],
             'polygons.*' => 'required|array',
             'polygons.*.*.lat' => 'required|numeric',
             'polygons.*.*.lng' => 'required|numeric',
+        ], [
+            'city_name.unique' => 'This city name is already used for another hub.',
         ]);
 
-        City::where('hub_id', $validated['hub_id'])->delete();
-
         foreach ($validated['polygons'] as $polygon) {
+            $coordinates = json_encode($polygon);
+
+            $alreadyExists = City::where('hub_id', $validated['hub_id'])
+                ->where('coordinates', $coordinates)
+                ->exists();
+
+            if ($alreadyExists) {
+                continue;
+            }
+
             $area = new City();
-            $area->coordinates = json_encode($polygon); // Save each polygon as JSON
+            $area->coordinates = $coordinates; // Save each polygon as JSON
             $area->hub_id = $validated['hub_id'];
+            $area->name = $validated['city_name'];
             $area->save();
         }
+
         return response()->json(['message' => 'Area saved successfully']);
     }
 }
