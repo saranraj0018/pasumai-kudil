@@ -31,6 +31,11 @@ $(function () {
                 condition: (val) => val === "",
                 message: "Floor Number is required",
             },
+            {
+                id: "#apartment_name",
+                condition: (val) => val === "",
+                message: "Apartment Name is required",
+            },
         ];
 
         fields.forEach((field) => {
@@ -58,6 +63,7 @@ $(function () {
                         }
                         // Reset form
                         document.getElementById("userForm").reset();
+                         window.location.reload();
                         $.get("/admin/users/lists", function (html) {
                             let $tbody = $(html)
                                 .find("#userTableBody")
@@ -136,6 +142,7 @@ $(function () {
                         let modalScope = document.querySelector('#editUserModal').__x.$data;
                         modalScope.open = false; // close modal
                         document.getElementById("userForm").reset();
+                        window.location.reload();
                         $.get("/admin/users/lists", function (html) {
                             let $tbody = $(html)
                                 .find("#userTableBody")

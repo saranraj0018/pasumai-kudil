@@ -61,7 +61,7 @@ $(function () {
       .prop("disabled", true)
       .removeClass("opacity-50 cursor-not-allowed")
       .text("Saving...");
-      
+
         let formData = new FormData(this);
         showLoader();
         sendRequest(
@@ -80,7 +80,7 @@ $(function () {
                         alpine.form = { name: '', status: '1' };
                         alpine.previewUrl = null;
                         document.getElementById("categoryForm").reset();
-
+                         window.location.reload();
                         $.get("/admin/category/list", function (html) {
                             let $tbody = $(html).find("#categoryTableBody").html();
                             $("#categoryTableBody").html($tbody);
@@ -130,6 +130,7 @@ $(function () {
                  hideLoader();
                 if (res.success) {
                     showToast("Category deleted successfully!", "success", 2000);
+                    window.location.reload();
                     reloadCategoryList();
                 } else {
                     showToast(res.message, "error", 2000);

@@ -18,7 +18,7 @@ class ProductsSampleSheet implements FromArray, WithTitle
                 'Benefits',
                 'Is Featured Product',
                 'Sale Price',
-                'Regular Price',
+                'MRP',
                 'Purchase Price',
                 'Weight',
                 'Weight Unit',

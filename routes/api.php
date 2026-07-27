@@ -75,7 +75,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/cart', [CartController::class, 'getCart']);
         Route::post('/cart/remove', [CartController::class, 'removeFromCart']);
         Route::post('/create-order', [CartController::class, 'createOrder']);
-         Route::post('/verify-payment', [CartController::class, 'verifyPayment']);
+        Route::post('/verify-payment', [CartController::class, 'verifyPayment']);
         Route::post('/order/save', [CartController::class, 'saveOrder']);
 
         //milk

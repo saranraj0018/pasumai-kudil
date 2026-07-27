@@ -33,14 +33,22 @@ class ProductsImportSheet implements
 {
     use Importable, SkipsFailures, SkipsErrors;
 
+    /**
+     * Handle Excel rows
+     */
     public function collection(Collection $rows)
     {
         if ($rows->isEmpty()) {
+            // Nothing to process
             return;
         }
+
         DB::beginTransaction();
+
         try {
             foreach ($rows as $row) {
+
+                // Skip completely empty rows
                 if ($row->filter()->isEmpty()) {
                     continue;
                 }
@@ -59,7 +67,14 @@ class ProductsImportSheet implements
                     continue;
                 }
 
+                // ==============================
+                // PRODUCT (create or update)
+                // ==============================
                 $product = $this->saveOrUpdateProduct($row->toArray());
+
+                // ==============================
+                // VARIANT (PRODUCT DETAILS)
+                // ==============================
                 $productDetail = new ProductDetail();
                 $productDetail->product_id          = $product->id;
                 $productDetail->category_id         = $category->id;
@@ -82,6 +97,9 @@ class ProductsImportSheet implements
         }
     }
 
+    /**
+     * Save or update product based on name
+     */
     protected function saveOrUpdateProduct(array $row): Product
     {
         $productName = trim($row['product_name'] ?? '');
@@ -118,24 +136,52 @@ class ProductsImportSheet implements
 
         return Carbon::parse($value)->format('Y-m-d');
     }
-    /**
-     * Excel validation rules
-     */
     public function rules(): array
     {
         return [
-            '*.product_name'   => ['required', 'string', 'max:255'],
-            '*.category'       => ['required', Rule::exists('categories', 'name')],
-            '*.regular_price'  => ['required', 'numeric', 'min:0'],
+            '*.product_name' => ['required', 'string', 'max:255'],
+            '*.category' => ['required', Rule::exists('categories', 'name')],
+            '*.mrp' => ['required', 'numeric', 'min:0'],
             '*.purchase_price' => ['required', 'numeric', 'min:0'],
-            '*.sale_price'     => ['nullable', 'numeric', 'min:0'],
-            '*.weight'         => ['nullable', 'numeric', 'min:0'],
-            '*.weight_unit'    => ['required', Rule::exists('units', 'short_name')],
-            '*.tax_type'       => ['nullable', 'in:0,1,2'],
+            '*.sale_price' => ['nullable', 'numeric', 'min:0'],
+            '*.weight' => ['nullable', 'numeric', 'min:0'],
+            '*.weight_unit' => ['required', Rule::exists('units', 'short_name')],
+            '*.tax_type' => ['nullable', 'in:0,1,2'],
             '*.tax_percentage' => ['nullable', 'numeric', 'min:0'],
-            '*.stock'          => ['required', 'integer', 'min:0'],
-            '*.is_featured'    => ['nullable', 'in:0,1'],
-            '*.expiry_date'    => ['nullable'],
+            '*.stock' => ['required', 'integer', 'min:0'],
+            '*.is_featured' => ['nullable', 'in:0,1'],
+            '*.expiry_date' => ['nullable'],
+        ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            foreach ($validator->getData() as $i => $row) {
+                $mrp = (float)($row['mrp'] ?? 0);
+                $purchase = (float)($row['purchase_price'] ?? 0);
+                $sale = (float)($row['sale_price'] ?? 0);
+                if ($purchase >= $mrp) {
+                    $validator->errors()->add("{$i}.purchase_price", "Purchase Price ({$purchase}) must be less than MRP ({$mrp}).");
+                }
+                if ($sale > 0 && $sale >= $mrp) {
+                    $validator->errors()->add("{$i}.sale_price", "Sale Price ({$sale}) must be less than MRP ({$mrp}).");
+                }
+                if ($sale > 0 && $purchase >= $sale) {
+                    $validator->errors()->add("{$i}.sale_price", "Sale Price ({$sale}) must be greater than Purchase Price ({$purchase}).");
+                }
+            }
+        });
+    }
+
+    public function customValidationMessages()
+    {
+        return [
+            '*.product_name.required' => 'Product Name is required.',
+            '*.category.required' => 'Category is required.',
+            '*.category.exists' => 'Category does not exist.',
+            '*.mrp.required' => 'MRP is required.',
+            '*.purchase_price.required' => 'Purchase Price is required.',
         ];
     }
 

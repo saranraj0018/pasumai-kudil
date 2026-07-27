@@ -253,6 +253,7 @@ class UserlistController extends Controller
             'state'          => 'nullable|string|max:255',
             'pincode'        => 'nullable|string|max:10',
             'floor_number'   => 'required',
+            'apartment_name' => 'required',
             'latitude'       => 'required|numeric',
             'longitude'      => 'required|numeric',
         ]);
@@ -290,13 +291,12 @@ class UserlistController extends Controller
             }
 
             $start_date = Carbon::now()->addDay();
-
             if ($daymonth) {
-                $end_date = $start_date->copy()->addMonthsNoOverflow($daycount)->subDay();
+                $totalDays = $daycount * 30;
+                $end_date = $start_date->copy()->addDays($totalDays - 1);
             } else {
-                $end_date = $start_date->copy()->addDays($daycount)->subDay();
+                $end_date = $start_date->copy()->addDays($daycount - 1);
             }
-
             if ($request->filled('custom_days')) {
                 $amount = round((float) $subscription->plan_amount, 2);
             } else {
@@ -346,6 +346,7 @@ class UserlistController extends Controller
                 $user->longitude      = $request['longitude'] ?? '';
                 $user->address        = $request['address'] ?? '';
                 $user->floor_number   = $request['floor_number'] ?? '';
+                $user->apartment_name = $request['apartment_name'] ?? '';
                 $user->save();
             }
 

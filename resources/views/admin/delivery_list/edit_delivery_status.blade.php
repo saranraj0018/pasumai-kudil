@@ -23,7 +23,8 @@
             <!-- Modal Box -->
             <div class="bg-white p-8 rounded-2xl shadow-2xl relative z-50">
                 <h2 class="text-2xl font-bold  text-gray-800">Edit Delivery</h2>
-                <form id="deliverystatusChangeForm" enctype="multipart/form-data" novalidate class="flex flex-col justify-start items-start w-full">
+                <form id="deliverystatusChangeForm" enctype="multipart/form-data" novalidate
+                    class="flex flex-col justify-start items-start w-full">
                     @csrf
                     <input type="hidden" name="exiting_image" x-model="exiting_image" id="exiting_image" />
                     <input type="hidden" name="delivery_id" x-model="form.delivery_id" id="delivery_id" />
@@ -83,3 +84,133 @@
         </div>
     </template>
 </div>
+<div id="changedeliveryStatusModal" x-data="deliveryStatusModal()" x-cloak>
+
+    <template x-if="open">
+        <div class="fixed inset-0 z-50 flex items-center justify-center">
+
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-black/40" @click="closeModal()">
+            </div>
+
+            <!-- Modal -->
+            <div class="relative z-50 w-full max-w-lg bg-white rounded-2xl shadow-xl">
+
+                <!-- Header -->
+                <div class="flex items-center justify-between p-5 border-b">
+                    <h2 class="text-xl font-bold">
+                        Change Delivery Status
+                    </h2>
+
+                    <button type="button" @click="closeModal()" class="text-gray-500 hover:text-red-500 text-xl">
+                        ✕
+                    </button>
+                </div>
+                <!-- Form -->
+                <form id="overallstatusChangeForm" enctype="multipart/form-data">
+                    @csrf
+                    <div class="p-5 space-y-4">
+                        <!-- From & To Date -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <x-label>
+                                    From Date
+                                    <span class="text-red-500">*</span>
+                                </x-label>
+
+                                <x-input type="date" id="from_date" name="from_date" x-model="form.from_date" />
+                            </div>
+                            <div>
+                                <x-label>
+                                    To Date
+                                    <span class="text-red-500">*</span>
+                                </x-label>
+                                <x-input type="date" id="to_date" name="to_date" x-model="form.to_date" />
+                            </div>
+                        </div>
+                        <!-- Delivery Boy -->
+                        <div>
+                            <x-label>
+                                Delivery Partner
+                            </x-label>
+                            <x-select id="delivery_boy" name="delivery_boy" x-model="form.delivery_boy">
+                                <option value="">
+                                    Please Select Delivery Partner
+                                </option>
+                                @foreach ($delivery_boy as $boy)
+                                    <option value="{{ $boy->id }}">
+                                        {{ $boy->name }}
+                                    </option>
+                                @endforeach
+                            </x-select>
+                        </div>
+                        <!-- Users -->
+                        <div>
+                            <x-label>
+                                Users
+                                <span class="text-red-500">*</span>
+                            </x-label>
+                            <select id="users" name="users[]" multiple>
+                                <option value="all">
+                                    All Users
+                                </option>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}">
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="flex justify-end gap-3 border-t p-5">
+                        <button type="button" @click="closeModal()" class="px-5 py-2 rounded-lg border">
+                            Cancel
+                        </button>
+                        <button id="save_product" type="submit"
+                            class="px-5 py-2 rounded-lg bg-[#ab5f00] text-white hover:bg-[#8c4d00]">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+</div>
+<script>
+    function deliveryStatusModal() {
+        return {
+            open: false,
+            form: {
+                from_date: '',
+                to_date: '',
+                status: '',
+                delivery_boy: '',
+                users: []
+            },
+            openModal() {
+                this.open = true;
+                this.$nextTick(() => {
+                    initUsersChoices();
+                });
+            },
+
+            closeModal() {
+                this.open = false;
+                this.form = {
+                    from_date: '',
+                    to_date: '',
+                    status: '',
+                    delivery_boy: '',
+                    users: []
+                };
+
+                $("#overallstatusChangeForm")[0].reset();
+                $(".error-message").remove();
+                if (choicesInstance) {
+                    choicesInstance.removeActiveItems();
+                }
+            }
+        };
+    }
+</script>

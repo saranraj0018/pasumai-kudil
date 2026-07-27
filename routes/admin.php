@@ -132,6 +132,7 @@ Route::prefix('admin')->group(function () {
         Route::prefix('delivery_list')->controller(DeliveryListController::class)->group(function () {
             Route::get('/delivery-list', 'index')->name('lists.delivery_list');
             Route::post('/status-save', 'statusSave')->name('save.delivery_status_save');
+            Route::post('/overall-save', 'overallSave')->name('overall_delivery_save');
             Route::post('/change-delivery-boy', 'changeDeliveryBoy')->name('change_delivery_boy.users');
         });
 

@@ -66,7 +66,7 @@
                                     data-value="{{ $coupon->discount_value }}"
                                     data-description="{{ $coupon->description }}"
                                     data-apply="{{ $coupon->apply_for }}" data-max="{{ $coupon->max_price }}"
-                                    data-min="{{ $coupon->min_price }}" data-order="{{ $coupon->order_count }}"
+                                    data-min="{{ $coupon->min_price }}" data-order="{{ $coupon->order_count }}" data-order_type="{{ $coupon->order_type }}"
                                     data-expires="{{ $coupon->expires_at ? \Carbon\Carbon::parse($coupon->expires_at)->format('Y-m-d') : '' }}"
                                     data-started="{{ $coupon->started_at ? \Carbon\Carbon::parse($coupon->started_at)->format('Y-m-d') : '' }}"
                                     data-status="{{ $coupon->status }}">

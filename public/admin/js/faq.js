@@ -85,7 +85,7 @@ $(function () {
                         alpine.form = { question: "", answer: "", faq_id: 0 };
                         alpine.previewUrl = null;
                         document.getElementById("faqForm").reset();
-
+                        window.location.reload();
                         $.get("/admin/faq/list", function (html) {
                             let $tbody = $(html).find("#faqTableBody").html();
                             $("#faqTableBody").html($tbody);
@@ -132,6 +132,7 @@ $(function () {
             function (res) {
                 if (res.success) {
                     showToast("FAQ deleted successfully!", "success", 2000);
+                    window.location.reload();
                     reloadFaqList();
                 } else {
                     showToast(res.message, "error", 2000);

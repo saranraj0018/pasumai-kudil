@@ -116,7 +116,7 @@ $(function () {
        const file = this.files[0];
 
        if (file) {
-           const maxSize = 2 * 1024 * 1024; 
+           const maxSize = 2 * 1024 * 1024;
            if (file.size > maxSize) {
              showToast("Image size must be less than 2MB", "error", 2000);
                $(this).val("");
@@ -218,6 +218,7 @@ $(function () {
                     showToast(res.message, "success", 2000);
                     setTimeout(() => {
                         $("#orderModal").fadeOut(200);
+                        window.location.reload();
                         reloadOrderList();
                     }, 500);
                 } else {

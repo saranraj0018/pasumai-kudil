@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class RolesController extends Controller
 {
@@ -19,18 +21,15 @@ class RolesController extends Controller
 
     public function roleSave(Request $request)
     {
-        $rules = [
-            'role_name'  => 'required',
-        ];
-        $request->validate($rules);
         try {
-            $role_exists = Role::where('name', $request['role_name'])->first();
-            if(!empty($role_exists)){
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Role Name Already Exists!'
-                ]);
-            }
+            $rules = [
+                'role_name'  => [
+                    'required',
+                    'max:255',
+                    Rule::unique('roles', 'name')->ignore($request->role_id)
+                ],
+            ];
+            $request->validate($rules);
             if (!empty($request['role_id'])) {
                 $message = 'Role Updated successfully';
                 $role = Role::find($request['role_id']);
@@ -49,9 +48,9 @@ class RolesController extends Controller
                 'message' => $message
             ]);
         } catch (\Exception $e) {
-            return response()->json([
+             return response()->json([
                 'success' => false,
-                'message' => 'Failed to save role',
+                'message' => $e->getMessage(),
                 'error' => $e->getMessage(),
             ], 500);
         }

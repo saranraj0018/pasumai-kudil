@@ -19,7 +19,8 @@
         city: '',
         address: '',
         plan_id: '',
-        floor_number: ''
+        floor_number: '',
+        apartment_name: ''
     },
     closeModal() {
         this.open = false;
@@ -31,7 +32,8 @@
             city: '',
             address: '',
             plan_id: '',
-            floor_number: ''
+            floor_number: '',
+            apartment_name: ''
         };
         this.previewUrl = null;
         this.errors = {}; // clear errors on close
@@ -79,7 +81,6 @@
                     <input type="hidden" name="exiting_image" x-model="exiting_image" id="exiting_image" />
                     <input type="hidden" name="user_id" x-model="form.user_id" id="user_id" />
                     <textarea x-model="form.address" name="address" type="hidden"></textarea>
-
                     <div class="p-5 space-y-5 flex-1 w-full h-fit">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -102,6 +103,12 @@
                                 <x-label>Floor Number</x-label>
                                 <x-input type="text" x-model="form.floor_number" name="floor_number"
                                     id="floor_number" placeholder="Enter Your Floor Number" autocomplete="off"
+                                    required />
+                            </div>
+                            <div>
+                            <x-label>Apartment Name</x-label>
+                                <x-input type="text" x-model="form.apartment_name" name="apartment_name"
+                                    id="apartment_name" placeholder="Enter Your Apartment Name" autocomplete="off"
                                     required />
                             </div>
                             <div>

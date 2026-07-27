@@ -23,6 +23,7 @@ $(function () {
         $("#max_price").val($(this).data("max"));
         $("#min_price").val($(this).data("min"));
         $("#order_count").val($(this).data("order"));
+        $("#order_type").val($(this).data("order_type"));
         $("#started_at").val($(this).data("started"));
         $("#expires_at").val($(this).data("expires"));
         $("#status").val($(this).data("status"));
@@ -33,6 +34,7 @@ $(function () {
        // $("#expires_at").prop("disabled", false);
        // }
 
+        toggleOrderCount();
 
         $("#coupon_label").text("Edit Coupon");
         $("#save_coupon").text("Update");
@@ -122,6 +124,7 @@ $(function () {
                         let modalScope = document.querySelector('#couponModal').__x.$data;
                         modalScope.open = false; // close modal
                         document.getElementById("couponForm").reset();
+                        window.location.reload();
                         reloadCouponList();
                     }, 500);
                 } else {
@@ -167,6 +170,7 @@ $(function () {
                  hideLoader();
                 if (res.success) {
                     showToast("Coupon deleted successfully!", "success", 2000);
+                    window.location.reload();
                     reloadCouponList();
                 } else {
                     showToast(res.message, "error", 2000);
