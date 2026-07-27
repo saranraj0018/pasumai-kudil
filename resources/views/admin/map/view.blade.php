@@ -52,7 +52,7 @@
     </div>
 </x-layouts.app>
 
-<script async src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&callback=initMap"></script>
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places,geometry&callback=initMap"></script>
 <script>
     // Define initMap globally to be called by Google Maps API
     function initMap() {
@@ -222,24 +222,34 @@
                 currentPath = [];
             }
 
-            if (polygons.length === 0) {
-                showToast("Please draw at least one new polygon on the map.", "error", 2000);
-                return;
-            }
-
-            const dataToSave = polygons.map(function(polygon) {
-
+            const polygonToCoords = function(polygon) {
                 const coords = [];
-
                 polygon.getPath().forEach(function(point) {
                     coords.push({
                         lat: point.lat(),
                         lng: point.lng()
                     });
                 });
-
                 return coords;
-            });
+            };
+
+            let reusedPolygons = [];
+
+            // No new polygon drawn: reuse an already-saved polygon for this hub only if
+            // the searched location actually falls inside it (point-in-polygon check).
+            // This avoids blindly reusing an unrelated locality's boundary.
+            if (polygons.length === 0 && marker && Array.isArray(window.currentPolygons)) {
+                reusedPolygons = window.currentPolygons.filter(function(polygon) {
+                    return google.maps.geometry.poly.containsLocation(marker.getPosition(), polygon);
+                });
+            }
+
+            if (polygons.length === 0 && reusedPolygons.length === 0) {
+                showToast("Please draw at least one polygon on the map.", "error", 2000);
+                return;
+            }
+
+            const dataToSave = polygons.concat(reusedPolygons).map(polygonToCoords);
 
             $.ajax({
                 url: '/admin/map/save-area',

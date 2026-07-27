@@ -67,7 +67,7 @@ class HubController extends Controller
         $city = !empty($request['hub_id']) ? Hub::find($request['hub_id']) : new Hub();
         $city->address = $request['hub_name'];
         $city->type = $request['type'];
-        $city->name = strstr($request['hub_name'], ',', true) ?: $request['hub_name'];;
+        $city->name = strstr($request['hub_name'], ',', true) ?: $request['hub_name'];
         $city->latitude = $request['latitude'];
         $city->shop_contact_number = $request['shop_contact_number'];
         $city->longitude = $request['longitude'];
@@ -128,24 +128,21 @@ class HubController extends Controller
             'city_name.unique' => 'This city name is already used for another hub.',
         ]);
 
+
         foreach ($validated['polygons'] as $polygon) {
             $coordinates = json_encode($polygon);
-
             $alreadyExists = City::where('hub_id', $validated['hub_id'])
+                ->where('name', $validated['city_name'])
                 ->where('coordinates', $coordinates)
                 ->exists();
-
             if ($alreadyExists) {
                 continue;
             }
-
             $area = new City();
             $area->coordinates = $coordinates; // Save each polygon as JSON
             $area->hub_id = $validated['hub_id'];
             $area->name = $validated['city_name'];
             $area->save();
         }
-
-        return response()->json(['message' => 'Area saved successfully']);
     }
 }
