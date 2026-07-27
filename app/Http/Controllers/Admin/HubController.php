@@ -124,8 +124,6 @@ class HubController extends Controller
             'polygons.*' => 'required|array',
             'polygons.*.*.lat' => 'required|numeric',
             'polygons.*.*.lng' => 'required|numeric',
-        ], [
-            'city_name.unique' => 'This city name is already used for another hub.',
         ]);
 
 
