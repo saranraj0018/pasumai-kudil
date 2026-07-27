@@ -25,10 +25,6 @@
                 </thead>
                 <tbody id="userTableBody" class="divide-y divide-gray-200">
                     @if ($getuser->isNotEmpty())
-
-                        @php
-                            $setting = \App\Models\Setting::where('data_key', 'milk_config_prefix')->first();
-                        @endphp
                         @foreach ($getuser as $user)
                         @php
                             $setting = \App\Models\Setting::where('data_key', 'milk_config_prefix')->first();

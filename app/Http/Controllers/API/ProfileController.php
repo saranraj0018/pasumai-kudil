@@ -19,6 +19,7 @@ class ProfileController extends Controller
     {
         try {
             $user = User::find(auth('api')->id());
+            $setting_user_id = \App\Models\Setting::where('data_key', 'milk_config_prefix')->first();
             $cacheKey = "inside_grocery_zone:user:{$user->id}";
             $shop_number = Hub::where('type', 1)->first();
             $isInside = Cache::get($cacheKey);
@@ -38,7 +39,7 @@ class ProfileController extends Controller
                     ]
                 ],
                 "inside_grocery_zone" =>  (bool) $isInside,
-                "customer_id" =>  $user->prefix ?? '',
+                'customer_id' => ($setting_user_id->data_value ?? '').$user->id ?? '',
                 "shop_number" => $shop_number?->shop_contact_number ?? '',
             ], 200);
         } catch (\Throwable $th) {
