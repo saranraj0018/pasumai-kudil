@@ -173,11 +173,6 @@ Route::prefix('admin')->group(function () {
         // Reports
         Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
         Route::post('/reports-export', [ReportsController::class, 'export'])->name('export_report');
-        Route::post('/reports-product-export', [ReportsController::class, 'productExport'])->name('export_product_report');
-        Route::post('/reports-item-list-export', [ReportsController::class, 'itemListExport'])->name('export_item_list_report');
-        Route::post('/reports-sales-breakdown-export', [ReportsController::class, 'salesBreakdownExport'])->name('export_sales_breakdown_report');
-        Route::post('/reports-payment-summary-export', [ReportsController::class, 'paymentSummaryExport'])->name('export_payment_summary_report');
-        Route::post('/reports-profit-export', [ReportsController::class, 'profitReportExport'])->name('export_profit_report');
 
         // Unit
         Route::prefix('unit')->controller(UnitController::class)->group(function () {
