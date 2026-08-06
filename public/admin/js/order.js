@@ -11,6 +11,8 @@ $(function () {
         // BEFORE
         $("#status").val(order.status);
         toggleRefundFields(order.status);
+        $("#paymentMethod").val(order.payment_method ?? "");
+        togglePaymentModeField(order.status);
         $("#addressCustomerMobile").text(
             order.user_address?.phone_number ?? "—",
         );
@@ -100,6 +102,14 @@ $(function () {
         $("#orderModal").fadeIn(200);
     });
 
+    function togglePaymentModeField(statusVal) {
+        if (parseInt(statusVal) === 4) {
+            $("#paymentModeField").slideDown(200);
+        } else {
+            $("#paymentModeField").slideUp(200);
+        }
+    }
+
     function toggleRefundFields(statusVal) {
         if (parseInt(statusVal) === 6) {
             $("#refundFields").slideDown(200);
@@ -143,6 +153,7 @@ $(function () {
 
     $(document).on("change", "#status", function () {
         toggleRefundFields($(this).val());
+        togglePaymentModeField($(this).val());
     });
 
     // ===== CLOSE MODAL =====
@@ -164,10 +175,16 @@ $(function () {
         let date = $("#statusDate").val();
         let refundImage = $("#refundImage").val();
         let refundNote = $("#refundNote").val();
+        let paymentMethod = $("#paymentMethod").val();
         let $saveBtn = $("#saveStatusBtn");
 
         if (!status || !date) {
             showToast("Please select both status and date", "error", 2000);
+            return;
+        }
+
+        if (status == 4 && !paymentMethod) {
+            showToast("Please select a payment mode", "error", 2000);
             return;
         }
 
@@ -188,6 +205,7 @@ $(function () {
         formData.append("status", status);
         formData.append("date", date);
         formData.append("id", Id);
+        formData.append("payment_method", paymentMethod);
         formData.append("refund_note", refundNote);
 
         // Handle file append AFTER formData is declared
