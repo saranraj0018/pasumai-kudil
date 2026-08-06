@@ -83,6 +83,21 @@
                 </div>
             </div>
 
+            <!-- Payment Mode (shown only when status = Delivered) -->
+            <div id="paymentModeField" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4" style="display:none;">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Payment Mode<span
+                            class="text-red-500">*</span></label>
+                    <select id="paymentMethod" class="w-full border p-2 sm:p-3 rounded-lg text-gray-900">
+                        <option value="">Please Select Payment Mode</option>
+                        <option value="cash">Cash</option>
+                        <option value="card">Card</option>
+                        <option value="gpay">GPay</option>
+                        <option value="credit">Credit</option>
+                    </select>
+                </div>
+            </div>
+
             <!-- Refund Fields (shown only when status = Refunded) -->
             <div id="refundFields" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4" style="display:none;">
                 <div>

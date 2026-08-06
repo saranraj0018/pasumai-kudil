@@ -39,6 +39,7 @@ class OrderController extends Controller
                 'status'   => 'required|integer',
                 'date'     => 'required|date',
                 'id'       => 'required|exists:orders,id',
+                'payment_method' => 'required_if:status,4|in:cash,card,gpay,credit',
             ]);
             $order = Order::with('user')->findOrFail($validated['id']);
             $user  = $order->user;
@@ -58,6 +59,7 @@ class OrderController extends Controller
                     break;
                 case 4:
                     $order->delivered_at = $date;
+                    $order->payment_method = $validated['payment_method'];
                     break;
                 case 5:
                     $order->cancelled_at = $date;
