@@ -120,23 +120,16 @@
         </div>
         <h1>Your Session Has Expired</h1>
         <p>For your security, this page timed out due to inactivity. Please reload the page and try again.</p>
-        <button type="button" class="reload-btn" id="reloadBtn" onclick="reloadPage()">
+        <a href="{{ route('admin.login') }}">
+        <button type="button" class="reload-btn" id="reloadBtn">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             <span>Reload Page</span>
         </button>
+        </a>
         <div class="code">Error 419 &middot; Page Expired</div>
     </div>
-
-    <script>
-        function reloadPage() {
-            const btn = document.getElementById('reloadBtn');
-            btn.classList.add('spinning');
-            btn.disabled = true;
-            window.location.reload();
-        }
-    </script>
 </body>
 
 </html>
