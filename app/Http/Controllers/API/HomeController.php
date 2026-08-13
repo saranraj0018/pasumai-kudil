@@ -52,35 +52,42 @@ class HomeController extends Controller
             });
 
         $user = auth('api')->user();
-        $likedProducts = (array) json_decode($user->likedProducts ?? '[]');
+        $likedProducts = json_decode($user->likedProducts ?? '[]', true);
         $cartQuantities = getCartQuantities();
 
-        $featuredProducts = Product::with(['details','variants.unit'])
-            ->orderBy('id', 'desc')
+        $featuredProducts = Product::with(['variants.unit'])
             ->where(function ($query) {
                 $query->whereDate('expiry_date', '>=', now())
                     ->orWhereNull('expiry_date');
             })
+            ->orderByDesc('id')
             ->get()
-            ->map(function ($product) use ($likedProducts, $cartQuantities) {
-                $details = $product->details;
-                $variants = $product->variants->first();
+            ->flatMap(function ($product) use ($likedProducts, $cartQuantities) {
 
-                return [
-                    'product_id'   => $product->id,
-                    'product_name' => $product->name,
-                    'product_image'=> url('/storage/' . $product->image),
-                    'offer_price'  => $details ? $details->sale_price : 0,
-                    'normal_price' => $details ? $details->regular_price : 0,
-                    "stock_count"  => $details ? $details->stock : 0,
-                    'liked_status' => in_array($product->id, $likedProducts),
-                    'product_kg'   => $details ? ($details->weight . ' ' . $variants->unit?->short_name) : null,
-                    'variation_id' => $details ? $details->id : null,
-                    'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
-                    'is_featured_product' => $details ? $details->is_featured_product : 0,
-                ];
-            })->filter(fn($product) => $product['is_featured_product'] == 1)
+                return $product->variants
+                    ->where('is_featured_product', 1)
+                    ->map(function ($detail) use ($product, $likedProducts, $cartQuantities) {
+
+                        return [
+                            'product_id'   => $product->id,
+                            'product_name' => $product->name,
+                            'product_image'=> url('/storage/' . $product->image),
+                            'offer_price'  => $detail->sale_price,
+                            'normal_price' => $detail->regular_price,
+                            'stock_count'  => $detail->stock,
+                            'liked_status' => collect($likedProducts)->contains(function ($item) use ($product, $detail) {
+                                return $item['product_id'] == $product->id
+                                    && $item['variant_id'] == $detail->id;
+                            }),
+                            'product_kg'   => $detail->weight . ' ' . optional($detail->unit)->short_name,
+                            'variation_id' => $detail->id,
+                            'quantity'     => intValue($cartQuantities[$detail->id] ?? 0),
+                            'is_featured_product' => $detail->is_featured_product,
+                        ];
+                    });
+            })
             ->values()
+            ->shuffle()
             ->toArray();
 
         $bestSellerProducts = Product::with(['details','variants.unit'])
@@ -89,26 +96,33 @@ class HomeController extends Controller
                 $query->whereDate('expiry_date', '>=', now())
                     ->orWhereNull('expiry_date');
             })
+            ->orderByDesc('id')
             ->get()
-            ->map(function ($product) use ($likedProducts, $cartQuantities) {
-                $details = $product->details;
-                $variants = $product->variants->first();
+                ->flatMap(function ($product) use ($likedProducts, $cartQuantities) {
+                    return $product->variants
+                        ->where('is_featured_product','!=', 1)
+                        ->map(function ($detail) use ($product, $likedProducts, $cartQuantities) {
 
                 return [
                     'product_id'   => $product->id,
                     'product_name' => $product->name,
                     'product_image' => url('/storage/' . $product->image),
-                    'offer_price'  => $details ? $details->sale_price : 0,
-                    'normal_price' => $details ? $details->regular_price : 0,
-                    'liked_status'       => in_array($product->id, $likedProducts),
-                    "stock_count"    => $details ? $details->stock : 0,
-                    'product_kg'  =>  $details ? ($details->weight . ' ' . $variants->unit?->short_name) : null,
-                    'variation_id'  => $details ? $details->id : null,
-                    'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
-                    'is_featured_product' => $details ? $details->is_featured_product : 0,
+                    'offer_price'  => $detail->sale_price ?? 0,
+                    'normal_price' => $detail->regular_price ?? 0,
+                    'liked_status' => collect($likedProducts)->contains(function ($item) use ($product, $detail) {
+                        return $item['product_id'] == $product->id
+                            && $item['variant_id'] == $detail->id;
+                    }),
+                    'stock_count'  => $detail->stock ?? 0,
+                    'product_kg'   => $detail->weight . ' ' . optional($detail->unit)->short_name,
+                    'variation_id' => $detail->id,
+                    'quantity'     => intValue($cartQuantities[$detail->id] ?? 0),
+                    'is_featured_product' => $detail->is_featured_product,
                 ];
-            })->filter(fn($product) => $product['is_featured_product'] != 1)
+            });
+                })
             ->values()
+            ->shuffle()
             ->toArray();
         $cacheKey = "inside_grocery_zone:user:{$user->id}";
         $isInside = Cache::get($cacheKey);

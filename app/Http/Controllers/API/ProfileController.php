@@ -106,44 +106,79 @@ class ProfileController extends Controller
     public function index(Request $request)
     {
         $user = auth('api')->user();
+
         $cacheKey = "inside_grocery_zone:user:{$user->id}";
         $isInside = Cache::get($cacheKey);
         $cartQuantities = getCartQuantities();
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Wish List',
-            "data" => Product::whereIn('id', (array)json_decode($user->likedProducts) ?: [])
-                ->where(function ($query) {
-                    $query->whereDate('expiry_date', '>=', now())
-                        ->orWhereNull('expiry_date');
+        $likedProducts = json_decode($user->likedProducts ?? '[]', true);
+
+        $productIds = collect($likedProducts)
+            ->pluck('product_id')
+            ->unique()
+            ->toArray();
+
+        $products = Product::with(['details', 'variants.unit'])
+            ->whereIn('id', $productIds)
+            ->where(function ($query) {
+                $query->whereDate('expiry_date', '>=', now())
+                    ->orWhereNull('expiry_date');
+            })
+            ->get();
+
+        $data = $products->flatMap(function ($product) use ($likedProducts, $cartQuantities) {
+
+            return $product->variants
+                ->filter(function ($variant) use ($likedProducts, $product) {
+                    return collect($likedProducts)->contains(function ($item) use ($product, $variant) {
+                        return $item['product_id'] == $product->id
+                            && $item['variant_id'] == $variant->id;
+                    });
                 })
-                ->get()->map(function ($product) use ($user,$cartQuantities) {
-                    $variants = $product->variants->first();
+                ->map(function ($variant) use ($product, $likedProducts, $cartQuantities) {
+
                     return [
                         'product_id' => $product->id,
                         'product_name' => $product->name,
-                        'product_image' => $product->image ? url('/storage/' . $product->image) : null,
-                        'productorginalPrice' => $product->details->regular_price,
-                        'NegotiationPrice' => $product->details->sale_price,
-                        'liked_status' => in_array($product->id, (array) json_decode($user->likedProducts) ?? []),
-                        'product_kg' => $product?->details?->weight ? ($product->details->weight . ' ' . $variants->unit?->short_name) : null,
-                        'stock_count' => $product->details->stock,
-                        'quantity' => $product->details->id ? intValue($cartQuantities[$product->details->id] ?? 0) : 0,
-                        'isFeaturedProduct' => $product->details->is_featured_product ?? 0,
-                        'variation_id' => $product->details?->id ?? null,
+                        'product_image' => $product->image
+                            ? url('/storage/' . $product->image)
+                            : null,
+
+                        'productorginalPrice' => $variant->regular_price,
+                        'NegotiationPrice' => $variant->sale_price,
+
+                        'liked_status' => true,
+
+                        'product_kg' => $variant->weight . ' ' . optional($variant->unit)->short_name,
+
+                        'stock_count' => $variant->stock,
+
+                        'quantity' => intValue($cartQuantities[$variant->id] ?? 0),
+
+                        'isFeaturedProduct' => $variant->is_featured_product ?? 0,
+
+                        'variation_id' => $variant->id,
                     ];
-                }),
-            "inside_grocery_zone" =>  (bool) $isInside,
+                });
+
+        })->values();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Wish List',
+            'data' => $data,
+            'inside_grocery_zone' => (bool) $isInside,
         ], 200);
     }
 
     public function toggleLikeStatus(Request $request)
     {
         try {
+
             $validator = Validator::make($request->all(), [
-                'product_id' => 'required|integer',
-                'status' => 'required'
+                'product_id' => 'required|integer|exists:products,id',
+                'variant_id' => 'required',
+                'status'     => 'required|boolean',
             ]);
 
             if ($validator->fails()) {
@@ -153,39 +188,52 @@ class ProfileController extends Controller
                 ], 419);
             }
 
-            $product = Product::find($request->product_id);
-            if (!$product) {
-                throw new ModelNotFoundException('Product Not Found', 404);
-            }
+            $user = auth('api')->user();
 
-            $user = User::find(auth("api")->user()->id);
-            if (!$user) {
-                throw new \Exception('User not authenticated', 401);
-            }
+            $likedProducts = json_decode($user->likedProducts ?? '[]', true) ?: [];
 
-            $likedProducts = (array) json_decode($user->likedProducts ?? '[]');
+            $exists = collect($likedProducts)->contains(function ($item) use ($request) {
+                return $item['product_id'] == $request->product_id
+                    && $item['variant_id'] == $request->variant_id;
+            });
 
-            $like = $request->status;
+            if ($request->status) {
 
-            if (!empty($like) && !in_array($request->product_id, $likedProducts)) {
-                $likedProducts[] = $request->product_id;
+                if (!$exists) {
+                    $likedProducts[] = [
+                        'product_id' => $request->product_id,
+                        'variant_id' => $request->variant_id,
+                    ];
+                }
+
                 $message = "Wishlist Added Successfully";
+
             } else {
-                $likedProducts = array_filter($likedProducts, fn($id) => $id != $product->id);
-                $likedProducts = array_values($likedProducts);
+
+                $likedProducts = array_values(array_filter($likedProducts, function ($item) use ($request) {
+                    return !(
+                        $item['product_id'] == $request->product_id &&
+                        $item['variant_id'] == $request->variant_id
+                    );
+                }));
+
                 $message = "Wishlist Removed Successfully";
             }
 
-            $user->update(['likedProducts' => json_encode($likedProducts)]);
+            $user->update([
+                'likedProducts' => json_encode($likedProducts)
+            ]);
 
             return response()->json([
                 'status' => 200,
                 'msg' => $message,
-            ], 200);
+            ]);
+
         } catch (\Throwable $th) {
+
             return response()->json([
                 'status' => $th->getCode() ?: 500,
-                'message' => $th->getMessage()
+                'message' => $th->getMessage(),
             ], $th->getCode() ?: 500);
         }
     }

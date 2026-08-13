@@ -62,29 +62,36 @@ class CategoryController extends Controller {
                 $query->whereDate('expiry_date', '>=', now())
                     ->orWhereNull('expiry_date');
              })
-            ->get()
-                ->map(function ($product) use ($cartQuantities, $likedProducts) {
-                     $details = $product->details;
-                    $variants = $product->variants->first();
+            ->get();
+            $data = $products
+                ->flatMap(function ($product) use ($likedProducts, $cartQuantities) {
+
+                    return $product->variants
+                        ->where('is_featured_product', '!=', 1)
+                        ->map(function ($variant) use ($product, $likedProducts, $cartQuantities) {
                     return [
                         "product_id"      => $product->id,
                         'category_id'    =>  $product->details->category_id ?? null,
                         "product_image" => $product->image ? url('/storage/' . $product->image) : null,
-                        "offer_price"     => $details ? $details->sale_price : 0,
-                        "normal_price"    => $details ? $details->regular_price : 0,
-                         'product_kg'  => $details ? ($details->weight . ' ' . $variants->unit?->short_name) : null,
+                        "offer_price"         => $variant->sale_price ?? 0,
+                        "normal_price"        => $variant->regular_price ?? 0,
+                        "product_kg"          => $variant->weight . ' ' . optional($variant->unit)->short_name,
                          'liked_status'         => in_array($product->id, $likedProducts),
-                         'variation_id'  => $details ? $details->id : null,
-                         'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
-                         "stock_count"    => $details ? $details->stock : 0,
-                         "product_name"    => $product->name,];
-                });
-
+                        "variation_id"        => $variant->id,
+                        "quantity"            => intValue($cartQuantities[$variant->id] ?? 0),
+                        "stock_count"         => $variant->stock ?? 0,
+                         "product_name"    => $product->name,
+                    ];
+                        });
+                })
+                ->values();
             return response()->json([
                 'status' => 200,
-                'msg'    => 'Category products fetched successfully',
-                'data'   => $products
-            ]);
+                'msg'    => $data->isEmpty()
+                    ? 'No products found'
+                    : 'Products fetched successfully',
+                'data'   => $data,
+            ], 200);
       } catch (\Throwable $th) {
             return response()->json([
                 'status' => $th->getCode(),

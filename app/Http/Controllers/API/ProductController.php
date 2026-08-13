@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller {
     public function featuredProducts(Request $request) {
+        $user = auth('api')->user();
+        $likedProducts = json_decode($user->likedProducts ?? '[]', true);
         $cartQuantities = getCartQuantities();
         $featuredProducts = Product::with(['details','variants.unit'])
             ->orderBy('id', 'desc')
@@ -16,25 +18,32 @@ class ProductController extends Controller {
                 $query->whereDate('expiry_date', '>=', now())
                     ->orWhereNull('expiry_date');
             })
+            ->orderByDesc('id')
             ->get()
-            ->map(function ($product) use ($cartQuantities) {
-                $details = $product->details;
-                $variants = $product->variants->first();
+            ->flatMap(function ($product) use ($cartQuantities,$likedProducts) {
+                return $product->variants
+                    ->where('is_featured_product', 1)
+                    ->map(function ($detail) use ($product,$likedProducts, $cartQuantities) {
                 return [
                     'product_id'   => $product->id,
                     'product_name' => $product->name,
                     'product_image' => $product->image ? url('/storage/' . $product->image) : null,
-                    'offer_price'  => $details ? $details->sale_price : 0,
-                    'normal_price' => $details ? $details->regular_price : 0,
-                    'liked_status'=> in_array($product->id, (array)json_decode(auth('api')->user()->likedProducts) ?? []),
-                    "stock_count"    => $details ? $details->stock : 0,
-                    'product_kg'  => $details ? ($details->weight . ' ' .  $variants->unit?->short_name) : null,
-                    'variation_id'  => $details ? $details->id : null,
-                    'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
-                    'is_featured_product' => $details ? $details->is_featured_product : 0,
+                    'offer_price'  => $detail ? $detail->sale_price : 0,
+                    'normal_price' => $detail ? $detail->regular_price : 0,
+                    'liked_status' => collect($likedProducts)->contains(function ($item) use ($product, $detail) {
+                        return $item['product_id'] == $product->id
+                            && $item['variant_id'] == $detail->id;
+                    }),
+                    "stock_count"    => $detail ? $detail->stock : 0,
+                    'product_kg'   => $detail->weight . ' ' . optional($detail->unit)->short_name,
+                    'variation_id'  => $detail ? $detail->id : null,
+                    'quantity'     =>  $detail ? intValue($cartQuantities[$detail->id] ?? 0) : 0,
+                    'is_featured_product' => $detail ? $detail->is_featured_product : 0,
                 ];
-            })->filter(fn($product) => $product['is_featured_product'] == 1)
+            });
+            })
             ->values()
+            ->shuffle()
             ->toArray();
 
 
@@ -46,6 +55,8 @@ class ProductController extends Controller {
     }
 
     public function bestSeller(Request $request) {
+        $user = auth('api')->user();
+        $likedProducts = json_decode($user->likedProducts ?? '[]', true);
         $cartQuantities = getCartQuantities();
         $bestSellerProducts = Product::with(['details','variants.unit'])
             ->orderBy('id', 'desc')
@@ -54,24 +65,30 @@ class ProductController extends Controller {
                     ->orWhereNull('expiry_date');
             })
             ->get()
-            ->map(function ($product) use ($cartQuantities) {
-                $details = $product->details;
-                $variants = $product->variants->first();
+            ->flatMap(function ($product) use ($cartQuantities,$likedProducts) {
+                return $product->variants
+                    ->where('is_featured_product','!=', 1)
+                    ->map(function ($detail) use ($product, $likedProducts,$cartQuantities) {
                 return [
                     'product_id'   => $product->id,
                     'product_name' => $product->name,
                     'product_image' => url('/storage/' . $product->image),
-                    'offer_price'  => $details ? $details->sale_price : 0,
-                    'normal_price' => $details ? $details->regular_price : 0,
-                    'liked_status'       => in_array($product->id, (array)json_decode(auth('api')->user()->likedProducts) ?? []),
-                    "stock_count"    => $details ? $details->stock : 0,
-                    'product_kg'  =>  $details ? ($details->weight . ' ' .  $variants->unit?->short_name) : null,
-                    'variation_id'  => $details ? $details->id : null,
-                    'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
-                    'is_featured_product' => $details ? $details->is_featured_product : 0,
+                    'offer_price'  => $detail ? $detail->sale_price : 0,
+                    'normal_price' => $detail ? $detail->regular_price : 0,
+                    'liked_status' => collect($likedProducts)->contains(function ($item) use ($product, $detail) {
+                        return $item['product_id'] == $product->id
+                            && $item['variant_id'] == $detail->id;
+                    }),
+                    "stock_count"    => $detail ? $detail->stock : 0,
+                    'product_kg'   => $detail->weight . ' ' . optional($detail->unit)->short_name,
+                    'variation_id'  => $detail ? $detail->id : null,
+                    'quantity'     =>  $detail ? intValue($cartQuantities[$detail->id] ?? 0) : 0,
+                    'is_featured_product' => $detail ? $detail->is_featured_product : 0,
                 ];
-            })->filter(fn($product) => $product['is_featured_product'] != 1)
+                    });
+            })
             ->values()
+                    ->shuffle()
             ->toArray();
 
         return response()->json([
@@ -81,7 +98,8 @@ class ProductController extends Controller {
         ]);
     }
 
-    public function searchGrocery(Request $request) {
+    public function searchGrocery(Request $request)
+    {
         try {
             $validator = Validator::make($request->all(), [
                 "product_name" => "required|string"
@@ -91,41 +109,56 @@ class ProductController extends Controller {
                 throw new \Exception($validator->errors()->first(), 419);
             }
 
-            $query = Product::query()->with(['details','variants.unit']);
-            $query->where('name', 'like', '%' . $request->product_name . '%');
-            $query->where('status', 1);
-            $products = $query->where(function ($query) {
-                $query->whereDate('expiry_date', '>=', now())
-                    ->orWhereNull('expiry_date');
-            })->get();
+            $products = Product::with(['details', 'variants.unit'])
+                ->where('status', 1)
+                ->where('name', 'like', '%' . $request->product_name . '%')
+                ->where(function ($query) {
+                    $query->whereDate('expiry_date', '>=', now())
+                        ->orWhereNull('expiry_date');
+                })
+                ->get();
 
             $user = auth('api')->user();
-            $likedProducts = (array) json_decode($user?->likedProducts ?? '[]');
+            $likedProducts = json_decode($user->likedProducts ?? '[]', true);
             $cartQuantities = getCartQuantities();
+
+            $data = $products
+                ->flatMap(function ($product) use ($likedProducts, $cartQuantities) {
+
+                    return $product->variants
+                        ->map(function ($variant) use ($product, $likedProducts, $cartQuantities) {
+
+                            return [
+                                "product_id"          => $product->id,
+                                "product_image"       => $product->image ? url('/storage/' . $product->image) : null,
+                                "product_name"        => $product->name,
+                                "offer_price"         => $variant->sale_price ?? 0,
+                                "normal_price"        => $variant->regular_price ?? 0,
+                                "stock_count"         => $variant->stock ?? 0,
+                                'liked_status' => collect($likedProducts)->contains(function ($item) use ($product, $variant) {
+                                    return $item['product_id'] == $product->id
+                                        && $item['variant_id'] == $variant->id;
+                                }),
+                                "product_kg"          => $variant->weight . ' ' . optional($variant->unit)->short_name,
+                                "variation_id"        => $variant->id,
+                                "quantity"            => intValue($cartQuantities[$variant->id] ?? 0),
+                                "is_featured_product" => $variant->is_featured_product,
+                            ];
+                        });
+                })
+                ->values();
 
             return response()->json([
                 'status' => 200,
-                'mgs'    => $products->isEmpty() ? 'No products found' : 'Products fetched successfully',
-                "data"   => $products->map(function ($product) use ($likedProducts, $cartQuantities) {
-                    $details = $product->details;
-                    $variants = $product->variants->first();
-                    return [
-                        "product_id"           => $product->id,
-                        "product_image"        => $product->image ? url('/storage/' . $product->image) : null,
-                        "product_name"         => $product->name,
-                       "offer_price"  => $product->details?->sale_price ?? 0,
-                       "normal_price" => $product->details?->regular_price ?? 0,
-                        "stock_count"    => $details ? $details->stock : 0,
-                        "liked_status"         => in_array($product->id, $likedProducts),
-                        'product_kg'  =>  $details ? ($details->weight . ' ' .  $variants->unit?->short_name) : null,
-                        'variation_id'  => $details ? $details->id : null,
-                        'quantity'     =>  $details ? intValue($cartQuantities[$details->id] ?? 0) : 0,
-                    ];
-                }),
+                'msg'    => $data->isEmpty()
+                    ? 'No products found'
+                    : 'Products fetched successfully',
+                'data'   => $data,
             ], 200);
+
         } catch (\Throwable $th) {
             return response()->json([
-                'status' => $th->getCode(),
+                'status'  => 500,
                 'message' => $th->getMessage(),
             ], 500);
         }
