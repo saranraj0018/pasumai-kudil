@@ -118,4 +118,7 @@ Route::group(['prefix' => 'user'], function () {
 
     });
 
+    Route::get('/privacy-policy', [FaqController::class, 'getPrivacy']);
+    Route::get('/terms-and-condition', [FaqController::class, 'getTerms']);
+
 });

@@ -20,4 +20,9 @@ class DeliveryPartner extends Model
     {
         return $this->hasMany(DailyDelivery::class, 'delivery_id', 'id');
     }
+
+    public function map_address()
+    {
+        return $this->hasMany(City::class, 'hub_id', 'hub_id');
+    }
 }

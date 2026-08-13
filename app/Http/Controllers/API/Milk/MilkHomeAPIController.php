@@ -242,17 +242,36 @@ class MilkHomeAPIController extends Controller
 
     private function getMappedDeliveryPartner($user)
     {
-        $partners = DeliveryPartner::with('get_map_address', 'get_hub')->get();
-        foreach ($partners as $partner) {
-            if ($partner->get_hub->type == 1) continue;
-            if (!$partner->get_map_address) continue;
-            $coords = json_decode($partner->get_map_address->coordinates, true);
-            if (!is_array($coords)) continue;
+        $partners = DeliveryPartner::with('map_address', 'get_hub')->get();
 
-            if ($this->isPointInPolygon((float)$user->latitude, (float)$user->longitude, $coords)) {
-                return $partner;
+        foreach ($partners as $partner) {
+
+            if ($partner->get_hub?->type == 1) {
+                continue;
+            }
+
+            if ($partner->map_address->isEmpty()) {
+                continue;
+            }
+
+            foreach ($partner->map_address as $address) {
+
+                $coords = json_decode($address->coordinates, true);
+
+                if (!is_array($coords) || empty($coords)) {
+                    continue;
+                }
+
+                if ($this->isPointInPolygon(
+                    (float) $user->latitude,
+                    (float) $user->longitude,
+                    $coords
+                )) {
+                    return $partner;
+                }
             }
         }
+
         return null;
     }
 
