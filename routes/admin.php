@@ -170,6 +170,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/download-template', [ProductImportExportController::class, 'downloadTemplate'])->name('download_template');
 
         Route::post('/product-upload', [ProductImportExportController::class, 'uploadProduct'])->name('product_upload');
+
+        // Stock & Expiry Date Update (export, edit offline, re-upload)
+        Route::get('/download-stock-update-template', [ProductImportExportController::class, 'downloadStockUpdateTemplate'])->name('download_stock_update_template');
+        Route::post('/stock-update-upload', [ProductImportExportController::class, 'uploadStockUpdate'])->name('stock_update_upload');
         // Reports
         Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
         Route::post('/reports-export', [ReportsController::class, 'export'])->name('export_report');
