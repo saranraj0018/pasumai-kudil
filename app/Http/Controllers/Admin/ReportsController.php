@@ -95,7 +95,10 @@ class ReportsController extends Controller
         $salesByProduct = OrderDetail::whereHas('order', function ($q) use ($from, $to) {
             $q->where('status', self::ORDER_DELIVERED_STATUS);
             if ($from && $to) {
-                $q->whereBetween('delivered_at', [$from, $to]);
+                $q->whereBetween('delivered_at', [
+                    Carbon::parse($from)->startOfDay(),
+                    Carbon::parse($to)->endOfDay(),
+                ]);
             }
         })
             ->selectRaw('product_id, SUM(quantity) as total_qty')
@@ -240,7 +243,7 @@ class ReportsController extends Controller
 
         $rows = collect();
 
-        $products = Product::with('variants.unit')->orderBy('name')->get();
+        $products = $this->productsCreatedBetween($request)->with('variants.unit')->orderBy('name')->get();
 
         foreach ($products as $product) {
             foreach ($product->variants as $variant) {
@@ -280,7 +283,7 @@ class ReportsController extends Controller
 
         $rows = collect();
 
-        $products = Product::with('variants.unit')->orderBy('name')->get();
+        $products = $this->productsCreatedBetween($request)->with('variants.unit')->orderBy('name')->get();
 
         foreach ($products as $product) {
             foreach ($product->variants as $variant) {
@@ -300,6 +303,22 @@ class ReportsController extends Controller
         }
 
         return [$headings, $rows, 'Product List View Report'];
+    }
+
+    // Product Stock View / Product List View filter by the product's
+    // creation date (there's no stock-change history to filter by).
+    private function productsCreatedBetween(Request $request)
+    {
+        $query = Product::query();
+
+        if ($request->from_date && $request->to_date) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($request->from_date)->startOfDay(),
+                Carbon::parse($request->to_date)->endOfDay(),
+            ]);
+        }
+
+        return $query;
     }
 
     // Appends values in the same order as the PRODUCT_OPTIONAL_COLUMNS
@@ -336,7 +355,10 @@ class ReportsController extends Controller
             ->whereHas('order', function ($q) use ($from, $to) {
                 $q->where('status', self::ORDER_DELIVERED_STATUS);
                 if ($from && $to) {
-                    $q->whereBetween('delivered_at', [$from, $to]);
+                    $q->whereBetween('delivered_at', [
+                        Carbon::parse($from)->startOfDay(),
+                        Carbon::parse($to)->endOfDay(),
+                    ]);
                 }
             })
             ->get();
