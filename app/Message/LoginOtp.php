@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Message;
+
+use App\Contracts\Message;
+
+
+class LoginOtp implements Message {
+
+    public function __construct(public string $otp) {
+    }
+
+
+
+    /**
+     * Template ID for Login
+     * @return string
+     */
+    public function template(): string {
+        return '1777178696796204160';
+    }
+
+
+
+
+    /**
+     * Message Template for OTP
+     * @param mixed $dataset
+     * @return string
+     */
+    public function message(): string {
+        return "Dear User, Your OTP for PasumaiKudil login is  $this->otp. It is valid for 3 minutes. Do not share this OTP with anyone. https://pasumaikudilorganic.com/ - Team PASUMAI KUDIL";
+    }
+}
+

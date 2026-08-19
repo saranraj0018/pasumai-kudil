@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Cache;
 use Razorpay\Api\Api;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use App\Contracts\Message as ContractsMessage;
+use Illuminate\Support\Facades\Http;
 
 if (!function_exists('getCartQuantities')) {
     function getCartQuantities()
@@ -73,6 +75,113 @@ if (!function_exists('milkPackTypes')) {
             '1ltr'  => '1 Ltr',
             '2ltr'  => '2 Ltr',
         ];
+    }
+}
+
+if (!function_exists('nettySms')) {
+    /**
+     * Initialize the Twilio Client and provide a fluent API.
+     *
+     * @return object
+     */
+    function nettySms()
+    {
+        return new class() {
+
+            /**
+             * Message to Send to the User
+             * @var
+             */
+            protected $message;
+
+
+
+            /**
+             * Recipient of the Message
+             * @var
+             */
+            protected $to;
+
+
+
+            /**
+             * function to set the message
+             * @param \App\Contracts\Message $message
+             * @return __anonymous
+             */
+            public function send(ContractsMessage $message)
+            {
+                $this->message = $message;
+                return $this;
+            }
+
+
+
+
+
+            /**
+             * Send The Message
+             * @param string $recipient
+             * @throws \Exception
+             * @return \Illuminate\Http\Client\Response
+             */
+            public function to(string ...$recipient)
+            {
+
+
+                try {
+
+                    /**
+                     * Validatew the phone number
+                     */
+                    $validator = \Illuminate\Support\Facades\Validator::make(["phone" => $recipient], [
+                        'phone' => [
+                            'required'
+                        ],
+                    ]);
+
+                    if ($validator->fails())
+                        throw new \Exception("Phone Number is Required to Send Message");
+
+
+                    # Recipient of the Message
+                    $this->to = $recipient;
+
+                    # Using HTTP Client to Send the Message
+                    $payload = [
+                        "Account" => [
+                            "APIKey" => "hdx3ivaMM0uJ2cMgPWmfBw",
+                            "SenderId" => "PASKUD",
+                            "Channel" => "Trans",
+                            "DCS" => 0,
+                            "FlashSms" => 0,
+                            "Route" => 4,
+                            "PeId" => "1701178591033234713"
+                        ],
+                        "Messages" => $this->people($this->to)
+                    ];
+                     Http::post(
+                        'https://retailsms.nettyfish.com/api/mt/SendSMS',
+                        $payload
+                    );
+
+                } catch (\Throwable $e) {
+
+                    throw new \Exception($e->getMessage());
+                }
+            }
+
+            protected function people(array $numbers)
+            {
+                return collect($numbers)->map(function ($number) {
+                    return [
+                        "Number" => str($number),
+                        "dlttemplateid" => $this->message->template(),
+                        "Text" => $this->message->message()
+                    ];
+                });
+            }
+        };
     }
 }
 

@@ -37,5 +37,9 @@ return [
     'google_maps' => [
       'api_key' => env('GOOGLE_MAPS_API_KEY'),
     ],
+    'nettyfish' =>
+        [
+            'url' =>  'https://retailsms.nettyfish.com/api/mt/SendSMS',
+        ],
 
 ];
