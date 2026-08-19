@@ -30,10 +30,12 @@ class ReportsController extends Controller
     public function export(Request $request)
     {
         $request->validate([
-            'report_type' => 'required|in:slow_moving,fast_moving,non_moving,day_wise_profit,item_wise_profit',
+            'report_type' => 'required|in:slow_moving,fast_moving,non_moving,day_wise_profit,item_wise_profit,product_stock_view,product_list_view',
             'from_date' => 'nullable|date',
             'to_date' => 'nullable|date|after_or_equal:from_date',
             'view_type' => 'required|in:view,excel,pdf',
+            'columns' => 'nullable|array',
+            'columns.*' => 'in:purchase_price,sale_price,regular_price,profit,stock',
         ]);
 
         [$headings, $rows, $title] = match ($request->report_type) {
@@ -42,6 +44,8 @@ class ReportsController extends Controller
             'non_moving' => $this->buildMovementReport($request, 'non'),
             'day_wise_profit' => $this->buildDayWiseProfitReport($request),
             'item_wise_profit' => $this->buildItemWiseProfitReport($request),
+            'product_stock_view' => $this->buildProductStockViewReport($request),
+            'product_list_view' => $this->buildProductListViewReport($request),
         };
 
         return $this->renderTable($request, $headings, collect($rows), $title, $request->report_type);
@@ -91,7 +95,10 @@ class ReportsController extends Controller
         $salesByProduct = OrderDetail::whereHas('order', function ($q) use ($from, $to) {
             $q->where('status', self::ORDER_DELIVERED_STATUS);
             if ($from && $to) {
-                $q->whereBetween('delivered_at', [$from, $to]);
+                $q->whereBetween('delivered_at', [
+                    Carbon::parse($from)->startOfDay(),
+                    Carbon::parse($to)->endOfDay(),
+                ]);
             }
         })
             ->selectRaw('product_id, SUM(quantity) as total_qty')
@@ -138,7 +145,7 @@ class ReportsController extends Controller
         ];
 
         return [
-            ['Product Code', 'Product Name', 'Sale Quantity', 'Remaining Quantity'],
+            ['Product Id', 'Product Name', 'Sale Quantity', 'Remaining Quantity'],
             $rows,
             $titles[$bucket],
         ];
@@ -207,6 +214,134 @@ class ReportsController extends Controller
         ];
     }
 
+    // Optional columns shared by the two product reports below. Only the
+    // columns the user ticks are added to the heading/row output.
+    const PRODUCT_OPTIONAL_COLUMNS = [
+        'purchase_price' => 'Purchase Price',
+        'sale_price' => 'Sale Price',
+        'regular_price' => 'Regular Price',
+        'profit' => 'Profit',
+        'stock' => 'Stock',
+    ];
+
+    // ================= PRODUCT STOCK VIEW =================
+    // Stock lives on each variant row (product_details); a non-variant
+    // product is simply a product with a single variant row.
+    private function buildProductStockViewReport(Request $request): array
+    {
+        // Stock is always shown as its own column here, so the optional
+        // "Stock" checkbox (meant for List View) is ignored to avoid a
+        // duplicate column.
+        $columns = array_diff($request->input('columns', []), ['stock']);
+
+        $headings = ['Product Id', 'Product Name', 'Variant', 'Stock'];
+        foreach (self::PRODUCT_OPTIONAL_COLUMNS as $key => $label) {
+            if (in_array($key, $columns)) {
+                $headings[] = $label;
+            }
+        }
+
+        $rows = collect();
+
+        $products = $this->productsCreatedBetween($request)->with('variants.unit')->orderBy('name')->get();
+
+        foreach ($products as $product) {
+            foreach ($product->variants as $variant) {
+                $unit = optional($variant->unit)->short_name ?? optional($variant->unit)->name;
+                $variantLabel = trim(rtrim(rtrim(number_format($variant->weight, 2), '0'), '.') . ' ' . $unit);
+
+                $row = [
+                    $product->id,
+                    $product->name,
+                    $variantLabel,
+                    (int) $variant->stock,
+                ];
+
+                $this->appendOptionalColumns($row, $columns, $variant);
+
+                $rows->push($row);
+            }
+        }
+
+        return [$headings, $rows, 'Product Stock View Report'];
+    }
+
+    // ================= PRODUCT LIST VIEW =================
+    // One row per variant (not an aggregated count/total). Stock is an
+    // optional column here (ticked via the Columns checkboxes) rather than
+    // shown by default.
+    private function buildProductListViewReport(Request $request): array
+    {
+        $columns = $request->input('columns', []);
+
+        $headings = ['Product Code', 'Product Name', 'Variant'];
+        foreach (self::PRODUCT_OPTIONAL_COLUMNS as $key => $label) {
+            if (in_array($key, $columns)) {
+                $headings[] = $label;
+            }
+        }
+
+        $rows = collect();
+
+        $products = $this->productsCreatedBetween($request)->with('variants.unit')->orderBy('name')->get();
+
+        foreach ($products as $product) {
+            foreach ($product->variants as $variant) {
+                $unit = optional($variant->unit)->short_name ?? optional($variant->unit)->name;
+                $variantLabel = trim(rtrim(rtrim(number_format($variant->weight, 2), '0'), '.') . ' ' . $unit);
+
+                $row = [
+                    $product->id,
+                    $product->name,
+                    $variantLabel,
+                ];
+
+                $this->appendOptionalColumns($row, $columns, $variant);
+
+                $rows->push($row);
+            }
+        }
+
+        return [$headings, $rows, 'Product List View Report'];
+    }
+
+    // Product Stock View / Product List View filter by the product's
+    // creation date (there's no stock-change history to filter by).
+    private function productsCreatedBetween(Request $request)
+    {
+        $query = Product::query();
+
+        if ($request->from_date && $request->to_date) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($request->from_date)->startOfDay(),
+                Carbon::parse($request->to_date)->endOfDay(),
+            ]);
+        }
+
+        return $query;
+    }
+
+    // Appends values in the same order as the PRODUCT_OPTIONAL_COLUMNS
+    // headings loop above, so row values always line up with their heading.
+    private function appendOptionalColumns(array &$row, array $columns, $variant): void
+    {
+        $effectiveSalePrice = $variant->sale_price ?: $variant->regular_price;
+
+        foreach (self::PRODUCT_OPTIONAL_COLUMNS as $key => $label) {
+            if (!in_array($key, $columns)) {
+                continue;
+            }
+
+            $row[] = match ($key) {
+                'purchase_price' => number_format($variant->purchase_price, 2),
+                'sale_price' => number_format($variant->sale_price ?? 0, 2),
+                'regular_price' => number_format($variant->regular_price, 2),
+                'profit' => number_format($effectiveSalePrice - $variant->purchase_price, 2),
+                'stock' => (int) $variant->stock,
+            };
+        }
+    }
+
     private function getProductCost($orderDetail)
     {
         return $orderDetail->variants->purchase_price
@@ -220,7 +355,10 @@ class ReportsController extends Controller
             ->whereHas('order', function ($q) use ($from, $to) {
                 $q->where('status', self::ORDER_DELIVERED_STATUS);
                 if ($from && $to) {
-                    $q->whereBetween('delivered_at', [$from, $to]);
+                    $q->whereBetween('delivered_at', [
+                        Carbon::parse($from)->startOfDay(),
+                        Carbon::parse($to)->endOfDay(),
+                    ]);
                 }
             })
             ->get();

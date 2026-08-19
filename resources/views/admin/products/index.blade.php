@@ -49,7 +49,7 @@
                         class="bg-[#ab5f00] hover:bg-[#8f4f00] text-white px-4 py-2 rounded transition add_product">
                         Create Product
                     </button>
-                @endcan
+                @endcan  
 
                 {{-- Download Template --}}
                 <a href="{{ route('download_template') }}"
@@ -70,6 +70,28 @@
                         class="px-4 py-2 bg-blue-600 text-white rounded-full transition flex items-center gap-1">
                         <i class="fa fa-upload"></i>
                         <span>Upload</span>
+                    </button>
+                </form>
+
+                {{-- Download Stock & Expiry Update Template --}}
+                <a href="{{ route('download_stock_update_template') }}"
+                    class="bg-[#ab5f00] px-4 py-2 text-white rounded-full transition flex items-center gap-1">
+                    <i class="fa fa-download"></i>
+                    <span>Download Stock & Expiry Date</span>
+                </a>
+
+                {{-- Upload Stock & Expiry Update: only Stock and Expiry Date columns are applied on import --}}
+                <form action="{{ route('stock_update_upload') }}" method="POST" enctype="multipart/form-data"
+                    class="flex items-center gap-2">
+                    @csrf
+
+                    <input type="file" name="file" accept=".xlsx,.csv" required
+                        class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+
+                    <button type="submit"
+                        class="px-4 py-2 bg-[#ab5f00] text-white rounded-full transition flex items-center gap-1">
+                        <i class="fa fa-upload"></i>
+                        <span>Update Stock & Expiry</span>
                     </button>
                 </form>
             </div>

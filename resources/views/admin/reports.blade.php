@@ -43,6 +43,12 @@
                             <option value="item_wise_profit"
                                 {{ ($filters['report_type'] ?? '') == 'item_wise_profit' ? 'selected' : '' }}>Item
                                 Wise Profit</option>
+                            <option value="product_stock_view"
+                                {{ ($filters['report_type'] ?? '') == 'product_stock_view' ? 'selected' : '' }}>
+                                Product Stock View</option>
+                            <option value="product_list_view"
+                                {{ ($filters['report_type'] ?? '') == 'product_list_view' ? 'selected' : '' }}>
+                                Product List View</option>
                         </select>
                     </div>
                     <div>
@@ -70,6 +76,37 @@
                         </select>
                     </div>
                 </div>
+                <div id="product_columns_filter" class="hidden border-t border-gray-200 px-4 py-3">
+                    <label class="block text-sm text-gray-600 mb-2">Columns</label>
+                    <div class="flex flex-wrap gap-4">
+                        @php $selectedColumns = $filters['columns'] ?? []; @endphp
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="columns[]" value="purchase_price"
+                                {{ in_array('purchase_price', $selectedColumns) ? 'checked' : '' }}>
+                            Purchase Price
+                        </label>
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="columns[]" value="sale_price"
+                                {{ in_array('sale_price', $selectedColumns) ? 'checked' : '' }}>
+                            Sale Price
+                        </label>
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="columns[]" value="regular_price"
+                                {{ in_array('regular_price', $selectedColumns) ? 'checked' : '' }}>
+                            Regular Price
+                        </label>
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="columns[]" value="profit"
+                                {{ in_array('profit', $selectedColumns) ? 'checked' : '' }}>
+                            Profit
+                        </label>
+                        <label id="stock_column_filter" class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="columns[]" value="stock"
+                                {{ in_array('stock', $selectedColumns) ? 'checked' : '' }}>
+                            Stock
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="flex justify-center">
                 <button type="submit"
@@ -86,6 +123,32 @@
 </x-layouts.app>
 <script>
     $(document).ready(function() {
+        // Only product reports break stock/price down per variant, so the
+        // optional price/profit columns only make sense for those two.
+        const reportTypeEl = document.getElementById('report_type');
+        const columnsFilterEl = document.getElementById('product_columns_filter');
+        const stockColumnFilterEl = document.getElementById('stock_column_filter');
+        const productReportTypes = ['product_stock_view', 'product_list_view'];
+
+        function toggleColumnsFilter() {
+            const show = productReportTypes.includes(reportTypeEl.value);
+            columnsFilterEl.classList.toggle('hidden', !show);
+            if (!show) {
+                columnsFilterEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            }
+
+            // Stock is always shown as its own column in Stock View, so the
+            // optional checkbox only makes sense for List View.
+            const showStockOption = reportTypeEl.value === 'product_list_view';
+            stockColumnFilterEl.classList.toggle('hidden', !showStockOption);
+            if (!showStockOption) {
+                stockColumnFilterEl.querySelector('input[type="checkbox"]').checked = false;
+            }
+        }
+
+        reportTypeEl.addEventListener('change', toggleColumnsFilter);
+        toggleColumnsFilter();
+
         // Keep "To Date" from going earlier than "From Date".
         const fromEl = document.getElementById('from_date');
         const toEl = document.getElementById('to_date');
