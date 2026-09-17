@@ -13,6 +13,6 @@ class Hub extends Model
 
     public function get_city()
     {
-        return $this->hasOne(City::class, 'hub_id', 'id');
+        return $this->hasMany(City::class, 'hub_id', 'id');
     }
 }

@@ -87,6 +87,7 @@ class HubController extends Controller
         if (empty($request->id)) {
             return response()->json(['success' => false, 'message' => 'City ID is required'], 400);
         }
+        City::where('hub_id',$request->id)->delete();
         Hub::find($request->id)->delete();
         return response()->json(['success' => true, 'message' => 'City deleted successfully']);
     }

@@ -75,35 +75,61 @@ class GroceryLocationFindController extends Controller
             ->where('type', 1)
             ->first();
 
-        if (!$hub || !$hub->get_city || empty($hub->get_city->coordinates)) {
+        if (!$hub || $hub->get_city->isEmpty()) {
             return false;
         }
 
-        $polygonRaw = json_decode($hub->get_city->coordinates, true);
+        $userLat = (float) $user->latitude;
+        $userLng = (float) $user->longitude;
 
-        if (!is_array($polygonRaw) || count($polygonRaw) < 3) {
-            return false;
+        foreach ($hub->get_city as $city) {
+
+            if (empty($city->coordinates)) {
+                continue;
+            }
+
+            $polygonRaw = json_decode($city->coordinates, true);
+
+            if (!is_array($polygonRaw) || count($polygonRaw) < 3) {
+                continue;
+            }
+
+            $polygon = [];
+
+            foreach ($polygonRaw as $point) {
+                if (
+                    !isset($point['lat'], $point['lng']) &&
+                    !isset($point['latitude'], $point['longitude'])
+                ) {
+                    continue;
+                }
+
+                $polygon[] = [
+                    'lat' => (float) ($point['lat'] ?? $point['latitude']),
+                    'lng' => (float) ($point['lng'] ?? $point['longitude']),
+                ];
+            }
+
+            if (count($polygon) < 3) {
+                continue;
+            }
+
+            // Close polygon
+            if ($polygon[0] !== $polygon[count($polygon) - 1]) {
+                $polygon[] = $polygon[0];
+            }
+
+            // Check user's location inside this city polygon
+            if ($this->isPointInPolygon(
+                $userLng,
+                $userLat,
+                $polygon
+            )) {
+                return true;
+            }
         }
 
-        //  Normalize polygon (fix key names & cast to float)
-        $polygon = [];
-        foreach ($polygonRaw as $point) {
-            $polygon[] = [
-                'lat' => (float) ($point['lat'] ?? $point['latitude']),
-                'lng' => (float) ($point['lng'] ?? $point['longitude']),
-            ];
-        }
-
-        //  Close polygon if not closed
-        if ($polygon[0] !== end($polygon)) {
-            $polygon[] = $polygon[0];
-        }
-
-        return $this->isPointInPolygon(
-            (float) $user->longitude, // X
-            (float) $user->latitude,  // Y
-            $polygon
-        );
+        return false;
     }
 
 
