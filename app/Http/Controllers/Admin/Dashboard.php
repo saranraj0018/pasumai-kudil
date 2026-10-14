@@ -17,11 +17,47 @@ use App\Models\UserSubscription;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class Dashboard extends Controller
 {
+    // Sidebar pages in menu order, with the abilities the sidebar needs to show
+    // each one (main menu + submenu). Users without dashboard access land on the
+    // first page they are allowed to see.
+    const LANDING_PAGES = [
+        'view.category' => ['view_grocery', 'view_category'],
+        'view.unit' => ['view_grocery', 'view_unit'],
+        'lists.products' => ['view_grocery', 'view_products'],
+        'view.coupons' => ['view_grocery', 'view_coupons'],
+        'view.orders' => ['view_grocery', 'view_orders'],
+        'view.users' => ['view_grocery', 'view_users'],
+        'show.map' => ['view_grocery', 'view_map'],
+        'lists.users' => ['view_milk', 'view_user_list'],
+        'view.milk.subscription' => ['view_milk', 'view_subscription'],
+        'lists.delivery_partner' => ['view_milk', 'view_delivery_partner'],
+        'lists.delivery_list' => ['view_milk', 'view_delivery_list'],
+        'lists.today_delivery_list' => ['view_milk', 'view_today_delivery'],
+        'view.banner' => ['view_hub', 'view_banner'],
+        'list.hub' => ['view_hub', 'view_hub_list'],
+        'lists.shipping' => ['view_hub', 'view_shipping'],
+        'ticket_lists' => ['view_hub', 'view_ticket'],
+        'reports' => ['view_report'],
+        'view.faq' => ['view_settings', 'view_faq'],
+        'roles_list' => ['view_settings', 'view_roles'],
+        'roles_and_permission' => ['view_settings', 'view_roles_permissions'],
+    ];
+
     public function index()
     {
+        if (Gate::denies('view_dashboard')) {
+            foreach (self::LANDING_PAGES as $route => $abilities) {
+                if (Gate::check($abilities)) {
+                    return redirect()->route($route);
+                }
+            }
+            return view('admin.no_access');
+        }
+
         $this->data['grocerry_location'] = Hub::where([
             'type' =>  1,
             'status' => 1
@@ -53,6 +89,8 @@ class Dashboard extends Controller
 
     public function dashboardData(Request $request)
     {
+        abort_if(Gate::denies('view_dashboard'), 403);
+
         $month = $request->month;
         $year  = $request->year;
 

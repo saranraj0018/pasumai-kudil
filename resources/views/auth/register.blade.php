@@ -14,7 +14,7 @@
 
             <!-- Role -->
             <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700">Role</label>
+                <label class="block text-sm font-medium text-gray-700">Role <span class="text-red-500">*</span></label>
                 <select name="role"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-[#FFE6CE] focus:border-[#FFE6CE]">
                     <option value="">Choose Role</option>
@@ -29,7 +29,7 @@
 
             <!-- Full Name -->
             <div>
-                <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                <label class="block text-sm font-medium text-gray-700">Full Name <span class="text-red-500">*</span></label>
                 <input name="name" type="text"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-[#FFE6CE] focus:border-[#FFE6CE]" />
                 @error('name')
@@ -39,7 +39,7 @@
 
             <!-- Mobile -->
             <div>
-                <label class="block text-sm font-medium text-gray-700">Mobile</label>
+                <label class="block text-sm font-medium text-gray-700">Mobile <span class="text-red-500">*</span></label>
                 <input name="mobile_number" type="number"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-[#FFE6CE] focus:border-[#FFE6CE]" />
                 @error('mobile_number')
@@ -49,7 +49,7 @@
 
             <!-- Email -->
             <div>
-                <label class="block text-sm font-medium text-gray-700">Email</label>
+                <label class="block text-sm font-medium text-gray-700">Email <span class="text-red-500">*</span></label>
                 <input name="email" type="email"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-[#FFE6CE] focus:border-[#FFE6CE]" />
                 @error('email')
@@ -59,9 +59,16 @@
 
             <!-- Password -->
             <div>
-                <label class="block text-sm font-medium text-gray-700">Password</label>
-                <input name="password" type="password"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-[#FFE6CE] focus:border-[#FFE6CE]" />
+                <label class="block text-sm font-medium text-gray-700">Password <span class="text-red-500">*</span></label>
+                <div class="relative mt-1">
+                    <input name="password" id="password" type="password"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-[#FFE6CE] focus:border-[#FFE6CE]" />
+                    <button type="button" onclick="togglePassword('password', this)" title="Show password"
+                        class="absolute right-3 text-gray-500 hover:text-gray-700"
+                        style="top: 50%; transform: translateY(-50%);">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                </div>
                 @error('password')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -69,14 +76,21 @@
 
             <!-- Confirm Password -->
             <div>
-                <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
-                <input name="password_confirmation" type="password"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-[#FFE6CE] focus:border-[#FFE6CE]" />
+                <label class="block text-sm font-medium text-gray-700">Confirm Password <span class="text-red-500">*</span></label>
+                <div class="relative mt-1">
+                    <input name="password_confirmation" id="password_confirmation" type="password"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-[#FFE6CE] focus:border-[#FFE6CE]" />
+                    <button type="button" onclick="togglePassword('password_confirmation', this)" title="Show password"
+                        class="absolute right-3 text-gray-500 hover:text-gray-700"
+                        style="top: 50%; transform: translateY(-50%);">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Security Code -->
             <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700">Security Code</label>
+                <label class="block text-sm font-medium text-gray-700">Security Code <span class="text-red-500">*</span></label>
                 <input name="code" type="text"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-[#FFE6CE] focus:border-[#FFE6CE]" />
                 @error('code')
@@ -99,4 +113,14 @@
             <a href="/" class="text-[#FF7F32] font-medium hover:underline">Sign In</a>
         </p>
     </div>
+
+    <script>
+        function togglePassword(inputId, button) {
+            let input = document.getElementById(inputId);
+            let show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            button.title = show ? 'Hide password' : 'Show password';
+            button.querySelector('i').className = show ? 'fa fa-eye-slash' : 'fa fa-eye';
+        }
+    </script>
 </x-layouts.auth>
