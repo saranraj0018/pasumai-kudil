@@ -117,7 +117,7 @@
         </form>
 
         @if ($resultHeadings)
-            @include('admin.reports.result_table', ['headings' => $resultHeadings, 'rows' => $resultRows, 'title' => $resultTitle])
+            @include('admin.reports.result_table', ['headings' => $resultHeadings, 'rows' => $resultRows, 'totals' => $table_totals ?? null, 'title' => $resultTitle])
         @endif
     </div>
 </x-layouts.app>

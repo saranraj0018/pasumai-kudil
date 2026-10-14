@@ -29,8 +29,9 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Search location (address / area / shop /
                     company)</label>
+                <!-- Enter picks a suggestion; stop it from also submitting the form -->
                 <input type="text" x-model="form.query" name="city" x-ref="cityInput" id="cityInput"
-                    autocomplete="off" placeholder="Type address, area, shop name, company..."
+                    autocomplete="off" @keydown.enter.prevent placeholder="Type address, area, shop name, company..."
                     class="w-full rounded-lg border border-gray-300 p-2 text-gray-700 focus:border-[#ab5f00] focus:ring-[#ab5f00]/30"
                     required />
                 <p x-show="errors.city" x-text="errors.city" class="text-red-600 text-sm mt-1"></p>
@@ -107,25 +108,17 @@
         }
     </style>
 
-    <!-- Google Transliteration (optional) - helps typing Tamil from Latin keyboard -->
-    <script src="https://www.google.com/jsapi"></script>
-    <script>
-        // load transliteration library asynchronously (optional)
-        google.load("elements", "1", {
-            packages: "transliteration"
-        });
-    </script>
-    <!-- Google Maps JS: no hard-coded language allows Google to choose best language,
-         but you can add &language=ta to favor Tamil suggestions if you want -->
-    <script
-        src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&callback=initGoogleMaps"
-        async defer></script>
     <script>
         let googleMapsLoaded = false;
 
         function initGoogleMaps() {
             // Called once Maps library loaded
             googleMapsLoaded = true;
+        }
+
+        // Google calls this when the API key is invalid, restricted or billing is off
+        function gm_authFailure() {
+            showToast("Google Maps failed to load. Check the API key in .env and its restrictions.", "error", 6000);
         }
 
         function shippingForm(existing = null) {
@@ -153,7 +146,6 @@
                             clearInterval(poll);
                             this._setupMap();
                             this._setupAutocomplete();
-                            this._setupTransliteration();
                         }
                     }, 200);
                 },
@@ -186,16 +178,6 @@
                         this._reverseGeocode(pos);
                     });
 
-                    // Setup city autocomplete
-                    const autocomplete = new google.maps.places.Autocomplete(this.$refs.cityInput, {
-                        types: ['(cities)'],
-                        componentRestrictions: {
-                            country: 'in'
-                        },
-                        fields: ['address_components', 'geometry', 'name'],
-                    });
-
-
                     // If we have initial lat/lng but no address loaded, reverse-geocode to fill address
                     if (this.form.latitude && this.form.longitude && !this.form.address) {
                         const latlng = new google.maps.LatLng(this.form.latitude, this.form.longitude);
@@ -226,7 +208,7 @@
 
                         // Use place.name (shop/company) if available, otherwise formatted_address
                         this.form.address = place.formatted_address || place.name || this.form.address;
-                        this.form.city = this._extractCityFromComponents(place.address_components) || place.name ||
+                        this.form.city = this._extractAreaFromComponents(place.address_components) || place.name ||
                             this.form.city;
 
                         const loc = place.geometry.location;
@@ -235,27 +217,20 @@
 
                         this._applyLatLng(lat, lng);
                         this.marker.setPosition(loc);
-                        this.map.panTo(loc);
-                        this.map.setZoom(15);
+                        // A city/area has a large viewport: show all of it instead of
+                        // zooming into its centre point, which looks like a random street
+                        if (place.geometry.viewport) {
+                            this.map.fitBounds(place.geometry.viewport);
+                        } else {
+                            this.map.panTo(loc);
+                            this.map.setZoom(15);
+                        }
                     });
 
                     // Also update query model from input manually so binding stays in sync
                     input.addEventListener('input', (e) => {
                         this.form.query = e.target.value;
                     });
-                },
-                _setupTransliteration() {
-                    // Optional: enable Google transliteration for the input (so typing Latin letters produces Tamil)
-                    try {
-                        const control = new google.elements.transliteration.TransliterationControl({
-                            sourceLanguage: 'en',
-                            destinationLanguage: ['ta'],
-                            transliterationEnabled: true
-                        });
-                        control.makeTransliteratable([this.$refs.cityInput]);
-                    } catch (err) {
-                        // console.warn('Transliteration not available', err);
-                    }
                 },
                 _applyLatLng(lat, lng) {
                     // Save with high precision as strings (or numbers) for your DB
@@ -371,4 +346,8 @@
             };
         }
     </script>
+    <!-- Google Maps JS: loaded after initGoogleMaps is defined so the callback always exists -->
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&callback=initGoogleMaps"
+        async defer></script>
 </x-layouts.app>

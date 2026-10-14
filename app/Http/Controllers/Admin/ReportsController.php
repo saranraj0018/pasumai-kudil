@@ -48,17 +48,66 @@ class ReportsController extends Controller
             'product_list_view' => $this->buildProductListViewReport($request),
         };
 
-        return $this->renderTable($request, $headings, collect($rows), $title, $request->report_type);
+        $rows = collect($rows);
+        $totals = in_array($request->report_type, self::REPORTS_WITH_TOTALS) && $rows->isNotEmpty()
+            ? $this->buildTotalsRow($headings, $rows)
+            : null;
+
+        return $this->renderTable($request, $headings, $rows, $title, $request->report_type, $totals);
+    }
+
+    const REPORTS_WITH_TOTALS = ['day_wise_profit', 'item_wise_profit', 'product_stock_view', 'product_list_view'];
+
+    // Headings whose column values are added up in the report's Total row.
+    const QUANTITY_TOTAL_COLUMNS = ['Sales Quantity', 'Sales Qty', 'Stock'];
+    const AMOUNT_TOTAL_COLUMNS = [
+        'Landing Cost Amount', 'Landing Cost (Purchase Price)', 'Sales Amount', 'Profit Amount',
+        'Purchase Price', 'Sale Price', 'Regular Price', 'Profit',
+    ];
+
+    // Sums the displayed (already formatted) values, so the total always
+    // matches the rows above it.
+    private function buildTotalsRow(array $headings, Collection $rows): array
+    {
+        $sum = fn($index) => $rows->sum(fn($row) => (float) str_replace(',', '', $row[$index]));
+
+        $totals = [];
+        foreach ($headings as $index => $heading) {
+            if (in_array($heading, self::QUANTITY_TOTAL_COLUMNS)) {
+                $totals[$index] = (int) $sum($index);
+            } elseif (in_array($heading, self::AMOUNT_TOTAL_COLUMNS)) {
+                $totals[$index] = number_format($sum($index), 2);
+            } else {
+                $totals[$index] = '';
+            }
+        }
+        $totals[0] = 'Total';
+
+        // Product reports have one row per variant, so the row count is the variant count
+        $variantIndex = array_search('Variant', $headings);
+        if ($variantIndex !== false) {
+            $totals[$variantIndex] = $rows->count();
+        }
+
+        // Profit % of the totals, not a sum of each row's percentage
+        $percentIndex = array_search('Profit %', $headings);
+        if ($percentIndex !== false) {
+            $sales = $sum(array_search('Sales Amount', $headings));
+            $profit = $sum(array_search('Profit Amount', $headings));
+            $totals[$percentIndex] = $sales > 0 ? number_format($profit / $sales * 100, 2) : '0.00';
+        }
+
+        return $totals;
     }
 
     /**
      * Render a pre-aggregated report as View / Excel / PDF.
      */
-    private function renderTable(Request $request, array $headings, Collection $rows, string $title, string $fileNamePrefix)
+    private function renderTable(Request $request, array $headings, Collection $rows, string $title, string $fileNamePrefix, ?array $totals = null)
     {
         if ($request->view_type == 'excel') {
             return Excel::download(
-                new GenericTableExport($headings, $rows, $title),
+                new GenericTableExport($headings, $totals ? $rows->concat([$totals]) : $rows, $title),
                 $fileNamePrefix . '_' . Carbon::now()->format('Ymd_His') . '.xlsx'
             );
         }
@@ -71,6 +120,7 @@ class ReportsController extends Controller
             $pdf = Pdf::loadView('admin.reports.table_pdf', [
                 'headings' => $headings,
                 'rows' => $rows,
+                'totals' => $totals,
                 'title' => $title,
                 'subtitle' => $subtitle,
             ])->setPaper('A4', 'landscape');
@@ -81,6 +131,7 @@ class ReportsController extends Controller
         return view('admin.reports', [
             'table_headings' => $headings,
             'table_rows' => $rows,
+            'table_totals' => $totals,
             'table_title' => $title,
             'filters' => $request->all(),
         ]);

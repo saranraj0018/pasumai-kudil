@@ -36,7 +36,23 @@ class RolesAndPermissionsController extends Controller
         ]);
 
         $role = Role::findOrFail($request->role_id);
-        $role->abilities()->sync($request->abilities ?? []);
+
+        // The sidebar hides a whole menu group unless its main menu ability is
+        // granted, so grant the main menu of every ticked submenu permission.
+        $abilityIds = collect($request->abilities ?? [])->map(fn($id) => (int) $id);
+        $allAbilities = Ability::get(['id', 'menu_id', 'main_menu'])->keyBy('id');
+
+        foreach ($abilityIds->all() as $id) {
+            $current = $allAbilities[$id] ?? null;
+            while ($current && $current->main_menu !== 'y' && $current->menu_id) {
+                $current = $allAbilities[$current->menu_id] ?? null;
+            }
+            if ($current && $current->main_menu === 'y') {
+                $abilityIds->push($current->id);
+            }
+        }
+
+        $role->abilities()->sync($abilityIds->unique()->values()->all());
 
         return redirect()->route('roles_and_permission', ['role_id' => $role->id])->with('success', 'Abilities updated successfully!');
     }

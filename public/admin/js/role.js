@@ -128,6 +128,14 @@ $(function () {
         });
     });
 
+    // A submenu permission needs its main menu, otherwise the sidebar hides the whole group
+    function checkMainMenu(menuId) {
+        let mainMenu = document.querySelector(
+            '.main-menu-checkbox[data-menu="' + menuId + '"]',
+        );
+        if (mainMenu) mainMenu.checked = true;
+    }
+
     // Select all submenu permissions
     document.querySelectorAll(".select-all-submenu").forEach((selectAll) => {
         selectAll.addEventListener("change", function () {
@@ -136,6 +144,17 @@ $(function () {
             document.querySelectorAll(".child-" + menuId).forEach((child) => {
                 child.checked = checked;
             });
+            if (checked) checkMainMenu(menuId);
+        });
+    });
+
+    document.querySelectorAll(".ability-checkbox").forEach((child) => {
+        child.addEventListener("change", function () {
+            if (!this.checked) return;
+            let childClass = [...this.classList].find((c) =>
+                c.startsWith("child-"),
+            );
+            if (childClass) checkMainMenu(childClass.replace("child-", ""));
         });
     });
 });

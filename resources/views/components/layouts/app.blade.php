@@ -17,18 +17,61 @@
         .animate-spin {
             animation: spin 1s linear infinite;
         }
+
+        /* Collapsible sidebar: toggled by the menu button in the navbar */
+        #sidebar,
+        #sidebar > aside,
+        #mainContent {
+            transition: width .2s ease, margin-left .2s ease;
+        }
+
+        .sidebar-collapsed #sidebar,
+        .sidebar-collapsed #sidebar > aside {
+            width: 4rem;
+        }
+
+        .sidebar-collapsed #mainContent {
+            margin-left: 4rem;
+        }
+
+        .sidebar-collapsed #sidebar span,
+        .sidebar-collapsed #sidebar .fa-chevron-down {
+            display: none;
+        }
+
+        .sidebar-collapsed #sidebar a,
+        .sidebar-collapsed #sidebar button {
+            justify-content: center;
+        }
+
+        .sidebar-collapsed #sidebar .px-5 {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .sidebar-collapsed #sidebar img {
+            height: 2rem;
+            width: 2rem;
+        }
     </style>
+    <script>
+        try {
+            if (localStorage.getItem('sidebarCollapsed') === '1') {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
+        } catch (e) {}
+    </script>
 </head>
 
 <body class="hold-transition sidebar-mini bg-gray-100">
     <div class="wrapper">
         <div class="flex">
 
-            <aside class="fixed top-0 left-0 h-full w-64 shadow-lg">
+            <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 shadow-lg">
                 <x-partials.sidebar />
             </aside>
 
-            <div class="flex flex-col flex-1 ml-64">
+            <div id="mainContent" class="flex flex-col flex-1 ml-64">
                 <div class="flex justify-start items-start">
                     <div class="flex flex-col w-full p-2">
                         <x-partials.navbar />
@@ -64,6 +107,14 @@
 
 
     <x-partials.scripts />
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            let collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+            try {
+                localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
+            } catch (e) {}
+        });
+    </script>
 </body>
 
 </html>

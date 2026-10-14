@@ -1,8 +1,8 @@
 <nav class="bg-white w-full border-b border-gray-200 px-5 py-2 shadow-sm rounded-xl flex justify-between items-center">
     <!-- Left: Menu Icon -->
-    <a href="#" class="text-gray-700 hover:text-gray-900">
+    <button type="button" id="sidebarToggle" class="text-gray-700 hover:text-gray-900" title="Toggle menu">
         <i class="fas fa-bars text-xl"></i>
-    </a>
+    </button>
 
     <!-- Right Side -->
     <div class="flex items-center gap-6">

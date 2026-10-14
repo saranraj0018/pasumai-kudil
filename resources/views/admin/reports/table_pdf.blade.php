@@ -29,4 +29,13 @@
             </tr>
         @endforelse
     </tbody>
+    @if (!empty($totals))
+        <tfoot>
+            <tr>
+                @foreach ($totals as $col)
+                    <td style="font-weight: bold;">{{ $col }}</td>
+                @endforeach
+            </tr>
+        </tfoot>
+    @endif
 </table>

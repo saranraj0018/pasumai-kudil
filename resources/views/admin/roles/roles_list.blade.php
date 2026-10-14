@@ -2,7 +2,7 @@
     <div class="p-4">
         <div class="flex justify-between mb-4">
             <h2 class="text-xl font-bold">Roles</h2>
-            @can('add_role')
+            @can('add_roles')
             <button id="createRole" class="bg-[#ab5f00] text-white px-4 py-2 rounded">
                 Create
             </button>

@@ -28,6 +28,15 @@
                     </tr>
                 @endforelse
             </tbody>
+            @if (!empty($totals))
+                <tfoot class="bg-gray-100 text-gray-800 text-sm font-semibold">
+                    <tr>
+                        @foreach ($totals as $col)
+                            <td class="px-4 py-2 border">{{ $col }}</td>
+                        @endforeach
+                    </tr>
+                </tfoot>
+            @endif
         </table>
     </div>
 </div>
